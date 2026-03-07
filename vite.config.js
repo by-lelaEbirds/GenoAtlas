@@ -6,8 +6,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'three/webgpu': 'three/build/three.webgpu.js',
-      'three/tsl': 'three/build/three.tsl.js'
+      'three/build/three.webgpu.js': 'three/webgpu',
+      'three/build/three.webgpu': 'three/webgpu',
+      'three/build/three.tsl.js': 'three/tsl',
+      'three/build/three.tsl': 'three/tsl'
     }
   }
 })
