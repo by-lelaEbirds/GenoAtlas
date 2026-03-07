@@ -3,40 +3,56 @@ import GlobeVisualizer from './components/GlobeVisualizer';
 import UploadPanel from './components/UploadPanel';
 import LandingPage from './components/LandingPage';
 import ResultsSidebar from './components/ResultsSidebar';
-import { MATHEUS_DATA, generateStainPoints } from './data/matheusData';
+
+const generateStainPoints = (regioes) => {
+  const points = [];
+  regioes.forEach(reg => {
+    const numPoints = reg.percent * 25;
+    for (let i = 0; i < numPoints; i++) {
+      const radius = reg.percent > 10 ? 8 : 4;
+      points.push({
+        lat: reg.lat + (Math.random() - 0.5) * radius,
+        lng: reg.lng + (Math.random() - 0.5) * radius,
+        color: reg.cor
+      });
+    }
+  });
+  return points;
+};
 
 export default function App() {
   const [isStarted, setIsStarted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processStatus, setProcessStatus] = useState('');
   const [showResults, setShowResults] = useState(false);
-  
+  const [userData, setUserData] = useState(null);
   const [globeData, setGlobeData] = useState({ arcs: [], points: [], rings: [] });
 
   const handleFileUpload = (file) => {
     setIsProcessing(true);
-    setProcessStatus('A extrair marcadores de ancestralidade...');
+    setProcessStatus('A extrair e descompactar marcadores genéticos...');
 
     const worker = new Worker(new URL('./workers/dnaWorker.js', import.meta.url), {
       type: 'module'
     });
 
     worker.onmessage = (e) => {
-      const { type, validSNPs, chromosomeCount, error } = e.data;
+      const { type, validSNPs, userProfile, error } = e.data;
 
       if (type === 'SUCCESS') {
-        setProcessStatus(`Identidade confirmada. Processando mapa de calor...`);
+        setProcessStatus(`Mapeados ${validSNPs.toLocaleString()} SNPs. Renderizando o mapa...`);
         
         setTimeout(() => {
           setIsProcessing(false);
           setProcessStatus('');
+          setUserData(userProfile);
           setShowResults(true);
           
-          const stains = generateStainPoints(MATHEUS_DATA.regioes);
-          const epicenters = MATHEUS_DATA.regioes.map(reg => ({
+          const stains = generateStainPoints(userProfile.regioes);
+          const epicenters = userProfile.regioes.map(reg => ({
             lat: reg.lat, lng: reg.lng, color: reg.cor
           }));
-          const arcs = MATHEUS_DATA.regioes.map(reg => ({
+          const arcs = userProfile.regioes.map(reg => ({
             startLat: 0, startLng: 0, endLat: reg.lat, endLng: reg.lng, color: reg.cor
           }));
 
@@ -68,7 +84,7 @@ export default function App() {
             />
           )}
 
-          {showResults && <ResultsSidebar />}
+          {showResults && <ResultsSidebar userData={userData} />}
         </div>
       )}
     </div>
