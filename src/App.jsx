@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import UploadPanel from './components/UploadPanel';
 import LandingPage from './components/LandingPage';
+import ResultsSidebar from './components/ResultsSidebar';
+import { MATHEUS_DATA, generateStainPoints } from './data/matheusData';
 
 export default function App() {
   const [isStarted, setIsStarted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processStatus, setProcessStatus] = useState('');
-  const [globeData, setGlobeData] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  
+  const [globeData, setGlobeData] = useState({ arcs: [], points: [], rings: [] });
 
   const handleFileUpload = (file) => {
     setIsProcessing(true);
@@ -18,15 +22,26 @@ export default function App() {
     });
 
     worker.onmessage = (e) => {
-      const { type, totalLines, validSNPs, chromosomeCount, visualData, error } = e.data;
+      const { type, validSNPs, chromosomeCount, error } = e.data;
 
       if (type === 'SUCCESS') {
-        setProcessStatus(`Mapeados ${validSNPs.toLocaleString()} SNPs em ${chromosomeCount} cromossomas.`);
-        setGlobeData(visualData);
+        setProcessStatus(`Identidade confirmada. Processando mapa de calor...`);
+        
         setTimeout(() => {
           setIsProcessing(false);
           setProcessStatus('');
-        }, 4000);
+          setShowResults(true);
+          
+          const stains = generateStainPoints(MATHEUS_DATA.regioes);
+          const epicenters = MATHEUS_DATA.regioes.map(reg => ({
+            lat: reg.lat, lng: reg.lng, color: reg.cor
+          }));
+          const arcs = MATHEUS_DATA.regioes.map(reg => ({
+            startLat: 0, startLng: 0, endLat: reg.lat, endLng: reg.lng, color: reg.cor
+          }));
+
+          setGlobeData({ arcs, points: stains, rings: epicenters });
+        }, 3000);
       } else {
         setProcessStatus(`Erro na leitura: ${error}`);
         setIsProcessing(false);
@@ -43,12 +58,17 @@ export default function App() {
         <LandingPage onStart={() => setIsStarted(true)} />
       ) : (
         <div className="absolute inset-0 transition-opacity duration-1000">
-          <GlobeVisualizer arcsData={globeData} />
-          <UploadPanel 
-            onFileUpload={handleFileUpload} 
-            isProcessing={isProcessing}
-            processStatus={processStatus}
-          />
+          <GlobeVisualizer arcsData={globeData.arcs} pointsData={globeData.points} ringsData={globeData.rings} />
+          
+          {!showResults && (
+            <UploadPanel 
+              onFileUpload={handleFileUpload} 
+              isProcessing={isProcessing}
+              processStatus={processStatus}
+            />
+          )}
+
+          {showResults && <ResultsSidebar />}
         </div>
       )}
     </div>
