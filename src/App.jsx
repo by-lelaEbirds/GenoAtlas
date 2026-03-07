@@ -7,20 +7,22 @@ export default function App() {
   const [isStarted, setIsStarted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processStatus, setProcessStatus] = useState('');
+  const [globeData, setGlobeData] = useState([]);
 
   const handleFileUpload = (file) => {
     setIsProcessing(true);
-    setProcessStatus('A ler sequenciamento genético...');
+    setProcessStatus('A extrair marcadores de ancestralidade...');
 
     const worker = new Worker(new URL('./workers/dnaWorker.js', import.meta.url), {
       type: 'module'
     });
 
     worker.onmessage = (e) => {
-      const { type, totalLines, sample, error } = e.data;
+      const { type, totalLines, validSNPs, chromosomeCount, visualData, error } = e.data;
 
       if (type === 'SUCCESS') {
-        setProcessStatus(`Sucesso! ${totalLines.toLocaleString()} marcadores processados.`);
+        setProcessStatus(`Mapeados ${validSNPs.toLocaleString()} SNPs em ${chromosomeCount} cromossomas.`);
+        setGlobeData(visualData);
         setTimeout(() => {
           setIsProcessing(false);
           setProcessStatus('');
@@ -41,7 +43,7 @@ export default function App() {
         <LandingPage onStart={() => setIsStarted(true)} />
       ) : (
         <div className="absolute inset-0 transition-opacity duration-1000">
-          <GlobeVisualizer />
+          <GlobeVisualizer arcsData={globeData} />
           <UploadPanel 
             onFileUpload={handleFileUpload} 
             isProcessing={isProcessing}
