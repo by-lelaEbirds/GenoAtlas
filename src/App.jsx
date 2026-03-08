@@ -57,11 +57,11 @@ export default function App() {
   const [endReason, setEndReason] = useState('');
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.satellite);
   const [themeAnimState, setThemeAnimState] = useState('idle'); 
-  const [activeRegion, setActiveRegion] = useState('all'); // Estado de Continente
+  const [activeRegion, setActiveRegion] = useState('all'); 
   
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
-  const [streak, setStreak] = useState(0); // Fogo / Combos
+  const [streak, setStreak] = useState(0); 
   const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
   
@@ -146,7 +146,6 @@ export default function App() {
     setGuessedCountries([]);
     setTravelArcs([]);
     
-    // FILTRA OS PAÍSES PELO CONTINENTE ESCOLHIDO
     let pool = allCountries;
     if (activeRegion === 'Americas') {
       pool = allCountries.filter(c => c.continent === 'North America' || c.continent === 'South America');
@@ -173,7 +172,7 @@ export default function App() {
 
   const pickNextCountry = (pool) => {
     if (pool.length === 0) {
-      endGame('win'); // Zerou o continente!
+      endGame('win'); 
       return;
     }
     const randomIndex = Math.floor(Math.random() * pool.length);
@@ -203,17 +202,16 @@ export default function App() {
     const isCombo = timeTaken <= 3;
 
     if (clickedCountryObj.iso === targetCountry.iso) {
-      // LOGICA DE STREAK E PONTOS
       const currentStreak = streak + 1;
       setStreak(currentStreak);
       
       const pointsBase = isCombo ? 200 : 100;
-      const pointsCombo = pointsBase + (currentStreak * 10); // Bónus por Streak
+      const pointsCombo = pointsBase + (currentStreak * 10); 
       setScore(prev => prev + pointsCombo);
       
-      // LOGICA ARCADE: TIME ATTACK (+3s)
+      // NOVA LÓGICA DE BÓNUS: +5 Segundos
       if (isCombo) {
-        setTimeLeft(prev => prev + 3);
+        setTimeLeft(prev => prev + 5);
         setTimeBonusAnim(true);
         setTimeout(() => setTimeBonusAnim(false), 1000);
       }
@@ -233,14 +231,14 @@ export default function App() {
       const popMilhoes = (clickedCountryObj.pop / 1000000).toFixed(1);
       
       setFeedback({ 
-        text: isCombo ? `⚡ TIME ATTACK! +3s` : '✅ CORRETO!', 
+        text: isCombo ? `⚡ TIME ATTACK! +5s` : '✅ CORRETO!', 
         color: isCombo ? 'text-emerald-400 scale-110' : 'text-cyan-400',
         fact: popMilhoes > 0 ? `População: ~${popMilhoes}M` : null
       });
 
       setTimeout(() => pickNextCountry(remainingCountries), 800); 
     } else {
-      setStreak(0); // Quebra o combo se errar
+      setStreak(0); 
       setLives(prev => {
         const newLives = prev - 1;
         if (newLives <= 0) endGame('lives');
@@ -303,7 +301,6 @@ export default function App() {
                 <div className="flex items-center gap-2 text-slate-400 uppercase tracking-widest text-xs font-bold">
                   <Target size={14} style={{ color: activeTheme.polyStroke }} /> Destino
                 </div>
-                {/* ÍCONE DE STREAK FLAMEJANTE */}
                 {streak >= 3 && (
                   <div className="flex items-center gap-1 text-amber-500 text-xs font-black animate-bounce bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
                     <Flame size={12} /> x{streak} STREAK
@@ -329,14 +326,13 @@ export default function App() {
               ))}
             </div>
 
-            {/* TIMER COM EFEITO DE TIME ATTACK */}
             <div className={`relative ${activeTheme.hudBg} backdrop-blur-xl border border-white/10 px-5 py-4 rounded-2xl flex items-center gap-3 transition-all duration-500 shadow-lg pointer-events-auto ${timeLeft <= 10 ? 'border-rose-500/50 bg-rose-900/30' : ''}`}>
               <Timer className={timeLeft <= 10 ? 'text-rose-500 animate-pulse' : ''} style={{ color: timeLeft > 10 ? activeTheme.polyStroke : undefined }} size={24} />
               <span className={`text-3xl font-mono font-black tracking-tight ${timeLeft <= 10 ? 'text-rose-500' : activeTheme.textColor}`}>
                 {timeLeft.toString().padStart(2, '0')}
               </span>
-              {/* Efeito visual flutuante de +3s */}
-              {timeBonusAnim && <span className="absolute -top-6 right-2 text-emerald-400 font-black animate-ping">+3s</span>}
+              {/* O NÚMERO MAGICO ATUALIZADO AQUI */}
+              {timeBonusAnim && <span className="absolute -top-6 right-2 text-emerald-400 font-black animate-ping">+5s</span>}
             </div>
             
             <div className={`${activeTheme.hudBg} backdrop-blur-xl border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-3 shadow-lg pointer-events-auto transition-colors duration-500`}>
