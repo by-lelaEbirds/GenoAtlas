@@ -47,11 +47,19 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     }
   }, [gameState]);
 
+  // A CORREÇÃO DA BANDEIRA VEM AQUI
   const createFlagElement = useCallback((d) => {
-    const el = document.createElement('div');
-    el.className = 'flag-marker'; 
-    el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" alt="${d.iso}" />`;
-    return el;
+    // 1. O container que o motor 3D vai mover (sem animações para não quebrar a física)
+    const container = document.createElement('div');
+    container.style.pointerEvents = 'none';
+    
+    // 2. O conteúdo visual com a nossa animação CSS
+    const flagWrapper = document.createElement('div');
+    flagWrapper.className = 'flag-marker'; 
+    flagWrapper.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" alt="${d.iso}" />`;
+    
+    container.appendChild(flagWrapper);
+    return container;
   }, []);
 
   let themeTransform = '';
@@ -73,7 +81,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   }
 
   return (
-    // ESTILO ROLETA: Move o globo para a borda direita (translate-x-[50%]) e aumenta (scale-[1.4])
     <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-x-[50%] scale-[1.4]' : 'translate-x-0 scale-100'}`}>
       
       <div className={`w-full h-full transition-all ${animDuration} ${themeTransform} ${themeOpacity}`}>
@@ -98,7 +105,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           polygonTransitionDuration={300}
           
           onPolygonHover={setHoverD}
-          // PEGA A COORDENADA EXATA DO CLIQUE DO RATO:
           onPolygonClick={(polygon, event, coords) => {
             if (onCountryClick && coords) onCountryClick(polygon, coords.lat, coords.lng);
           }}
