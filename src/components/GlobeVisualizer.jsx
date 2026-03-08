@@ -73,7 +73,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   }
 
   return (
-    <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-y-[45%] scale-[1.4]' : 'translate-y-0 scale-100'}`}>
+    // ESTILO ROLETA: Move o globo para a borda direita (translate-x-[50%]) e aumenta (scale-[1.4])
+    <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-x-[50%] scale-[1.4]' : 'translate-x-0 scale-100'}`}>
       
       <div className={`w-full h-full transition-all ${animDuration} ${themeTransform} ${themeOpacity}`}>
         <Globe
@@ -97,9 +98,9 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           polygonTransitionDuration={300}
           
           onPolygonHover={setHoverD}
-          // Agora passamos apenas o polígono, a App já sabe qual é o centro exato!
-          onPolygonClick={(polygon) => {
-            if (onCountryClick) onCountryClick(polygon);
+          // PEGA A COORDENADA EXATA DO CLIQUE DO RATO:
+          onPolygonClick={(polygon, event, coords) => {
+            if (onCountryClick && coords) onCountryClick(polygon, coords.lat, coords.lng);
           }}
           
           arcsData={travelArcs}
