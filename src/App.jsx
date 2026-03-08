@@ -12,7 +12,7 @@ export const MAP_THEMES = {
     bg: 'from-[#0f172a] to-[#020617]',
     textColor: 'text-white',
     hudBg: 'bg-slate-900/80',
-    polyStroke: '#22d3ee', // cyan-400
+    polyStroke: '#22d3ee',
     polyHover: 'rgba(34, 211, 238, 0.5)',
     polyGuessed: 'rgba(34, 197, 94, 0.5)',
     atmosphere: '#38bdf8',
@@ -25,7 +25,7 @@ export const MAP_THEMES = {
     bg: 'from-[#dbeafe] to-[#93c5fd]',
     textColor: 'text-slate-900',
     hudBg: 'bg-white/90',
-    polyStroke: '#2563eb', // blue-600
+    polyStroke: '#2563eb',
     polyHover: 'rgba(255, 255, 255, 0.5)',
     polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#bfdbfe',
@@ -38,7 +38,7 @@ export const MAP_THEMES = {
     bg: 'from-[#17052e] to-[#050014]',
     textColor: 'text-fuchsia-50',
     hudBg: 'bg-fuchsia-950/80',
-    polyStroke: '#d946ef', // fuchsia-500
+    polyStroke: '#d946ef',
     polyHover: 'rgba(217, 70, 239, 0.6)',
     polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#d946ef',
@@ -91,7 +91,9 @@ export default function App() {
             const countryObj = { 
               name: localName, 
               iso: isoCode, 
-              continent: f.properties.CONTINENT
+              continent: f.properties.CONTINENT,
+              lat: f.properties.LABEL_Y, // A MAGIA ACONTECE AQUI: Centro exato do país (Latitude)
+              lng: f.properties.LABEL_X  // Centro exato do país (Longitude)
             };
             f.properties.LOCAL_NAME = localName;
             f.properties.COUNTRY_OBJ = countryObj;
@@ -176,7 +178,8 @@ export default function App() {
     setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500' });
   };
 
-  const handleCountryClick = useCallback((polygon, lat, lng) => {
+  // Simplificámos a função: agora usamos as coordenadas do próprio objeto do país!
+  const handleCountryClick = useCallback((polygon) => {
     if (gameState !== 'playing' || !targetCountry) return;
 
     const clickedCountryObj = polygon.properties.COUNTRY_OBJ;
@@ -189,17 +192,15 @@ export default function App() {
       const points = isCombo ? 200 : 100;
       setScore(prev => prev + points);
       
-      const currentGuess = { ...clickedCountryObj, lat, lng };
-      
       setGuessedCountries(prev => {
         if (prev.length > 0) {
           const lastGuess = prev[prev.length - 1];
           setTravelArcs(arcs => [...arcs, { 
             startLat: lastGuess.lat, startLng: lastGuess.lng, 
-            endLat: lat, endLng: lng 
+            endLat: clickedCountryObj.lat, endLng: clickedCountryObj.lng 
           }]);
         }
-        return [...prev, currentGuess];
+        return [...prev, clickedCountryObj];
       });
 
       setFeedback({ 
@@ -207,7 +208,6 @@ export default function App() {
         color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500'
       });
 
-      // Transição muito mais rápida para focar na ação
       setTimeout(() => pickNextCountry(remainingCountries), 800); 
     } else {
       setLives(prev => {
