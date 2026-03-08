@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, themeAnimState }, ref) => {
+const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, themeAnimState, travelArcs }, ref) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
   const timeoutRef = useRef(null);
@@ -10,9 +10,7 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     triggerStartAnimation: () => {
       if (globeEl.current) {
         globeEl.current.pointOfView({ altitude: 2.2 }, 0);
-        setTimeout(() => {
-          globeEl.current.pointOfView({ altitude: 1.6 }, 2500);
-        }, 100);
+        setTimeout(() => globeEl.current.pointOfView({ altitude: 1.6 }, 2500), 100);
       }
     }
   }));
@@ -33,17 +31,13 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
       };
 
       const handleInteractionEnd = () => {
-        timeoutRef.current = setTimeout(() => {
-          controls.autoRotate = true;
-        }, 3000);
+        timeoutRef.current = setTimeout(() => { controls.autoRotate = true; }, 3000);
       };
 
       controls.addEventListener('start', handleInteractionStart);
       controls.addEventListener('end', handleInteractionEnd);
 
-      if (gameState === 'start') {
-        globeEl.current.pointOfView({ altitude: 1.8 }, 1000);
-      }
+      if (gameState === 'start') globeEl.current.pointOfView({ altitude: 1.8 }, 1000);
 
       return () => {
         controls.removeEventListener('start', handleInteractionStart);
@@ -53,33 +47,28 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     }
   }, [gameState]);
 
-  // Lógica de CSS Dinâmico para o Deslizamento de Tema
+  // Animação Snappy e Rápida de Troca de Tema
   let themeTransform = '';
   let animDuration = '';
   let themeOpacity = '';
 
   if (themeAnimState === 'out') {
-    // Escorrega para a Esquerda, diminui e tomba 20 graus
-    themeTransform = '-translate-x-[120%] -rotate-[20deg] scale-50';
+    themeTransform = '-translate-x-[100%] -rotate-[15deg] scale-75';
     themeOpacity = 'opacity-0';
-    animDuration = 'duration-500';
+    animDuration = 'duration-300 ease-in';
   } else if (themeAnimState === 'prepare-in') {
-    // Teletransporte instantâneo para a Direita, invisível
-    themeTransform = 'translate-x-[120%] rotate-[20deg] scale-50';
+    themeTransform = 'translate-x-[100%] rotate-[15deg] scale-75';
     themeOpacity = 'opacity-0';
     animDuration = 'duration-0'; 
   } else {
-    // Entrada Triunfal (Idle)
     themeTransform = 'translate-x-0 rotate-0 scale-100';
     themeOpacity = 'opacity-100';
-    animDuration = 'duration-[1200ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'; // Curva com saltinho final
+    animDuration = 'duration-[800ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'; 
   }
 
   return (
-    // Outer Div: Efeito Horizonte (Apple)
-    <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-y-[45%] scale-[1.4]' : 'translate-y-0 scale-100'}`}>
+    <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-y-[45%] scale-[1.4]' : 'translate-y-0 scale-100'}`}>
       
-      {/* Inner Div: Efeito Troca de Temas */}
       <div className={`w-full h-full transition-all ${animDuration} ${themeTransform} ${themeOpacity}`}>
         <Globe
           ref={globeEl}
@@ -102,20 +91,36 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           polygonTransitionDuration={300}
           
           onPolygonHover={setHoverD}
-          onPolygonClick={(polygon) => {
-            if (onCountryClick) onCountryClick(polygon);
+          // CAPTURA A COORDENADA EXATA DO CLIQUE DO RATO
+          onPolygonClick={(polygon, event, { lat, lng }) => {
+            if (onCountryClick) onCountryClick(polygon, lat, lng);
           }}
           
+          // Arcos de Viagem
+          arcsData={travelArcs}
+          arcColor={() => theme.polyStroke}
+          arcDashLength={0.4}
+          arcDashGap={0.2}
+          arcDashAnimateTime={1500}
+          arcAltitudeAutoScale={0.3}
+
+          // Bandeiras Cravadas
           htmlElementsData={guessedCountries}
           htmlLat="lat"
           htmlLng="lng"
           htmlAltitude={0.06}
           htmlElement={d => {
             const el = document.createElement('div');
-            el.style.width = '36px';
-            el.style.height = '26px';
+            el.style.width = '32px';
+            el.style.height = '24px';
             el.style.pointerEvents = 'none';
-            el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 2px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.6);" />`;
+            // Animação CSS para a bandeira dar um "Pop" ao nascer
+            el.innerHTML = `
+              <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; width: 100%; height: 100%;">
+                <img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 2px solid white; box-shadow: 0 8px 16px rgba(0,0,0,0.8);" />
+              </div>
+              <style>@keyframes popIn { 0% { transform: scale(0) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }</style>
+            `;
             return el;
           }}
         />
