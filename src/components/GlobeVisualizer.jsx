@@ -8,7 +8,7 @@ const GlobeVisualizer = React.memo(({ geoData, onCountryClick }) => {
   useEffect(() => {
     if (globeEl.current) {
       globeEl.current.controls().autoRotate = true;
-      globeEl.current.controls().autoRotateSpeed = 0.3; // Mais devagar para facilitar o clique
+      globeEl.current.controls().autoRotateSpeed = 0.3;
       globeEl.current.controls().enableDamping = true;
       globeEl.current.pointOfView({ altitude: 1.8 });
     }
@@ -23,7 +23,7 @@ const GlobeVisualizer = React.memo(({ geoData, onCountryClick }) => {
         backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
         
         polygonsData={geoData}
-        polygonAltitude={0.01} // A CURA DO LAG: Altitude cravada! Sem recálculos pesados.
+        polygonAltitude={0.01}
         polygonCapColor={d => d === hoverD ? 'rgba(0, 243, 255, 0.4)' : 'rgba(255, 255, 255, 0.0)'}
         polygonSideColor={() => 'rgba(0, 243, 255, 0.15)'}
         polygonStrokeColor={() => '#00f3ff'}
@@ -31,7 +31,7 @@ const GlobeVisualizer = React.memo(({ geoData, onCountryClick }) => {
         
         onPolygonHover={setHoverD}
         onPolygonClick={(polygon) => {
-          if (onCountryClick) onCountryClick(polygon.properties.ADMIN);
+          if (onCountryClick) onCountryClick(polygon.properties.LOCAL_NAME || polygon.properties.ADMIN);
         }}
       />
     </div>
