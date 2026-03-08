@@ -1,12 +1,33 @@
-<!DOCTYPE html>
-<html lang="pt">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ancestralidade 3D</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #050505;
+}
+
+/* ANIMAÇÃO DAS BANDEIRAS FIXA (ESTILO GOOGLE MAPS PIN) */
+@keyframes popIn {
+  0% { transform: translate(-50%, -100%) scale(0) translateY(20px); opacity: 0; }
+  100% { transform: translate(-50%, -100%) scale(1) translateY(0); opacity: 1; }
+}
+
+.flag-marker {
+  width: 32px;
+  height: 24px;
+  pointer-events: none;
+  transform-origin: bottom center;
+  /* O translate no keyframe crava a base da bandeira no local do clique */
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.flag-marker img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 2px solid white;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.8);
+}
