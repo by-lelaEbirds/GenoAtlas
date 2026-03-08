@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
-import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb } from 'lucide-react';
+// O GraduationCap VOLTOU! Fim do crash.
+import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb, GraduationCap } from 'lucide-react';
 
 export const MAP_THEMES = {
   satellite: {
@@ -91,7 +92,8 @@ export default function App() {
             const countryObj = { 
               name: localName, 
               iso: isoCode, 
-              continent: f.properties.CONTINENT
+              continent: f.properties.CONTINENT,
+              pop: f.properties.POP_EST // CORREÇÃO: Recuperámos a base de dados da população!
             };
             f.properties.LOCAL_NAME = localName;
             f.properties.COUNTRY_OBJ = countryObj;
@@ -202,12 +204,15 @@ export default function App() {
         return [...prev, currentGuess];
       });
 
+      const popMilhoes = (clickedCountryObj.pop / 1000000).toFixed(1);
+      
       setFeedback({ 
         text: isCombo ? '🔥 COMBO! +200' : '✅ CORRETO! +100', 
-        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500'
+        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500',
+        fact: popMilhoes > 0 ? `População: ~${popMilhoes}M habitantes` : null
       });
 
-      setTimeout(() => pickNextCountry(remainingCountries), 800); 
+      setTimeout(() => pickNextCountry(remainingCountries), 1200); 
     } else {
       setLives(prev => {
         const newLives = prev - 1;
@@ -231,7 +236,6 @@ export default function App() {
         travelArcs={travelArcs}
       />
       
-      {/* Aqui entra a magia da propriedade themes corrigida */}
       {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={handleThemeChange} themes={MAP_THEMES} />}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} bestScore={bestScore} onRestart={startGame} onHome={goHome} theme={activeTheme} />}
@@ -265,8 +269,10 @@ export default function App() {
                 {targetCountry?.name || '...'}
               </div>
               
-              <div className="h-6 mt-3 flex flex-col justify-center">
+              <div className="h-10 mt-3 flex flex-col justify-center">
                 {feedback && <div className={`font-black transform transition-all tracking-wide ${feedback.color}`}>{feedback.text}</div>}
+                {/* O GraduationCap agora está importado e vai funcionar perfeitamente! */}
+                {feedback?.fact && <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1"><GraduationCap size={12}/> {feedback.fact}</div>}
               </div>
             </div>
           </div>
