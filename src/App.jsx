@@ -55,6 +55,7 @@ export default function App() {
   const [gameState, setGameState] = useState('start');
   const [endReason, setEndReason] = useState('');
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.satellite);
+  const [themeAnimState, setThemeAnimState] = useState('idle'); // 'idle' | 'out' | 'prepare-in'
   
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
@@ -109,6 +110,25 @@ export default function App() {
     }
     return () => clearInterval(timer);
   }, [gameState, timeLeft]);
+
+  // Função Mágica para Animação de Troca de Tema
+  const handleThemeChange = (newTheme) => {
+    if (newTheme.id === activeTheme.id || themeAnimState !== 'idle') return;
+
+    // 1. Atira o globo atual para a esquerda
+    setThemeAnimState('out');
+    
+    // 2. Espera 500ms (tempo de saída), troca a textura e teletransporta para a direita
+    setTimeout(() => {
+      setActiveTheme(newTheme);
+      setThemeAnimState('prepare-in');
+      
+      // 3. Espera 50ms para o navegador registar a nova posição invisível e puxa-o para o centro
+      setTimeout(() => {
+        setThemeAnimState('idle');
+      }, 50);
+    }, 500);
+  };
 
   const endGame = (reason) => {
     setGameState('result');
@@ -195,9 +215,11 @@ export default function App() {
         theme={activeTheme} 
         gameState={gameState}
         guessedCountries={guessedCountries}
+        themeAnimState={themeAnimState}
       />
       
-      {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={setActiveTheme} />}
+      {/* Repara que agora passamos o handleThemeChange em vez do setActiveTheme direto! */}
+      {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={handleThemeChange} />}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} bestScore={bestScore} onRestart={startGame} onHome={goHome} theme={activeTheme} />}
 
