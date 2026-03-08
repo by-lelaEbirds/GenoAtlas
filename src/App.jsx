@@ -42,32 +42,6 @@ export const MAP_THEMES = {
     bump: null
   }
 };
-};
-  cartographic: {
-    id: 'cartographic',
-    name: 'Cartográfico',
-    globeUrl: '//unpkg.com/three-globe/example/img/earth-water.png',
-    bg: 'from-[#f0f9ff] to-[#bae6fd]', // Modo Claro Suave!
-    textColor: 'text-slate-900',
-    hudBg: 'bg-white/80',
-    polyStroke: '#1e40af',
-    polyHover: 'rgba(30, 64, 175, 0.4)',
-    atmosphere: '#7dd3fc',
-    bump: null
-  },
-  cyberpunk: {
-    id: 'cyberpunk',
-    name: 'Cyberpunk',
-    globeUrl: '//unpkg.com/three-globe/example/img/earth-dark.jpg',
-    bg: 'from-[#17052e] to-[#050014]',
-    textColor: 'text-fuchsia-50',
-    hudBg: 'bg-fuchsia-950/80',
-    polyStroke: '#bc13fe',
-    polyHover: 'rgba(188, 19, 254, 0.6)',
-    atmosphere: '#bc13fe',
-    bump: null
-  }
-};
 
 export default function App() {
   const [geoData, setGeoData] = useState([]);
