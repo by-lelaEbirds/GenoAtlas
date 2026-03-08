@@ -20,8 +20,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
       const controls = globeEl.current.controls();
       controls.autoRotate = true;
       controls.autoRotateSpeed = 0.5;
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.1;
+      // MAGIA AQUI: Damping = false. O globo agora pára de forma "seca" e imediata!
+      controls.enableDamping = false; 
       controls.rotateSpeed = 1.0;
       controls.zoomSpeed = 0.8;
 
@@ -31,7 +31,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
       };
 
       const handleInteractionEnd = () => {
-        timeoutRef.current = setTimeout(() => { controls.autoRotate = true; }, 3000);
+        // Aumentado para 5 Segundos antes de voltar a girar automaticamente
+        timeoutRef.current = setTimeout(() => { controls.autoRotate = true; }, 5000);
       };
 
       controls.addEventListener('start', handleInteractionStart);
@@ -47,13 +48,10 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     }
   }, [gameState]);
 
-  // A CORREÇÃO DA BANDEIRA VEM AQUI
   const createFlagElement = useCallback((d) => {
-    // 1. O container que o motor 3D vai mover (sem animações para não quebrar a física)
     const container = document.createElement('div');
     container.style.pointerEvents = 'none';
     
-    // 2. O conteúdo visual com a nossa animação CSS
     const flagWrapper = document.createElement('div');
     flagWrapper.className = 'flag-marker'; 
     flagWrapper.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" alt="${d.iso}" />`;
