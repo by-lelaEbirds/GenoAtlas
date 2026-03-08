@@ -4,12 +4,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {
-      colors: {
-        'dna-neon': '#00f3ff',
-        'dna-purple': '#bc13fe'
-      }
-    },
+    extend: {},
   },
   plugins: [],
 }
