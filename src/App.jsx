@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
-// O GraduationCap VOLTOU! Fim do crash.
-import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb, GraduationCap } from 'lucide-react';
+import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb, GraduationCap, Flame } from 'lucide-react';
 
 export const MAP_THEMES = {
   satellite: {
@@ -13,7 +12,7 @@ export const MAP_THEMES = {
     bg: 'from-[#0f172a] to-[#020617]',
     textColor: 'text-white',
     hudBg: 'bg-slate-900/80',
-    polyStroke: '#22d3ee', // cyan-400
+    polyStroke: '#22d3ee', 
     polyHover: 'rgba(34, 211, 238, 0.5)',
     polyGuessed: 'rgba(34, 197, 94, 0.5)',
     atmosphere: '#38bdf8',
@@ -26,7 +25,7 @@ export const MAP_THEMES = {
     bg: 'from-[#dbeafe] to-[#93c5fd]',
     textColor: 'text-slate-900',
     hudBg: 'bg-white/90',
-    polyStroke: '#2563eb', // blue-600
+    polyStroke: '#2563eb', 
     polyHover: 'rgba(255, 255, 255, 0.5)',
     polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#bfdbfe',
@@ -39,7 +38,7 @@ export const MAP_THEMES = {
     bg: 'from-[#17052e] to-[#050014]',
     textColor: 'text-fuchsia-50',
     hudBg: 'bg-fuchsia-950/80',
-    polyStroke: '#d946ef', // fuchsia-500
+    polyStroke: '#d946ef', 
     polyHover: 'rgba(217, 70, 239, 0.6)',
     polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#d946ef',
@@ -58,9 +57,11 @@ export default function App() {
   const [endReason, setEndReason] = useState('');
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.satellite);
   const [themeAnimState, setThemeAnimState] = useState('idle'); 
+  const [activeRegion, setActiveRegion] = useState('all'); // Estado de Continente
   
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0); // Fogo / Combos
   const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
   
@@ -69,6 +70,7 @@ export default function App() {
   const [targetStartTime, setTargetStartTime] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const [hintUsed, setHintUsed] = useState(false);
+  const [timeBonusAnim, setTimeBonusAnim] = useState(false);
 
   useEffect(() => {
     const savedScore = localStorage.getItem('geoGuessBestScore');
@@ -93,7 +95,7 @@ export default function App() {
               name: localName, 
               iso: isoCode, 
               continent: f.properties.CONTINENT,
-              pop: f.properties.POP_EST // CORREÇÃO: Recuperámos a base de dados da população!
+              pop: f.properties.POP_EST
             };
             f.properties.LOCAL_NAME = localName;
             f.properties.COUNTRY_OBJ = countryObj;
@@ -111,7 +113,7 @@ export default function App() {
     let timer;
     if (gameState === 'playing' && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    } else if (timeLeft === 0 && gameState === 'playing') {
+    } else if (timeLeft <= 0 && gameState === 'playing') {
       endGame('time');
     }
     return () => clearInterval(timer);
@@ -120,7 +122,6 @@ export default function App() {
   const handleThemeChange = (newTheme) => {
     if (newTheme.id === activeTheme.id || themeAnimState !== 'idle') return;
     setThemeAnimState('out');
-    
     setTimeout(() => {
       setActiveTheme(newTheme);
       setThemeAnimState('prepare-in');
@@ -139,14 +140,24 @@ export default function App() {
 
   const startGame = () => {
     setScore(0);
+    setStreak(0);
     setTimeLeft(60);
     setLives(3);
     setGuessedCountries([]);
     setTravelArcs([]);
-    setRemainingCountries([...allCountries]);
+    
+    // FILTRA OS PAÍSES PELO CONTINENTE ESCOLHIDO
+    let pool = allCountries;
+    if (activeRegion === 'Americas') {
+      pool = allCountries.filter(c => c.continent === 'North America' || c.continent === 'South America');
+    } else if (activeRegion !== 'all') {
+      pool = allCountries.filter(c => c.continent === activeRegion);
+    }
+
+    setRemainingCountries([...pool]);
     setGameState('playing');
     if (globeRef.current) globeRef.current.triggerStartAnimation();
-    pickNextCountry([...allCountries]);
+    pickNextCountry([...pool]);
   };
 
   const goHome = () => {
@@ -155,12 +166,16 @@ export default function App() {
     setTargetCountry(null);
     setTimeLeft(60);
     setScore(0);
+    setStreak(0);
     setGuessedCountries([]);
     setTravelArcs([]);
   };
 
   const pickNextCountry = (pool) => {
-    if (pool.length === 0) return;
+    if (pool.length === 0) {
+      endGame('win'); // Zerou o continente!
+      return;
+    }
     const randomIndex = Math.floor(Math.random() * pool.length);
     const selected = pool[randomIndex];
     const newPool = pool.filter(c => c.iso !== selected.iso);
@@ -175,7 +190,7 @@ export default function App() {
     if (lives <= 1 || hintUsed || !targetCountry) return;
     setLives(prev => prev - 1);
     setHintUsed(true);
-    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500' });
+    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500', fact: '' });
   };
 
   const handleCountryClick = useCallback((polygon, lat, lng) => {
@@ -188,11 +203,22 @@ export default function App() {
     const isCombo = timeTaken <= 3;
 
     if (clickedCountryObj.iso === targetCountry.iso) {
-      const points = isCombo ? 200 : 100;
-      setScore(prev => prev + points);
+      // LOGICA DE STREAK E PONTOS
+      const currentStreak = streak + 1;
+      setStreak(currentStreak);
+      
+      const pointsBase = isCombo ? 200 : 100;
+      const pointsCombo = pointsBase + (currentStreak * 10); // Bónus por Streak
+      setScore(prev => prev + pointsCombo);
+      
+      // LOGICA ARCADE: TIME ATTACK (+3s)
+      if (isCombo) {
+        setTimeLeft(prev => prev + 3);
+        setTimeBonusAnim(true);
+        setTimeout(() => setTimeBonusAnim(false), 1000);
+      }
       
       const currentGuess = { ...clickedCountryObj, lat, lng };
-      
       setGuessedCountries(prev => {
         if (prev.length > 0) {
           const lastGuess = prev[prev.length - 1];
@@ -207,21 +233,22 @@ export default function App() {
       const popMilhoes = (clickedCountryObj.pop / 1000000).toFixed(1);
       
       setFeedback({ 
-        text: isCombo ? '🔥 COMBO! +200' : '✅ CORRETO! +100', 
-        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500',
-        fact: popMilhoes > 0 ? `População: ~${popMilhoes}M habitantes` : null
+        text: isCombo ? `⚡ TIME ATTACK! +3s` : '✅ CORRETO!', 
+        color: isCombo ? 'text-emerald-400 scale-110' : 'text-cyan-400',
+        fact: popMilhoes > 0 ? `População: ~${popMilhoes}M` : null
       });
 
-      setTimeout(() => pickNextCountry(remainingCountries), 1200); 
+      setTimeout(() => pickNextCountry(remainingCountries), 800); 
     } else {
+      setStreak(0); // Quebra o combo se errar
       setLives(prev => {
         const newLives = prev - 1;
         if (newLives <= 0) endGame('lives');
         return newLives;
       });
-      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500' });
+      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500', fact: null });
     }
-  }, [gameState, targetCountry, targetStartTime, remainingCountries, score, bestScore]);
+  }, [gameState, targetCountry, targetStartTime, remainingCountries, score, streak, bestScore]);
 
   return (
     <div className={`relative w-screen h-screen overflow-hidden select-none bg-gradient-to-br ${activeTheme.bg} transition-colors duration-700 ease-in-out`}>
@@ -236,7 +263,17 @@ export default function App() {
         travelArcs={travelArcs}
       />
       
-      {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={handleThemeChange} themes={MAP_THEMES} />}
+      {gameState === 'start' && (
+        <StartScreen 
+          onStart={startGame} 
+          bestScore={bestScore} 
+          currentTheme={activeTheme} 
+          setTheme={handleThemeChange} 
+          themes={MAP_THEMES} 
+          activeRegion={activeRegion}
+          setRegion={setActiveRegion}
+        />
+      )}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} bestScore={bestScore} onRestart={startGame} onHome={goHome} theme={activeTheme} />}
 
@@ -254,24 +291,32 @@ export default function App() {
               
               <button 
                 onClick={useHint}
-                disabled={lives <= 1 || hintUsed}
-                className={`w-max flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md ${lives <= 1 || hintUsed ? 'bg-slate-500/10 text-slate-500 border-slate-500/20 opacity-50 cursor-not-allowed' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/20'}`}
+                disabled={lives <= 1 || hintUsed || activeRegion !== 'all'}
+                className={`w-max flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md ${lives <= 1 || hintUsed || activeRegion !== 'all' ? 'bg-slate-500/10 text-slate-500 border-slate-500/20 opacity-50 cursor-not-allowed' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/20'}`}
               >
-                <Lightbulb size={16} /> {hintUsed ? 'DICA USADA' : 'DICA CONTINENTE (-1 Vida)'}
+                <Lightbulb size={16} /> {activeRegion !== 'all' ? 'DICA MODO GLOBAL' : hintUsed ? 'DICA USADA' : 'DICA CONTINENTE (-1 Vida)'}
               </button>
             </div>
 
             <div className={`${activeTheme.hudBg} backdrop-blur-xl border border-white/10 p-6 rounded-3xl w-full md:w-96 shadow-xl transition-colors duration-500`}>
-              <div className="flex items-center gap-2 text-slate-400 uppercase tracking-widest text-xs font-bold mb-2">
-                <Target size={14} style={{ color: activeTheme.polyStroke }} /> Destino Alvo
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-slate-400 uppercase tracking-widest text-xs font-bold">
+                  <Target size={14} style={{ color: activeTheme.polyStroke }} /> Destino
+                </div>
+                {/* ÍCONE DE STREAK FLAMEJANTE */}
+                {streak >= 3 && (
+                  <div className="flex items-center gap-1 text-amber-500 text-xs font-black animate-bounce bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
+                    <Flame size={12} /> x{streak} STREAK
+                  </div>
+                )}
               </div>
+              
               <div className={`text-3xl md:text-4xl font-black tracking-wide drop-shadow-sm ${activeTheme.textColor}`}>
                 {targetCountry?.name || '...'}
               </div>
               
               <div className="h-10 mt-3 flex flex-col justify-center">
                 {feedback && <div className={`font-black transform transition-all tracking-wide ${feedback.color}`}>{feedback.text}</div>}
-                {/* O GraduationCap agora está importado e vai funcionar perfeitamente! */}
                 {feedback?.fact && <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1"><GraduationCap size={12}/> {feedback.fact}</div>}
               </div>
             </div>
@@ -284,11 +329,14 @@ export default function App() {
               ))}
             </div>
 
-            <div className={`${activeTheme.hudBg} backdrop-blur-xl border border-white/10 px-5 py-4 rounded-2xl flex items-center gap-3 transition-all duration-500 shadow-lg pointer-events-auto ${timeLeft <= 10 ? 'border-rose-500/50 bg-rose-900/30' : ''}`}>
+            {/* TIMER COM EFEITO DE TIME ATTACK */}
+            <div className={`relative ${activeTheme.hudBg} backdrop-blur-xl border border-white/10 px-5 py-4 rounded-2xl flex items-center gap-3 transition-all duration-500 shadow-lg pointer-events-auto ${timeLeft <= 10 ? 'border-rose-500/50 bg-rose-900/30' : ''}`}>
               <Timer className={timeLeft <= 10 ? 'text-rose-500 animate-pulse' : ''} style={{ color: timeLeft > 10 ? activeTheme.polyStroke : undefined }} size={24} />
               <span className={`text-3xl font-mono font-black tracking-tight ${timeLeft <= 10 ? 'text-rose-500' : activeTheme.textColor}`}>
                 {timeLeft.toString().padStart(2, '0')}
               </span>
+              {/* Efeito visual flutuante de +3s */}
+              {timeBonusAnim && <span className="absolute -top-6 right-2 text-emerald-400 font-black animate-ping">+3s</span>}
             </div>
             
             <div className={`${activeTheme.hudBg} backdrop-blur-xl border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-3 shadow-lg pointer-events-auto transition-colors duration-500`}>
