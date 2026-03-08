@@ -14,6 +14,7 @@ body {
 }
 
 .flag-marker {
+  position: absolute;
   width: 32px;
   height: 24px;
   pointer-events: none;
