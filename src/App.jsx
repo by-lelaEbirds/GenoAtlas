@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
-import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb, GraduationCap } from 'lucide-react';
+import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb } from 'lucide-react';
 
 export const MAP_THEMES = {
   satellite: {
@@ -12,7 +12,7 @@ export const MAP_THEMES = {
     bg: 'from-[#0f172a] to-[#020617]',
     textColor: 'text-white',
     hudBg: 'bg-slate-900/80',
-    polyStroke: '#22d3ee',
+    polyStroke: '#22d3ee', // cyan-400
     polyHover: 'rgba(34, 211, 238, 0.5)',
     polyGuessed: 'rgba(34, 197, 94, 0.5)',
     atmosphere: '#38bdf8',
@@ -25,7 +25,7 @@ export const MAP_THEMES = {
     bg: 'from-[#dbeafe] to-[#93c5fd]',
     textColor: 'text-slate-900',
     hudBg: 'bg-white/90',
-    polyStroke: '#2563eb',
+    polyStroke: '#2563eb', // blue-600
     polyHover: 'rgba(255, 255, 255, 0.5)',
     polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#bfdbfe',
@@ -38,7 +38,7 @@ export const MAP_THEMES = {
     bg: 'from-[#17052e] to-[#050014]',
     textColor: 'text-fuchsia-50',
     hudBg: 'bg-fuchsia-950/80',
-    polyStroke: '#d946ef',
+    polyStroke: '#d946ef', // fuchsia-500
     polyHover: 'rgba(217, 70, 239, 0.6)',
     polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#d946ef',
@@ -91,9 +91,7 @@ export default function App() {
             const countryObj = { 
               name: localName, 
               iso: isoCode, 
-              continent: f.properties.CONTINENT,
-              pop: f.properties.POP_EST
-              // Removemos a leitura de LABEL_Y daqui para evitar a "Ilha Nula"
+              continent: f.properties.CONTINENT
             };
             f.properties.LOCAL_NAME = localName;
             f.properties.COUNTRY_OBJ = countryObj;
@@ -175,10 +173,9 @@ export default function App() {
     if (lives <= 1 || hintUsed || !targetCountry) return;
     setLives(prev => prev - 1);
     setHintUsed(true);
-    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500', fact: '' });
+    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500' });
   };
 
-  // AGORA SIM: Recebemos a lat e lng puras do raio laser do ecrã!
   const handleCountryClick = useCallback((polygon, lat, lng) => {
     if (gameState !== 'playing' || !targetCountry) return;
 
@@ -192,7 +189,6 @@ export default function App() {
       const points = isCombo ? 200 : 100;
       setScore(prev => prev + points);
       
-      // Injeta a coordenada exata do rato no objeto do país
       const currentGuess = { ...clickedCountryObj, lat, lng };
       
       setGuessedCountries(prev => {
@@ -206,12 +202,9 @@ export default function App() {
         return [...prev, currentGuess];
       });
 
-      const popMilhoes = (clickedCountryObj.pop / 1000000).toFixed(1);
-      
       setFeedback({ 
         text: isCombo ? '🔥 COMBO! +200' : '✅ CORRETO! +100', 
-        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500',
-        fact: popMilhoes > 0 ? `População: ~${popMilhoes}M habitantes` : null
+        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500'
       });
 
       setTimeout(() => pickNextCountry(remainingCountries), 800); 
@@ -221,7 +214,7 @@ export default function App() {
         if (newLives <= 0) endGame('lives');
         return newLives;
       });
-      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500', fact: null });
+      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500' });
     }
   }, [gameState, targetCountry, targetStartTime, remainingCountries, score, bestScore]);
 
@@ -238,7 +231,8 @@ export default function App() {
         travelArcs={travelArcs}
       />
       
-      {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={handleThemeChange} />}
+      {/* Aqui entra a magia da propriedade themes corrigida */}
+      {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={handleThemeChange} themes={MAP_THEMES} />}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} bestScore={bestScore} onRestart={startGame} onHome={goHome} theme={activeTheme} />}
 
@@ -271,9 +265,8 @@ export default function App() {
                 {targetCountry?.name || '...'}
               </div>
               
-              <div className="h-10 mt-3 flex flex-col justify-center">
+              <div className="h-6 mt-3 flex flex-col justify-center">
                 {feedback && <div className={`font-black transform transition-all tracking-wide ${feedback.color}`}>{feedback.text}</div>}
-                {feedback?.fact && <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1"><GraduationCap size={12}/> {feedback.fact}</div>}
               </div>
             </div>
           </div>
