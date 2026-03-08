@@ -47,10 +47,9 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     }
   }, [gameState]);
 
-  // A CURA DO PISCA-PISCA: A função é memorizada e não é recriada quando o rato mexe!
   const createFlagElement = useCallback((d) => {
     const el = document.createElement('div');
-    el.className = 'flag-marker'; // Usa o CSS limpo do index.css
+    el.className = 'flag-marker'; 
     el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" alt="${d.iso}" />`;
     return el;
   }, []);
@@ -98,8 +97,9 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           polygonTransitionDuration={300}
           
           onPolygonHover={setHoverD}
-          onPolygonClick={(polygon, event, { lat, lng }) => {
-            if (onCountryClick) onCountryClick(polygon, lat, lng);
+          // Agora passamos apenas o polígono, a App já sabe qual é o centro exato!
+          onPolygonClick={(polygon) => {
+            if (onCountryClick) onCountryClick(polygon);
           }}
           
           arcsData={travelArcs}
@@ -113,7 +113,7 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           htmlLat="lat"
           htmlLng="lng"
           htmlAltitude={0.06}
-          htmlElement={createFlagElement} // Referência estável injetada aqui
+          htmlElement={createFlagElement}
         />
       </div>
     </div>
