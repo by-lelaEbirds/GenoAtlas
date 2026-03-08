@@ -9,7 +9,7 @@ export const MAP_THEMES = {
     id: 'satellite',
     name: 'Satélite HD',
     globeUrl: '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
-    bg: 'from-[#0f172a] to-[#020617]', // Slate 900 (Fim do Preto Puro!)
+    bg: 'from-[#0f172a] to-[#020617]',
     textColor: 'text-white',
     hudBg: 'bg-slate-900/80',
     polyStroke: '#00f3ff',
@@ -17,6 +17,31 @@ export const MAP_THEMES = {
     atmosphere: '#38bdf8',
     bump: '//unpkg.com/three-globe/example/img/earth-topology.png'
   },
+  cartographic: {
+    id: 'cartographic',
+    name: 'Cartográfico',
+    globeUrl: '//unpkg.com/three-globe/example/img/earth-day.jpg',
+    bg: 'from-[#dbeafe] to-[#93c5fd]',
+    textColor: 'text-slate-900',
+    hudBg: 'bg-white/90',
+    polyStroke: '#2563eb',
+    polyHover: 'rgba(255, 255, 255, 0.5)',
+    atmosphere: '#bfdbfe',
+    bump: null
+  },
+  cyberpunk: {
+    id: 'cyberpunk',
+    name: 'Cyberpunk',
+    globeUrl: '//unpkg.com/three-globe/example/img/earth-dark.jpg',
+    bg: 'from-[#17052e] to-[#050014]',
+    textColor: 'text-fuchsia-50',
+    hudBg: 'bg-fuchsia-950/80',
+    polyStroke: '#bc13fe',
+    polyHover: 'rgba(188, 19, 254, 0.6)',
+    atmosphere: '#bc13fe',
+    bump: null
+  }
+};
   cartographic: {
     id: 'cartographic',
     name: 'Cartográfico',
