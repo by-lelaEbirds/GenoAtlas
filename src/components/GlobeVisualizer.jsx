@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, useCallback } from 'react';
 import Globe from 'react-globe.gl';
 
 const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, themeAnimState, travelArcs }, ref) => {
@@ -47,7 +47,14 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     }
   }, [gameState]);
 
-  // Animação Snappy e Rápida de Troca de Tema
+  // A CURA DO PISCA-PISCA: A função é memorizada e não é recriada quando o rato mexe!
+  const createFlagElement = useCallback((d) => {
+    const el = document.createElement('div');
+    el.className = 'flag-marker'; // Usa o CSS limpo do index.css
+    el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" alt="${d.iso}" />`;
+    return el;
+  }, []);
+
   let themeTransform = '';
   let animDuration = '';
   let themeOpacity = '';
@@ -91,12 +98,10 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           polygonTransitionDuration={300}
           
           onPolygonHover={setHoverD}
-          // CAPTURA A COORDENADA EXATA DO CLIQUE DO RATO
           onPolygonClick={(polygon, event, { lat, lng }) => {
             if (onCountryClick) onCountryClick(polygon, lat, lng);
           }}
           
-          // Arcos de Viagem
           arcsData={travelArcs}
           arcColor={() => theme.polyStroke}
           arcDashLength={0.4}
@@ -104,25 +109,11 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           arcDashAnimateTime={1500}
           arcAltitudeAutoScale={0.3}
 
-          // Bandeiras Cravadas
           htmlElementsData={guessedCountries}
           htmlLat="lat"
           htmlLng="lng"
           htmlAltitude={0.06}
-          htmlElement={d => {
-            const el = document.createElement('div');
-            el.style.width = '32px';
-            el.style.height = '24px';
-            el.style.pointerEvents = 'none';
-            // Animação CSS para a bandeira dar um "Pop" ao nascer
-            el.innerHTML = `
-              <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; width: 100%; height: 100%;">
-                <img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 2px solid white; box-shadow: 0 8px 16px rgba(0,0,0,0.8);" />
-              </div>
-              <style>@keyframes popIn { 0% { transform: scale(0) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }</style>
-            `;
-            return el;
-          }}
+          htmlElement={createFlagElement} // Referência estável injetada aqui
         />
       </div>
     </div>
