@@ -42,6 +42,7 @@ export const MAP_THEMES = {
     bump: null
   }
 };
+};
   cartographic: {
     id: 'cartographic',
     name: 'Cartográfico',
