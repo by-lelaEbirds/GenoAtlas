@@ -9,9 +9,10 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   useImperativeHandle(ref, () => ({
     triggerStartAnimation: () => {
       if (globeEl.current) {
-        globeEl.current.pointOfView({ altitude: 2.5 }, 0);
+        // Dá um pequeno "pulo" de câmara no arranque para um efeito mais dramático
+        globeEl.current.pointOfView({ altitude: 2.2 }, 0);
         setTimeout(() => {
-          globeEl.current.pointOfView({ altitude: 1.5 }, 2500);
+          globeEl.current.pointOfView({ altitude: 1.6 }, 2500);
         }, 100);
       }
     }
@@ -54,7 +55,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   }, [gameState]);
 
   return (
-    <div className={`absolute inset-0 z-0 cursor-crosshair transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-x-1/4 scale-90' : 'translate-x-0 scale-100'}`}>
+    // EFEITO APPLE HORIZONTE: Se estiver no START, move 45% para baixo e faz zoom de 140%
+    <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-y-[45%] scale-[1.4]' : 'translate-y-0 scale-100'}`}>
       <Globe
         ref={globeEl}
         globeImageUrl={theme.globeUrl}
@@ -63,6 +65,7 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
         showAtmosphere={true}
         atmosphereColor={theme.atmosphere}
         atmosphereAltitude={0.15}
+        
         polygonsData={geoData}
         polygonAltitude={d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.03 : 0.015}
         polygonCapColor={d => {
@@ -73,17 +76,26 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
         polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
         polygonStrokeColor={() => theme.polyStroke}
         polygonTransitionDuration={300}
+        
         onPolygonHover={setHoverD}
         onPolygonClick={(polygon) => {
           if (onCountryClick) onCountryClick(polygon);
         }}
+        
+        // SISTEMA DE BANDEIRAS CORRIGIDO
         htmlElementsData={guessedCountries}
+        htmlLat="lat"
+        htmlLng="lng"
+        htmlAltitude={0.06}
         htmlElement={d => {
           const el = document.createElement('div');
-          el.innerHTML = `<img src="https://flagcdn.com/24x18/${d.iso.toLowerCase()}.png" class="rounded-sm shadow-lg pointer-events-none" />`;
+          // Forçamos o tamanho absoluto do container no DOM para a imagem não sumir
+          el.style.width = '36px';
+          el.style.height = '26px';
+          el.style.pointerEvents = 'none';
+          el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 2px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.6);" />`;
           return el;
         }}
-        htmlAltitude={0.05}
       />
     </div>
   );
