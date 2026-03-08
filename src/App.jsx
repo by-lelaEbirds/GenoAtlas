@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
-import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb } from 'lucide-react';
+import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb, GraduationCap } from 'lucide-react';
 
 export const MAP_THEMES = {
   satellite: {
@@ -92,8 +92,8 @@ export default function App() {
               name: localName, 
               iso: isoCode, 
               continent: f.properties.CONTINENT,
-              lat: f.properties.LABEL_Y, // A MAGIA ACONTECE AQUI: Centro exato do país (Latitude)
-              lng: f.properties.LABEL_X  // Centro exato do país (Longitude)
+              pop: f.properties.POP_EST
+              // Removemos a leitura de LABEL_Y daqui para evitar a "Ilha Nula"
             };
             f.properties.LOCAL_NAME = localName;
             f.properties.COUNTRY_OBJ = countryObj;
@@ -175,11 +175,11 @@ export default function App() {
     if (lives <= 1 || hintUsed || !targetCountry) return;
     setLives(prev => prev - 1);
     setHintUsed(true);
-    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500' });
+    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500', fact: '' });
   };
 
-  // Simplificámos a função: agora usamos as coordenadas do próprio objeto do país!
-  const handleCountryClick = useCallback((polygon) => {
+  // AGORA SIM: Recebemos a lat e lng puras do raio laser do ecrã!
+  const handleCountryClick = useCallback((polygon, lat, lng) => {
     if (gameState !== 'playing' || !targetCountry) return;
 
     const clickedCountryObj = polygon.properties.COUNTRY_OBJ;
@@ -192,20 +192,26 @@ export default function App() {
       const points = isCombo ? 200 : 100;
       setScore(prev => prev + points);
       
+      // Injeta a coordenada exata do rato no objeto do país
+      const currentGuess = { ...clickedCountryObj, lat, lng };
+      
       setGuessedCountries(prev => {
         if (prev.length > 0) {
           const lastGuess = prev[prev.length - 1];
           setTravelArcs(arcs => [...arcs, { 
             startLat: lastGuess.lat, startLng: lastGuess.lng, 
-            endLat: clickedCountryObj.lat, endLng: clickedCountryObj.lng 
+            endLat: lat, endLng: lng 
           }]);
         }
-        return [...prev, clickedCountryObj];
+        return [...prev, currentGuess];
       });
 
+      const popMilhoes = (clickedCountryObj.pop / 1000000).toFixed(1);
+      
       setFeedback({ 
         text: isCombo ? '🔥 COMBO! +200' : '✅ CORRETO! +100', 
-        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500'
+        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500',
+        fact: popMilhoes > 0 ? `População: ~${popMilhoes}M habitantes` : null
       });
 
       setTimeout(() => pickNextCountry(remainingCountries), 800); 
@@ -215,7 +221,7 @@ export default function App() {
         if (newLives <= 0) endGame('lives');
         return newLives;
       });
-      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500' });
+      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500', fact: null });
     }
   }, [gameState, targetCountry, targetStartTime, remainingCountries, score, bestScore]);
 
@@ -265,8 +271,9 @@ export default function App() {
                 {targetCountry?.name || '...'}
               </div>
               
-              <div className="h-6 mt-3 flex flex-col justify-center">
+              <div className="h-10 mt-3 flex flex-col justify-center">
                 {feedback && <div className={`font-black transform transition-all tracking-wide ${feedback.color}`}>{feedback.text}</div>}
+                {feedback?.fact && <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1"><GraduationCap size={12}/> {feedback.fact}</div>}
               </div>
             </div>
           </div>
