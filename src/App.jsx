@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
-import { Timer, Trophy, Target, Heart, XOctagon } from 'lucide-react';
+import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb } from 'lucide-react';
 
 export const MAP_THEMES = {
   satellite: {
@@ -14,6 +14,7 @@ export const MAP_THEMES = {
     hudBg: 'bg-slate-900/80',
     polyStroke: '#00f3ff',
     polyHover: 'rgba(0, 243, 255, 0.5)',
+    polyGuessed: 'rgba(34, 197, 94, 0.5)',
     atmosphere: '#38bdf8',
     bump: '//unpkg.com/three-globe/example/img/earth-topology.png'
   },
@@ -26,6 +27,7 @@ export const MAP_THEMES = {
     hudBg: 'bg-white/90',
     polyStroke: '#2563eb',
     polyHover: 'rgba(255, 255, 255, 0.5)',
+    polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#bfdbfe',
     bump: null
   },
@@ -38,14 +40,17 @@ export const MAP_THEMES = {
     hudBg: 'bg-fuchsia-950/80',
     polyStroke: '#bc13fe',
     polyHover: 'rgba(188, 19, 254, 0.6)',
+    polyGuessed: 'rgba(34, 197, 94, 0.6)',
     atmosphere: '#bc13fe',
     bump: null
   }
 };
 
 export default function App() {
+  const globeRef = useRef();
   const [geoData, setGeoData] = useState([]);
   const [allCountries, setAllCountries] = useState([]);
+  const [guessedCountries, setGuessedCountries] = useState([]);
   
   const [gameState, setGameState] = useState('start');
   const [endReason, setEndReason] = useState('');
@@ -56,10 +61,11 @@ export default function App() {
   const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
   
-  const [targetCountry, setTargetCountry] = useState('');
+  const [targetCountry, setTargetCountry] = useState(null);
   const [remainingCountries, setRemainingCountries] = useState([]);
   const [targetStartTime, setTargetStartTime] = useState(0);
   const [feedback, setFeedback] = useState(null);
+  const [hintUsed, setHintUsed] = useState(false);
 
   useEffect(() => {
     const savedScore = localStorage.getItem('geoGuessBestScore');
@@ -68,23 +74,29 @@ export default function App() {
     fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
       .then(res => res.json())
       .then(data => {
-        const userLang = navigator.language || 'pt-BR';
+        let userLang = navigator.language;
+        if (!userLang.startsWith('pt')) userLang = 'pt-BR';
+        
         const translator = new Intl.DisplayNames([userLang], { type: 'region' });
         
-        const validNames = new Set();
+        const validCountries = [];
         const translatedFeatures = data.features.map(f => {
           let localName = f.properties.ADMIN;
           const isoCode = f.properties.ISO_A2;
+          const continent = f.properties.CONTINENT;
+          
           if (isoCode && isoCode !== '-99') {
             try { localName = translator.of(isoCode); } catch (error) {}
+            const countryObj = { name: localName, iso: isoCode, continent: continent, lat: f.properties.LABEL_Y, lng: f.properties.LABEL_X };
+            f.properties.LOCAL_NAME = localName;
+            f.properties.COUNTRY_OBJ = countryObj;
+            validCountries.push(countryObj);
           }
-          f.properties.LOCAL_NAME = localName;
-          validNames.add(localName);
           return f;
         });
 
         setGeoData(translatedFeatures);
-        setAllCountries(Array.from(validNames));
+        setAllCountries(validCountries);
       });
   }, []);
 
@@ -111,39 +123,54 @@ export default function App() {
     setScore(0);
     setTimeLeft(60);
     setLives(3);
+    setGuessedCountries([]);
     setRemainingCountries([...allCountries]);
     setGameState('playing');
+    if (globeRef.current) globeRef.current.triggerStartAnimation();
     pickNextCountry([...allCountries]);
   };
 
   const goHome = () => {
     setGameState('start');
     setFeedback(null);
-    setTargetCountry('');
+    setTargetCountry(null);
     setTimeLeft(60);
     setScore(0);
+    setGuessedCountries([]);
   };
 
   const pickNextCountry = (pool) => {
     if (pool.length === 0) return;
     const randomIndex = Math.floor(Math.random() * pool.length);
     const selected = pool[randomIndex];
-    const newPool = pool.filter(c => c !== selected);
+    const newPool = pool.filter(c => c.iso !== selected.iso);
     setRemainingCountries(newPool);
     setTargetCountry(selected);
     setTargetStartTime(Date.now());
     setFeedback(null);
+    setHintUsed(false);
   };
 
-  const handleCountryClick = useCallback((clickedCountry) => {
-    if (gameState !== 'playing') return;
+  const useHint = () => {
+    if (lives <= 1 || hintUsed || !targetCountry) return;
+    setLives(prev => prev - 1);
+    setHintUsed(true);
+    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500' });
+  };
+
+  const handleCountryClick = useCallback((polygon) => {
+    if (gameState !== 'playing' || !targetCountry) return;
+
+    const clickedCountryObj = polygon.properties.COUNTRY_OBJ;
+    if (!clickedCountryObj) return;
 
     const timeTaken = (Date.now() - targetStartTime) / 1000;
     const isCombo = timeTaken <= 3;
 
-    if (clickedCountry === targetCountry) {
+    if (clickedCountryObj.iso === targetCountry.iso) {
       const points = isCombo ? 200 : 100;
       setScore(prev => prev + points);
+      setGuessedCountries(prev => [...prev, clickedCountryObj]);
       setFeedback({ 
         text: isCombo ? '🔥 COMBO! +200' : '✅ CORRETO! +100', 
         color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500' 
@@ -155,35 +182,52 @@ export default function App() {
         if (newLives <= 0) endGame('lives');
         return newLives;
       });
-      setFeedback({ text: `❌ Esse é: ${clickedCountry}`, color: 'text-rose-500' });
+      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500' });
     }
   }, [gameState, targetCountry, targetStartTime, remainingCountries, score, bestScore]);
 
   return (
     <div className={`relative w-screen h-screen overflow-hidden select-none bg-gradient-to-br ${activeTheme.bg} transition-colors duration-1000`}>
-      <GlobeVisualizer geoData={geoData} onCountryClick={handleCountryClick} theme={activeTheme} />
+      <GlobeVisualizer 
+        ref={globeRef}
+        geoData={geoData} 
+        onCountryClick={handleCountryClick} 
+        theme={activeTheme} 
+        gameState={gameState}
+        guessedCountries={guessedCountries}
+      />
       
       {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={setActiveTheme} />}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} bestScore={bestScore} onRestart={startGame} onHome={goHome} theme={activeTheme} />}
 
       {gameState === 'playing' && (
-        <div className="absolute top-0 left-0 w-full p-4 md:p-6 pointer-events-none flex flex-col md:flex-row justify-between items-start gap-4 z-10">
+        <div className="absolute top-0 left-0 w-full p-4 md:p-6 pointer-events-none flex flex-col md:flex-row justify-between items-start gap-4 z-10 animate-in fade-in duration-700">
           
           <div className="flex flex-col gap-4 w-full md:w-auto">
-            <button 
-              onClick={() => endGame('lives')}
-              className="pointer-events-auto w-max flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md"
-            >
-              <XOctagon size={16} /> DESISTIR
-            </button>
+            <div className="flex gap-3 pointer-events-auto">
+              <button 
+                onClick={() => endGame('lives')}
+                className="w-max flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md"
+              >
+                <XOctagon size={16} /> DESISTIR
+              </button>
+              
+              <button 
+                onClick={useHint}
+                disabled={lives <= 1 || hintUsed}
+                className={`w-max flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md ${lives <= 1 || hintUsed ? 'bg-slate-500/10 text-slate-500 border-slate-500/20 opacity-50 cursor-not-allowed' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/20'}`}
+              >
+                <Lightbulb size={16} /> {hintUsed ? 'DICA USADA' : 'DICA CONTINENTE (-1 Vida)'}
+              </button>
+            </div>
 
             <div className={`${activeTheme.hudBg} backdrop-blur-xl border border-white/10 p-6 rounded-3xl w-full md:w-96 shadow-xl transition-colors duration-500`}>
               <div className="flex items-center gap-2 text-slate-400 uppercase tracking-widest text-xs font-bold mb-2">
                 <Target size={14} style={{ color: activeTheme.polyStroke }} /> Destino Alvo
               </div>
               <div className={`text-3xl md:text-4xl font-black tracking-wide drop-shadow-sm ${activeTheme.textColor}`}>
-                {targetCountry}
+                {targetCountry?.name || '...'}
               </div>
               <div className="h-6 mt-3">
                 {feedback && <div className={`font-black transform transition-all tracking-wide ${feedback.color}`}>{feedback.text}</div>}
