@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = React.memo(({ geoData, onCountryClick }) => {
+const GlobeVisualizer = React.memo(({ geoData, onCountryClick, theme }) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
 
@@ -10,7 +10,7 @@ const GlobeVisualizer = React.memo(({ geoData, onCountryClick }) => {
       globeEl.current.controls().autoRotate = true;
       globeEl.current.controls().autoRotateSpeed = 0.3;
       globeEl.current.controls().enableDamping = true;
-      globeEl.current.controls().dampingFactor = 0.05; // Rotação super suave
+      globeEl.current.controls().dampingFactor = 0.05;
       globeEl.current.pointOfView({ altitude: 1.8 });
     }
   }, []);
@@ -19,23 +19,20 @@ const GlobeVisualizer = React.memo(({ geoData, onCountryClick }) => {
     <div className="absolute inset-0 z-0 cursor-crosshair">
       <Globe
         ref={globeEl}
-        // Texturas de altíssima resolução
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-        bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-        backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+        globeImageUrl={theme.globeUrl}
+        bumpImageUrl={theme.bump}
+        backgroundColor="rgba(0,0,0,0)" // Invisível para o gradiente CSS brilhar!
         
-        // Atmosfera Premium
         showAtmosphere={true}
-        atmosphereColor="#00f3ff"
-        atmosphereAltitude={0.2}
+        atmosphereColor={theme.atmosphere}
+        atmosphereAltitude={0.15}
         
-        // Polígonos Otimizados
         polygonsData={geoData}
-        polygonAltitude={0.01}
-        polygonCapColor={d => d === hoverD ? 'rgba(0, 243, 255, 0.5)' : 'rgba(255, 255, 255, 0.0)'}
-        polygonSideColor={() => 'rgba(0, 243, 255, 0.1)'}
-        polygonStrokeColor={() => 'rgba(0, 243, 255, 0.8)'}
-        polygonTransitionDuration={300}
+        polygonAltitude={0.025} // CURA DO Z-FIGHTING: Mais alto para não colidir com o mapa
+        polygonCapColor={d => d === hoverD ? theme.polyHover : 'rgba(255, 255, 255, 0.0)'}
+        polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
+        polygonStrokeColor={() => theme.polyStroke}
+        polygonTransitionDuration={200}
         
         onPolygonHover={setHoverD}
         onPolygonClick={(polygon) => {
