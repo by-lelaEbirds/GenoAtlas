@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
-import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb } from 'lucide-react';
+import { Timer, Trophy, Target, Heart, XOctagon, Lightbulb, GraduationCap } from 'lucide-react';
 
 export const MAP_THEMES = {
   satellite: {
@@ -51,11 +51,12 @@ export default function App() {
   const [geoData, setGeoData] = useState([]);
   const [allCountries, setAllCountries] = useState([]);
   const [guessedCountries, setGuessedCountries] = useState([]);
+  const [travelArcs, setTravelArcs] = useState([]);
   
   const [gameState, setGameState] = useState('start');
   const [endReason, setEndReason] = useState('');
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.satellite);
-  const [themeAnimState, setThemeAnimState] = useState('idle'); // 'idle' | 'out' | 'prepare-in'
+  const [themeAnimState, setThemeAnimState] = useState('idle'); 
   
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
@@ -84,11 +85,15 @@ export default function App() {
         const translatedFeatures = data.features.map(f => {
           let localName = f.properties.ADMIN;
           const isoCode = f.properties.ISO_A2;
-          const continent = f.properties.CONTINENT;
           
           if (isoCode && isoCode !== '-99') {
             try { localName = translator.of(isoCode); } catch (error) {}
-            const countryObj = { name: localName, iso: isoCode, continent: continent, lat: f.properties.LABEL_Y, lng: f.properties.LABEL_X };
+            const countryObj = { 
+              name: localName, 
+              iso: isoCode, 
+              continent: f.properties.CONTINENT,
+              pop: f.properties.POP_EST // Para o facto educativo
+            };
             f.properties.LOCAL_NAME = localName;
             f.properties.COUNTRY_OBJ = countryObj;
             validCountries.push(countryObj);
@@ -111,23 +116,16 @@ export default function App() {
     return () => clearInterval(timer);
   }, [gameState, timeLeft]);
 
-  // Função Mágica para Animação de Troca de Tema
+  // Troca Snappy de Temas (Animação mais rápida)
   const handleThemeChange = (newTheme) => {
     if (newTheme.id === activeTheme.id || themeAnimState !== 'idle') return;
-
-    // 1. Atira o globo atual para a esquerda
     setThemeAnimState('out');
     
-    // 2. Espera 500ms (tempo de saída), troca a textura e teletransporta para a direita
     setTimeout(() => {
       setActiveTheme(newTheme);
       setThemeAnimState('prepare-in');
-      
-      // 3. Espera 50ms para o navegador registar a nova posição invisível e puxa-o para o centro
-      setTimeout(() => {
-        setThemeAnimState('idle');
-      }, 50);
-    }, 500);
+      setTimeout(() => { setThemeAnimState('idle'); }, 50);
+    }, 300); // Reduzido para 300ms
   };
 
   const endGame = (reason) => {
@@ -144,6 +142,7 @@ export default function App() {
     setTimeLeft(60);
     setLives(3);
     setGuessedCountries([]);
+    setTravelArcs([]);
     setRemainingCountries([...allCountries]);
     setGameState('playing');
     if (globeRef.current) globeRef.current.triggerStartAnimation();
@@ -157,6 +156,7 @@ export default function App() {
     setTimeLeft(60);
     setScore(0);
     setGuessedCountries([]);
+    setTravelArcs([]);
   };
 
   const pickNextCountry = (pool) => {
@@ -175,10 +175,11 @@ export default function App() {
     if (lives <= 1 || hintUsed || !targetCountry) return;
     setLives(prev => prev - 1);
     setHintUsed(true);
-    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500' });
+    setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500', fact: '' });
   };
 
-  const handleCountryClick = useCallback((polygon) => {
+  // Coordenadas agora vêm do Raycaster do Globo!
+  const handleCountryClick = useCallback((polygon, lat, lng) => {
     if (gameState !== 'playing' || !targetCountry) return;
 
     const clickedCountryObj = polygon.properties.COUNTRY_OBJ;
@@ -190,24 +191,45 @@ export default function App() {
     if (clickedCountryObj.iso === targetCountry.iso) {
       const points = isCombo ? 200 : 100;
       setScore(prev => prev + points);
-      setGuessedCountries(prev => [...prev, clickedCountryObj]);
+      
+      // Salva a coordenada EXATA do clique para a bandeira
+      const currentGuess = { ...clickedCountryObj, lat, lng };
+      
+      setGuessedCountries(prev => {
+        // Gera Rota de Migração/Viagem (Ligando a última bandeira à nova)
+        if (prev.length > 0) {
+          const lastGuess = prev[prev.length - 1];
+          setTravelArcs(arcs => [...arcs, { 
+            startLat: lastGuess.lat, startLng: lastGuess.lng, 
+            endLat: lat, endLng: lng 
+          }]);
+        }
+        return [...prev, currentGuess];
+      });
+
+      // Pílula Educacional! (População)
+      const popMilhoes = (clickedCountryObj.pop / 1000000).toFixed(1);
+      
       setFeedback({ 
         text: isCombo ? '🔥 COMBO! +200' : '✅ CORRETO! +100', 
-        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500' 
+        color: isCombo ? 'text-amber-500 scale-110' : 'text-emerald-500',
+        fact: popMilhoes > 0 ? `População: ~${popMilhoes}M habitantes` : null
       });
-      setTimeout(() => pickNextCountry(remainingCountries), 800);
+
+      setTimeout(() => pickNextCountry(remainingCountries), 1200); // Dá tempo de ler a curiosidade
     } else {
       setLives(prev => {
         const newLives = prev - 1;
         if (newLives <= 0) endGame('lives');
         return newLives;
       });
-      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500' });
+      setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500', fact: null });
     }
   }, [gameState, targetCountry, targetStartTime, remainingCountries, score, bestScore]);
 
   return (
-    <div className={`relative w-screen h-screen overflow-hidden select-none bg-gradient-to-br ${activeTheme.bg} transition-colors duration-1000`}>
+    // Transição suave de fundo
+    <div className={`relative w-screen h-screen overflow-hidden select-none bg-gradient-to-br ${activeTheme.bg} transition-colors duration-700 ease-in-out`}>
       <GlobeVisualizer 
         ref={globeRef}
         geoData={geoData} 
@@ -216,9 +238,9 @@ export default function App() {
         gameState={gameState}
         guessedCountries={guessedCountries}
         themeAnimState={themeAnimState}
+        travelArcs={travelArcs}
       />
       
-      {/* Repara que agora passamos o handleThemeChange em vez do setActiveTheme direto! */}
       {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} currentTheme={activeTheme} setTheme={handleThemeChange} />}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} bestScore={bestScore} onRestart={startGame} onHome={goHome} theme={activeTheme} />}
@@ -251,8 +273,10 @@ export default function App() {
               <div className={`text-3xl md:text-4xl font-black tracking-wide drop-shadow-sm ${activeTheme.textColor}`}>
                 {targetCountry?.name || '...'}
               </div>
-              <div className="h-6 mt-3">
+              
+              <div className="h-10 mt-3 flex flex-col justify-center">
                 {feedback && <div className={`font-black transform transition-all tracking-wide ${feedback.color}`}>{feedback.text}</div>}
+                {feedback?.fact && <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1"><GraduationCap size={12}/> {feedback.fact}</div>}
               </div>
             </div>
           </div>
