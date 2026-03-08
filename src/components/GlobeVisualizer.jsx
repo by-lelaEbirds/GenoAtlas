@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries }, ref) => {
+const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, themeAnimState }, ref) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
   const timeoutRef = useRef(null);
@@ -9,7 +9,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   useImperativeHandle(ref, () => ({
     triggerStartAnimation: () => {
       if (globeEl.current) {
-        // Dá um pequeno "pulo" de câmara no arranque para um efeito mais dramático
         globeEl.current.pointOfView({ altitude: 2.2 }, 0);
         setTimeout(() => {
           globeEl.current.pointOfView({ altitude: 1.6 }, 2500);
@@ -54,49 +53,73 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     }
   }, [gameState]);
 
+  // Lógica de CSS Dinâmico para o Deslizamento de Tema
+  let themeTransform = '';
+  let animDuration = '';
+  let themeOpacity = '';
+
+  if (themeAnimState === 'out') {
+    // Escorrega para a Esquerda, diminui e tomba 20 graus
+    themeTransform = '-translate-x-[120%] -rotate-[20deg] scale-50';
+    themeOpacity = 'opacity-0';
+    animDuration = 'duration-500';
+  } else if (themeAnimState === 'prepare-in') {
+    // Teletransporte instantâneo para a Direita, invisível
+    themeTransform = 'translate-x-[120%] rotate-[20deg] scale-50';
+    themeOpacity = 'opacity-0';
+    animDuration = 'duration-0'; 
+  } else {
+    // Entrada Triunfal (Idle)
+    themeTransform = 'translate-x-0 rotate-0 scale-100';
+    themeOpacity = 'opacity-100';
+    animDuration = 'duration-[1200ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]'; // Curva com saltinho final
+  }
+
   return (
-    // EFEITO APPLE HORIZONTE: Se estiver no START, move 45% para baixo e faz zoom de 140%
+    // Outer Div: Efeito Horizonte (Apple)
     <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? 'translate-y-[45%] scale-[1.4]' : 'translate-y-0 scale-100'}`}>
-      <Globe
-        ref={globeEl}
-        globeImageUrl={theme.globeUrl}
-        bumpImageUrl={theme.bump}
-        backgroundColor="rgba(0,0,0,0)"
-        showAtmosphere={true}
-        atmosphereColor={theme.atmosphere}
-        atmosphereAltitude={0.15}
-        
-        polygonsData={geoData}
-        polygonAltitude={d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.03 : 0.015}
-        polygonCapColor={d => {
-          if (guessedCountries.some(c => c.iso === d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
-          if (d === hoverD) return theme.polyHover;
-          return 'rgba(255, 255, 255, 0.0)';
-        }}
-        polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
-        polygonStrokeColor={() => theme.polyStroke}
-        polygonTransitionDuration={300}
-        
-        onPolygonHover={setHoverD}
-        onPolygonClick={(polygon) => {
-          if (onCountryClick) onCountryClick(polygon);
-        }}
-        
-        // SISTEMA DE BANDEIRAS CORRIGIDO
-        htmlElementsData={guessedCountries}
-        htmlLat="lat"
-        htmlLng="lng"
-        htmlAltitude={0.06}
-        htmlElement={d => {
-          const el = document.createElement('div');
-          // Forçamos o tamanho absoluto do container no DOM para a imagem não sumir
-          el.style.width = '36px';
-          el.style.height = '26px';
-          el.style.pointerEvents = 'none';
-          el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 2px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.6);" />`;
-          return el;
-        }}
-      />
+      
+      {/* Inner Div: Efeito Troca de Temas */}
+      <div className={`w-full h-full transition-all ${animDuration} ${themeTransform} ${themeOpacity}`}>
+        <Globe
+          ref={globeEl}
+          globeImageUrl={theme.globeUrl}
+          bumpImageUrl={theme.bump}
+          backgroundColor="rgba(0,0,0,0)"
+          showAtmosphere={true}
+          atmosphereColor={theme.atmosphere}
+          atmosphereAltitude={0.15}
+          
+          polygonsData={geoData}
+          polygonAltitude={d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.03 : 0.015}
+          polygonCapColor={d => {
+            if (guessedCountries.some(c => c.iso === d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
+            if (d === hoverD) return theme.polyHover;
+            return 'rgba(255, 255, 255, 0.0)';
+          }}
+          polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
+          polygonStrokeColor={() => theme.polyStroke}
+          polygonTransitionDuration={300}
+          
+          onPolygonHover={setHoverD}
+          onPolygonClick={(polygon) => {
+            if (onCountryClick) onCountryClick(polygon);
+          }}
+          
+          htmlElementsData={guessedCountries}
+          htmlLat="lat"
+          htmlLng="lng"
+          htmlAltitude={0.06}
+          htmlElement={d => {
+            const el = document.createElement('div');
+            el.style.width = '36px';
+            el.style.height = '26px';
+            el.style.pointerEvents = 'none';
+            el.innerHTML = `<img src="https://flagcdn.com/w40/${d.iso.toLowerCase()}.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 2px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.6);" />`;
+            return el;
+          }}
+        />
+      </div>
     </div>
   );
 });
