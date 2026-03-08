@@ -8,11 +8,12 @@ export default function App() {
   const [geoData, setGeoData] = useState([]);
   const [allCountries, setAllCountries] = useState([]);
   
-  const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'result'
-  const [endReason, setEndReason] = useState(''); // 'time', 'lives'
+  const [gameState, setGameState] = useState('start');
+  const [endReason, setEndReason] = useState('');
   
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
   
   const [targetCountry, setTargetCountry] = useState('');
@@ -21,12 +22,34 @@ export default function App() {
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
+    const savedScore = localStorage.getItem('geoGuessBestScore');
+    if (savedScore) setBestScore(parseInt(savedScore, 10));
+
     fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
       .then(res => res.json())
       .then(data => {
-        setGeoData(data.features);
-        const names = data.features.map(f => f.properties.ADMIN);
-        setAllCountries(names);
+        const userLang = navigator.language || 'pt-BR';
+        const translator = new Intl.DisplayNames([userLang], { type: 'region' });
+        
+        const validNames = new Set();
+
+        const translatedFeatures = data.features.map(f => {
+          let localName = f.properties.ADMIN;
+          const isoCode = f.properties.ISO_A2;
+          
+          if (isoCode && isoCode !== '-99') {
+            try {
+              localName = translator.of(isoCode);
+            } catch (error) {}
+          }
+          
+          f.properties.LOCAL_NAME = localName;
+          validNames.add(localName);
+          return f;
+        });
+
+        setGeoData(translatedFeatures);
+        setAllCountries(Array.from(validNames));
       });
   }, []);
 
@@ -35,11 +58,19 @@ export default function App() {
     if (gameState === 'playing' && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     } else if (timeLeft === 0 && gameState === 'playing') {
-      setGameState('result');
-      setEndReason('time');
+      endGame('time');
     }
     return () => clearInterval(timer);
   }, [gameState, timeLeft]);
+
+  const endGame = (reason) => {
+    setGameState('result');
+    setEndReason(reason);
+    if (score > bestScore) {
+      setBestScore(score);
+      localStorage.setItem('geoGuessBestScore', score.toString());
+    }
+  };
 
   const startGame = () => {
     setScore(0);
@@ -79,21 +110,18 @@ export default function App() {
     } else {
       setLives(prev => {
         const newLives = prev - 1;
-        if (newLives <= 0) {
-          setGameState('result');
-          setEndReason('lives');
-        }
+        if (newLives <= 0) endGame('lives');
         return newLives;
       });
       setFeedback({ text: `❌ Errou! Esse é: ${clickedCountry}`, color: 'text-red-500' });
     }
-  }, [gameState, targetCountry, targetStartTime, remainingCountries]);
+  }, [gameState, targetCountry, targetStartTime, remainingCountries, score, bestScore]);
 
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden select-none">
       <GlobeVisualizer geoData={geoData} onCountryClick={handleCountryClick} />
       
-      {gameState === 'start' && <StartScreen onStart={startGame} />}
+      {gameState === 'start' && <StartScreen onStart={startGame} bestScore={bestScore} />}
       
       {gameState === 'result' && <ResultScreen score={score} reason={endReason} onRestart={startGame} />}
 
@@ -118,20 +146,20 @@ export default function App() {
           </div>
 
           <div className="flex gap-4">
-            <div className="bg-black/70 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-3 text-white">
+            <div className="bg-black/70 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-3 text-white shadow-lg">
               {[...Array(3)].map((_, i) => (
                 <Heart key={i} className={i < lives ? "text-red-500 fill-red-500" : "text-gray-600"} size={24} />
               ))}
             </div>
 
-            <div className={`bg-black/70 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-4 text-white transition-colors ${timeLeft <= 10 ? 'border-red-500/50 bg-red-900/20' : ''}`}>
+            <div className={`bg-black/70 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-4 text-white transition-colors shadow-lg ${timeLeft <= 10 ? 'border-red-500/50 bg-red-900/40' : ''}`}>
               <Timer className={timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-dna-neon'} />
               <span className={`text-3xl font-mono font-bold ${timeLeft <= 10 ? 'text-red-500' : ''}`}>
                 00:{timeLeft.toString().padStart(2, '0')}
               </span>
             </div>
             
-            <div className="bg-black/70 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-4 text-white">
+            <div className="bg-black/70 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl flex items-center gap-4 text-white shadow-lg">
               <Trophy className="text-yellow-400" />
               <span className="text-3xl font-mono font-bold">{score}</span>
             </div>
