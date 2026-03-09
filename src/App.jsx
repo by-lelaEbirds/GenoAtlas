@@ -59,6 +59,9 @@ export default function App() {
   const [themeAnimState, setThemeAnimState] = useState('idle'); 
   const [activeRegion, setActiveRegion] = useState('all'); 
   
+  // O NOVO ESTADO DE SUSPENSE CINEMÁTICO
+  const [isGameActive, setIsGameActive] = useState(false); 
+  
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0); 
@@ -109,15 +112,37 @@ export default function App() {
       });
   }, []);
 
+  // MOTOR CINEMÁTICO (Espera o globo aterrar antes de soltar o relógio e mostrar o nome)
+  useEffect(() => {
+    let phase2Timer;
+    if (gameState === 'playing' && !isGameActive) {
+      const phase1Timer = setTimeout(() => {
+        setIsGameActive(true);
+        setTargetStartTime(Date.now()); // O tempo para o Bónus de +5s começa só aqui!
+        setFeedback({ text: '🔥 EXPLORE!', color: 'text-emerald-400 scale-110 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)] font-black', fact: null });
+        
+        phase2Timer = setTimeout(() => {
+          setFeedback(prev => prev?.text === '🔥 EXPLORE!' ? null : prev);
+        }, 1500);
+      }, 2500); // Exatos 2.5 segundos de calibração para combinar com a câmara do WebGL
+
+      return () => {
+        clearTimeout(phase1Timer);
+        clearTimeout(phase2Timer);
+      };
+    }
+  }, [gameState, isGameActive]);
+
+  // CRONÓMETRO AGORA PROTEGIDO
   useEffect(() => {
     let timer;
-    if (gameState === 'playing' && timeLeft > 0) {
+    if (gameState === 'playing' && isGameActive && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    } else if (timeLeft <= 0 && gameState === 'playing') {
+    } else if (timeLeft <= 0 && gameState === 'playing' && isGameActive) {
       endGame('time');
     }
     return () => clearInterval(timer);
-  }, [gameState, timeLeft]);
+  }, [gameState, isGameActive, timeLeft]);
 
   const handleThemeChange = (newTheme) => {
     if (newTheme.id === activeTheme.id || themeAnimState !== 'idle') return;
@@ -131,6 +156,7 @@ export default function App() {
 
   const endGame = (reason) => {
     setGameState('result');
+    setIsGameActive(false); // Congela o jogo
     setEndReason(reason);
     if (score > bestScore) {
       setBestScore(score);
@@ -145,6 +171,7 @@ export default function App() {
     setLives(3);
     setGuessedCountries([]);
     setTravelArcs([]);
+    setIsGameActive(false); // Inicia bloqueado em formato "Cinemático"
     
     let pool = allCountries;
     if (activeRegion === 'Americas') {
@@ -156,11 +183,21 @@ export default function App() {
     setRemainingCountries([...pool]);
     setGameState('playing');
     if (globeRef.current) globeRef.current.triggerStartAnimation();
-    pickNextCountry([...pool]);
+    
+    // Sorteia o primeiro país mas sem disparar a pontuação de tempo
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const selected = pool[randomIndex];
+    const newPool = pool.filter(c => c.iso !== selected.iso);
+    setRemainingCountries(newPool);
+    setTargetCountry(selected);
+    setHintUsed(false);
+    
+    setFeedback({ text: '⏳ A CALIBRAR...', color: 'text-amber-400 animate-pulse tracking-widest text-sm drop-shadow-md', fact: null });
   };
 
   const goHome = () => {
     setGameState('start');
+    setIsGameActive(false);
     setFeedback(null);
     setTargetCountry(null);
     setTimeLeft(60);
@@ -186,14 +223,15 @@ export default function App() {
   };
 
   const useHint = () => {
-    if (lives <= 1 || hintUsed || !targetCountry) return;
+    if (lives <= 1 || hintUsed || !targetCountry || !isGameActive) return;
     setLives(prev => prev - 1);
     setHintUsed(true);
     setFeedback({ text: `📍 Continente: ${targetCountry.continent}`, color: 'text-amber-500', fact: '' });
   };
 
   const handleCountryClick = useCallback((polygon, lat, lng) => {
-    if (gameState !== 'playing' || !targetCountry) return;
+    // BLOQUEIA CLIQUES SE O JOGO AINDA ESTIVER A ATERRAR O PLANETA
+    if (gameState !== 'playing' || !isGameActive || !targetCountry) return;
 
     const clickedCountryObj = polygon.properties.COUNTRY_OBJ;
     if (!clickedCountryObj) return;
@@ -209,7 +247,6 @@ export default function App() {
       const pointsCombo = pointsBase + (currentStreak * 10); 
       setScore(prev => prev + pointsCombo);
       
-      // NOVA LÓGICA DE BÓNUS: +5 Segundos
       if (isCombo) {
         setTimeLeft(prev => prev + 5);
         setTimeBonusAnim(true);
@@ -246,7 +283,7 @@ export default function App() {
       });
       setFeedback({ text: `❌ Esse é: ${clickedCountryObj.name}`, color: 'text-rose-500', fact: null });
     }
-  }, [gameState, targetCountry, targetStartTime, remainingCountries, score, streak, bestScore]);
+  }, [gameState, isGameActive, targetCountry, targetStartTime, remainingCountries, score, streak, bestScore]);
 
   return (
     <div className={`relative w-screen h-screen overflow-hidden select-none bg-gradient-to-br ${activeTheme.bg} transition-colors duration-700 ease-in-out`}>
@@ -289,8 +326,8 @@ export default function App() {
               
               <button 
                 onClick={useHint}
-                disabled={lives <= 1 || hintUsed || activeRegion !== 'all'}
-                className={`w-max flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md ${lives <= 1 || hintUsed || activeRegion !== 'all' ? 'bg-slate-500/10 text-slate-500 border-slate-500/20 opacity-50 cursor-not-allowed' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/20'}`}
+                disabled={lives <= 1 || hintUsed || activeRegion !== 'all' || !isGameActive}
+                className={`w-max flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-bold transition-colors backdrop-blur-md ${lives <= 1 || hintUsed || activeRegion !== 'all' || !isGameActive ? 'bg-slate-500/10 text-slate-500 border-slate-500/20 opacity-50 cursor-not-allowed' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/20'}`}
               >
                 <Lightbulb size={16} /> {activeRegion !== 'all' ? 'DICA MODO GLOBAL' : hintUsed ? 'DICA USADA' : 'DICA CONTINENTE (-1 Vida)'}
               </button>
@@ -308,7 +345,8 @@ export default function App() {
                 )}
               </div>
               
-              <div className={`text-3xl md:text-4xl font-black tracking-wide drop-shadow-sm ${activeTheme.textColor}`}>
+              {/* O EFEITO BLUR DO NOME ENQUANTO CALIBRA */}
+              <div className={`text-3xl md:text-4xl font-black tracking-wide drop-shadow-sm transition-all duration-700 ease-out ${activeTheme.textColor} ${!isGameActive ? 'opacity-0 blur-md translate-y-4' : 'opacity-100 blur-0 translate-y-0'}`}>
                 {targetCountry?.name || '...'}
               </div>
               
@@ -327,11 +365,10 @@ export default function App() {
             </div>
 
             <div className={`relative ${activeTheme.hudBg} backdrop-blur-xl border border-white/10 px-5 py-4 rounded-2xl flex items-center gap-3 transition-all duration-500 shadow-lg pointer-events-auto ${timeLeft <= 10 ? 'border-rose-500/50 bg-rose-900/30' : ''}`}>
-              <Timer className={timeLeft <= 10 ? 'text-rose-500 animate-pulse' : ''} style={{ color: timeLeft > 10 ? activeTheme.polyStroke : undefined }} size={24} />
-              <span className={`text-3xl font-mono font-black tracking-tight ${timeLeft <= 10 ? 'text-rose-500' : activeTheme.textColor}`}>
+              <Timer className={timeLeft <= 10 && isGameActive ? 'text-rose-500 animate-pulse' : ''} style={{ color: timeLeft > 10 ? activeTheme.polyStroke : undefined }} size={24} />
+              <span className={`text-3xl font-mono font-black tracking-tight ${timeLeft <= 10 && isGameActive ? 'text-rose-500' : activeTheme.textColor}`}>
                 {timeLeft.toString().padStart(2, '0')}
               </span>
-              {/* O NÚMERO MAGICO ATUALIZADO AQUI */}
               {timeBonusAnim && <span className="absolute -top-6 right-2 text-emerald-400 font-black animate-ping">+5s</span>}
             </div>
             
