@@ -6,16 +6,15 @@ export default function GameHUD({ state, actions }) {
   if (state.studyCard || state.gameState !== GAME_STATES.PLAYING) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 pt-[60px] pb-8 md:p-8 md:pt-8 z-20">
+    // CORREÇÃO: Transferimos o efeito 'animate-shake' para cá. Quando errar, só a HUD treme, poupando a GPU de renderizar o planeta inteiro chacoalhando.
+    <div className={`absolute inset-0 pointer-events-none flex flex-col justify-between p-4 pt-[60px] pb-8 md:p-8 md:pt-8 z-20 ${state.isShaking ? 'animate-shake' : ''}`}>
       
-      {/* CORREÇÃO: Uso de position relative para evitar que o botão fechar empurre a pílula central em telas pequenas */}
       <div className="relative flex justify-center items-start w-full">
         <button onClick={actions.quitGame} className="absolute left-0 top-0 pointer-events-auto bg-white border-b-4 border-stone-200 p-2.5 md:p-3 rounded-full text-stone-400 hover:text-rose-500 shrink-0 active:translate-y-1 active:border-b-0 transition-all z-10">
           <X size={20} strokeWidth={3} />
         </button>
         
         <div className="flex flex-col items-center w-full px-12 md:px-16">
-          {/* CORREÇÃO: Ajustes de padding e gap para caber em telas estreitas */}
           <div className={`bg-white border-b-4 border-stone-200 px-3 md:px-6 py-2 md:py-3 rounded-full flex items-center justify-center gap-2 md:gap-8 pointer-events-auto shadow-lg transition-all duration-300 w-full max-w-fit ${state.timeLeft <= 10 && state.gameMode !== 'study' ? 'border-rose-300 bg-rose-50 scale-105' : ''}`}>
             
             <div className="flex gap-1 md:gap-1.5 shrink-0">
@@ -57,7 +56,6 @@ export default function GameHUD({ state, actions }) {
 
         <div className={`w-full px-4 py-4 md:px-6 md:py-6 rounded-3xl flex flex-col items-center transform transition-all relative overflow-hidden group pointer-events-auto border-b-[6px] shadow-lg ${state.streak > 2 ? 'bg-amber-50 border-amber-300 scale-[1.02]' : 'bg-white border-stone-200'}`}>
           
-          {/* CORREÇÃO: O layout agora quebra (flex-col) no mobile se faltar espaço, aumentando a usabilidade dos botões */}
           <div className="w-full flex flex-col sm:flex-row justify-between items-center sm:items-end mb-2 gap-3 sm:gap-1">
             <span className={`text-[10px] sm:text-xs uppercase tracking-[0.2em] font-black flex items-center gap-1.5 ${state.streak > 2 ? 'text-amber-600' : 'text-stone-400'}`}>
               {state.gameMode === 'football' ? <Trophy size={14}/> : <Target size={14} />} 
