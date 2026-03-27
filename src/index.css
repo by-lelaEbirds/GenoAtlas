@@ -10,6 +10,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* OTIMIZAÇÕES MOBILE-FIRST GLOBAIS */
+* {
+  -webkit-tap-highlight-color: transparent; /* Remove aquele fundo azul feio ao clicar no Android */
+}
+
+button {
+  touch-action: manipulation; /* Garante clique imediato, sem delay de 300ms aguardando double-tap */
+}
+
 body {
   margin: 0;
   display: flex;
@@ -18,7 +27,7 @@ body {
   min-height: 100vh;
   overflow: hidden;
   overscroll-behavior: none;
-  background-color: white; /* BUG 11: Garantir fundo branco por padrão */
+  background-color: white; 
 }
 
 /* CUSTOM SCROLLBAR (Utilizado na Jornada e nos Modais) */
@@ -29,11 +38,11 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e7e5e4; /* stone-200 */
+  background: #e7e5e4; 
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #d6d3d1; /* stone-300 */
+  background: #d6d3d1; 
 }
 
 /* ANIMAÇÕES CUSTOMIZADAS */
@@ -72,7 +81,7 @@ body {
   animation: bounce-short 1s infinite;
 }
 
-/* ANIMAÇÃO FADE-IN-UP (Para modais e elementos que surgem) */
+/* ANIMAÇÃO FADE-IN-UP */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
@@ -81,7 +90,7 @@ body {
   animation: fade-in-up 0.3s ease-out both;
 }
 
-/* ANIMAÇÃO DE SPIN SLOW (Para o ícone de gelo) */
+/* ANIMAÇÃO DE SPIN SLOW */
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
