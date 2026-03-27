@@ -11,7 +11,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
     if (coins >= theme.price) {
       const newCoins = coins - theme.price;
       
-      // Validação de unicidade para evitar duplicações no array de temas
       let newThemes = unlockedThemes;
       if (!unlockedThemes.includes(theme.id)) {
         newThemes = [...unlockedThemes, theme.id];
@@ -46,7 +45,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-6 py-3 bg-white/70 backdrop-blur-md border-b border-stone-100 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white ring-2 ring-sky-400 bg-white shadow-sm">
-            <img className="w-full h-full object-cover scale-110 translate-y-1" alt="Explorer Hero" src={`${basePath}icon.png`} />
+            <img className="w-full h-full object-cover scale-110 translate-y-1" alt="Explorer Hero" src={`${basePath}assets/icon.png`} />
           </div>
           <h1 className="font-black italic tracking-tighter text-2xl text-sky-900 drop-shadow-sm">GenoAtlas</h1>
         </div>
@@ -81,7 +80,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
                   <div className="relative">
                     <div className="bg-white p-1.5 rounded-xl shadow-xl border-4 border-amber-400">
-                      <img className="w-10 h-10 rounded-lg object-cover scale-110" alt="Você está aqui" src={`${basePath}icon.png`} />
+                      <img className="w-10 h-10 rounded-lg object-cover scale-110" alt="Você está aqui" src={`${basePath}assets/icon.png`} />
                     </div>
                     <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-white"></div>
                   </div>
