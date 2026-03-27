@@ -1,24 +1,26 @@
 import React from 'react';
 import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle } from 'lucide-react';
 import AdBanner from './AdBanner';
-import { Preferences } from '@capacitor/preferences';
-
-const saveNativeData = async (key, val) => {
-  try { await Preferences.set({ key, value: val.toString() }); } catch (e) {}
-};
+import { saveNativeData } from '../utils/storage';
 
 export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted }) {
   
-  const basePath = import.meta.env.BASE_URL; // Caminho Seguro do Vite
+  const basePath = import.meta.env.BASE_URL;
 
   const handleThemeSelect = (theme) => {
     if (coins >= theme.price) {
       const newCoins = coins - theme.price;
-      const newThemes = [...unlockedThemes, theme.id];
+      
+      // Validação de unicidade para evitar duplicações no array de temas
+      let newThemes = unlockedThemes;
+      if (!unlockedThemes.includes(theme.id)) {
+        newThemes = [...unlockedThemes, theme.id];
+        setUnlockedThemes(newThemes);
+        saveNativeData('geoGuessThemes', JSON.stringify(newThemes));
+      }
+      
       setCoins(newCoins); 
-      setUnlockedThemes(newThemes);
       saveNativeData('geoGuessCoins', newCoins);
-      saveNativeData('geoGuessThemes', JSON.stringify(newThemes));
       setTheme(theme);
     }
   };
@@ -32,20 +34,15 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   ];
 
   return (
-    // Fundo limpo e suave (light blue to white)
     <div className="absolute inset-0 z-40 bg-gradient-to-b from-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-32">
       
-      {/* ELEMENTOS VISUAIS SIMPLES (Nuvens e Grade) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-60">
         <div className="absolute top-[15%] left-[10%] w-[120px] h-[40px] bg-white rounded-full blur-[2px]"></div>
         <div className="absolute top-[25%] right-[5%] w-[180px] h-[60px] bg-white rounded-full blur-[3px]"></div>
         <div className="absolute top-[50%] left-[15%] w-[100px] h-[35px] bg-white rounded-full blur-[2px]"></div>
-        
-        {/* Grade de cartografia suave */}
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px)', backgroundSize: '48px 48px' }}></div>
       </div>
       
-      {/* HEADER FIXO */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-6 py-3 bg-white/70 backdrop-blur-md border-b border-stone-100 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white ring-2 ring-sky-400 bg-white shadow-sm">
@@ -60,7 +57,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
       </header>
 
-      {/* CABEÇALHO JORNADA */}
       <div className="relative z-10 text-center mb-6 px-6 pt-24 animate-fade-in-up">
         <div className="inline-flex items-center gap-2 bg-sky-600 px-6 py-2.5 rounded-full text-white shadow-lg border-b-4 border-sky-800 mb-3">
           <Compass size={20} strokeWidth={2.5} />
@@ -69,10 +65,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-sm tracking-wide bg-sky-50 inline-block px-4 py-1 rounded-full border border-sky-100 shadow-inner">Junte moedas e avance de bioma!</p>
       </div>
 
-      {/* O MAPA SAGA */}
       <div className="relative z-10 max-w-md mx-auto px-4 flex flex-col items-center min-h-[1200px] pt-10">
         
-        {/* LINHA PONTILHADA CENTRAL */}
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[6px] border-l-[8px] border-dashed border-stone-200 opacity-60 z-0"></div>
 
         {themeNodes.map((t, index) => {
@@ -83,7 +77,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           return (
             <div key={t.id} className="relative flex flex-col items-center z-10 mb-32">
               
-              {/* AVATAR INDICADOR DE POSIÇÃO */}
               {isCurrent && (
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
                   <div className="relative">
@@ -95,8 +88,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 </div>
               )}
 
-              {/* O NÓ DE NÍVEL */}
               <button 
+                aria-label={isUnlocked ? `Selecionar tema ${t.name}` : `Desbloquear tema ${t.name}`}
                 onClick={() => {
                   if (isUnlocked) { setTheme(t); onStart(); } 
                   else { handleThemeSelect(t); }
@@ -116,14 +109,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 )}
               </button>
 
-              {/* NOME DO PLANETA (COM whitespace-nowrap PARA NÃO ESMAGAR) */}
               <div className={`absolute -bottom-6 px-5 py-2 rounded-full border-2 z-20 whitespace-nowrap scale-110 ${isUnlocked ? 'bg-white border-stone-300 shadow-md' : 'bg-stone-100 border-stone-300'}`}>
                 <span className={`text-[10px] font-black uppercase tracking-widest ${isUnlocked ? 'text-stone-800' : 'text-stone-400'}`}>
                   {isUnlocked && isCurrent ? 'Jogar Agora' : t.name}
                 </span>
               </div>
 
-              {/* CAIXA DE PREÇO SE BLOQUEADO */}
               {!isUnlocked && (
                 <div className="absolute -bottom-16 flex flex-col items-center animate-pulse-slow">
                   <div className="bg-amber-400 px-4 py-1.5 rounded-full border border-amber-500 shadow-md flex items-center gap-1 scale-110 whitespace-nowrap min-w-max">
@@ -133,13 +124,11 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 </div>
               )}
 
-              {/* MISSÃO SECUNDÁRIA FLUTUANTE */}
               {sideMission && (
-                <button onClick={sideMission.onClick} disabled={sideMission.disabled} className={`${sideMission.pos} flex flex-col items-center cursor-pointer group transition-all z-0 ${sideMission.disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}>
+                <button aria-label={sideMission.label} onClick={sideMission.onClick} disabled={sideMission.disabled} className={`${sideMission.pos} flex flex-col items-center cursor-pointer group transition-all z-0 ${sideMission.disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}>
                   <div className={`w-[60px] h-[60px] rounded-2xl ${index % 2 === 0 ? 'rotate-12' : '-rotate-12'} flex items-center justify-center border-[3px] ${sideMission.bg} ${sideMission.border} ${sideMission.shadow}`}>
                     {sideMission.icon}
                   </div>
-                  {/* TEXTO CORRIGIDO (whitespace-nowrap) */}
                   <span className={`text-[9px] font-black mt-3 bg-white px-3 py-0.5 rounded-full uppercase tracking-widest border shadow-sm whitespace-nowrap min-w-max ${sideMission.text}`}>{sideMission.label}</span>
                 </button>
               )}
@@ -147,7 +136,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           );
         })}
 
-        {/* NÓ FINAL (O TROFÉU) */}
         <div className="relative flex flex-col items-center opacity-80 mt-10 mb-10">
           <div className="w-[110px] h-[110px] bg-gradient-to-b from-rose-500 to-rose-700 rounded-full flex items-center justify-center border-[8px] border-rose-300 shadow-[0_14px_0_#881337,0_0_50px_rgba(225,29,72,0.8)] z-10 relative cursor-not-allowed">
             <Trophy size={50} className="text-white" strokeWidth={2.5} />
@@ -160,7 +148,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <div className="w-full mt-4"><AdBanner dataAdSlot="START_SCREEN_SLOT" /></div>
       </div>
 
-      {/* BOTTOM NAV BAR (CORRIGIDA COM whitespace-nowrap) */}
       <nav className="fixed bottom-0 left-0 w-full z-50 bg-white/90 backdrop-blur-xl flex justify-around items-end px-2 pb-6 pt-3 border-t-2 border-stone-200 shadow-[0px_-10px_30px_rgba(0,0,0,0.05)] rounded-t-[2.5rem]">
         <button className="flex flex-col items-center justify-center bg-sky-500 text-white rounded-2xl px-6 py-2.5 shadow-[0_5px_0_#0369a1] active:translate-y-[5px] active:shadow-none transition-all">
           <Home size={24} strokeWidth={2.5} />
