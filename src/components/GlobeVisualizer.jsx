@@ -9,7 +9,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   const onStartRef = useRef(null);
   const onEndRef = useRef(null);
 
-  // CORREÇÃO: Aproximei o globo no mobile (de 2.8 para 2.4) para não ficar minúsculo
   const getIdealAltitude = () => isMobile ? 2.4 : 1.8;
 
   useImperativeHandle(ref, () => ({
@@ -100,7 +99,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           showAtmosphere={false} 
           
           polygonsData={geoData}
-          polygonResolution={2} 
+          // CORREÇÃO: Resolução reduzida no mobile para evitar sobrecarga da GPU (Thermal Throttling)
+          polygonResolution={isMobile ? 1 : 2} 
           
           polygonAltitude={d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005}
           polygonCapColor={d => {
