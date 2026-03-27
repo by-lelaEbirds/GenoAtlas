@@ -28,7 +28,8 @@ export const MAP_THEMES = {
     price: 0,
     id: 'explorador',
     globeUrl: `${basePath}assets/globes/earth-blue-marble.jpg`,
-    bgImageUrl: '', 
+    // Fundo estrelado ativado para o modo padrão!
+    bgImageUrl: `${basePath}assets/globes/night-sky.png`, 
     bump: `${basePath}assets/globes/earth-topology.png`,
     polyHover: 'rgba(251, 191, 36, 0.7)', 
     polyGuessed: 'rgba(34, 197, 94, 0.9)', 
@@ -54,7 +55,8 @@ export const MAP_THEMES = {
     price: 1500,
     id: 'ouro',
     globeUrl: `${basePath}assets/globes/earth-day.jpg`,
-    bgImageUrl: '',
+    // Fundo estrelado ativado para o modo de ouro!
+    bgImageUrl: `${basePath}assets/globes/night-sky.png`,
     bump: `${basePath}assets/globes/earth-topology.png`,
     polyHover: 'rgba(255, 255, 255, 0.9)',
     polyGuessed: 'rgba(251, 191, 36, 0.9)',
