@@ -5,8 +5,9 @@ import { GAME_STATES } from '../constants';
 export default function GameHUD({ state, actions }) {
   if (state.studyCard || state.gameState !== GAME_STATES.PLAYING) return null;
 
+  const basePath = import.meta.env.BASE_URL;
+
   return (
-    // CORREÇÃO: Transferimos o efeito 'animate-shake' para cá. Quando errar, só a HUD treme, poupando a GPU de renderizar o planeta inteiro chacoalhando.
     <div className={`absolute inset-0 pointer-events-none flex flex-col justify-between p-4 pt-[60px] pb-8 md:p-8 md:pt-8 z-20 ${state.isShaking ? 'animate-shake' : ''}`}>
       
       <div className="relative flex justify-center items-start w-full">
@@ -51,7 +52,7 @@ export default function GameHUD({ state, actions }) {
       <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto pointer-events-none relative pt-10">
         
         <div className="absolute -left-10 bottom-[90%] -z-10 animate-fade-in hidden sm:block">
-          <img src="./icon.png" alt="Guia In-Game" className="w-[80px] h-auto drop-shadow-md rotate-[-5deg] scale-110" />
+          <img src={`${basePath}assets/icon.png`} alt="Guia In-Game" className="w-[80px] h-auto drop-shadow-md rotate-[-5deg] scale-110" />
         </div>
 
         <div className={`w-full px-4 py-4 md:px-6 md:py-6 rounded-3xl flex flex-col items-center transform transition-all relative overflow-hidden group pointer-events-auto border-b-[6px] shadow-lg ${state.streak > 2 ? 'bg-amber-50 border-amber-300 scale-[1.02]' : 'bg-white border-stone-200'}`}>
