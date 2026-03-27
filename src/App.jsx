@@ -21,7 +21,8 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`relative w-full h-[100dvh] overflow-hidden select-none bg-white transition-all duration-1000 ease-out ${state.isShaking ? 'animate-shake' : ''} ${isLoaded ? 'opacity-100' : 'opacity-0 scale-105'}`}>
+    // CORREÇÃO: Retirei o animate-shake do contêiner root. O canvas WebGL agora fica intacto e não causa drop de FPS.
+    <div className={`relative w-full h-[100dvh] overflow-hidden select-none bg-white transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0 scale-105'}`}>
       
       <div className={`absolute inset-0 pointer-events-none z-10 transition-colors duration-200 ${state.screenFlash === 'success' ? 'bg-green-500/20' : state.screenFlash === 'error' ? 'bg-rose-500/20' : state.timeLeft <= 10 && state.gameState === GAME_STATES.PLAYING && !state.studyCard && state.gameMode !== GAME_MODES.STUDY ? 'shadow-[inset_0_0_100px_rgba(244,63,94,0.2)]' : ''}`} />
 
@@ -121,7 +122,6 @@ export default function App() {
       
       {state.studyCard && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-4 animate-fade-in-up pointer-events-auto">
-          {/* CORREÇÃO: Ajustes de padding e margens para caber na tela do celular */}
           <div className="bg-white border-b-[6px] border-stone-200 p-5 md:p-8 rounded-[2rem] max-w-sm w-full shadow-2xl relative pt-12 md:pt-16">
             
             <div className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2">
@@ -134,7 +134,6 @@ export default function App() {
             
             <div className="text-center mt-2">
               <h3 className="text-2xl md:text-3xl font-black text-stone-800 mb-1 tracking-tighter uppercase whitespace-nowrap">{state.studyCard.name}</h3>
-              {/* CORREÇÃO: Fonte base aumentada para garantir leitura clara */}
               {!state.studyCard.isCorrect && ( <p className="text-xs md:text-sm text-rose-500 mb-4 font-black uppercase tracking-widest bg-rose-50 inline-block px-3 py-1.5 rounded-full border border-rose-100 whitespace-nowrap">Clicou em: {state.studyCard.clickedName}</p> )}
               {state.studyCard.isCorrect && ( <p className="text-xs md:text-sm text-green-600 mb-4 font-black uppercase tracking-widest bg-green-50 inline-block px-3 py-1.5 rounded-full border border-green-100 whitespace-nowrap">+{state.studyCard.pointsGained} Pontos!</p> )}
 
