@@ -32,7 +32,11 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
     const initControls = () => {
       if (!globeEl.current) return;
       const renderer = globeEl.current.renderer();
-      if (renderer) renderer.setPixelRatio(1);
+      
+      // Otimização: usa o pixel ratio do dispositivo, mas limita a 2x para evitar thermal throttling severo
+      if (renderer) {
+        renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1);
+      }
 
       const controls = globeEl.current.controls?.();
       if (!controls) return;
@@ -99,7 +103,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           showAtmosphere={false} 
           
           polygonsData={geoData}
-          // CORREÇÃO: Resolução reduzida no mobile para evitar sobrecarga da GPU (Thermal Throttling)
           polygonResolution={isMobile ? 1 : 2} 
           
           polygonAltitude={d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005}
@@ -110,7 +113,9 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           }}
           polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
           polygonStrokeColor={() => theme.polyStroke}
-          polygonTransitionDuration={0} 
+          
+          // Otimização Visual: Suaviza a transição de cor (em vez de piscar instantaneamente com 0)
+          polygonTransitionDuration={250} 
           
           onPolygonHover={isMobile ? undefined : setHoverD}
           onPolygonClick={(polygon, event, coords) => {
