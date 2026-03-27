@@ -21,7 +21,6 @@ export default function App() {
   }, []);
 
   return (
-    // CORREÇÃO: Retirei o animate-shake do contêiner root. O canvas WebGL agora fica intacto e não causa drop de FPS.
     <div className={`relative w-full h-[100dvh] overflow-hidden select-none bg-white transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0 scale-105'}`}>
       
       <div className={`absolute inset-0 pointer-events-none z-10 transition-colors duration-200 ${state.screenFlash === 'success' ? 'bg-green-500/20' : state.screenFlash === 'error' ? 'bg-rose-500/20' : state.timeLeft <= 10 && state.gameState === GAME_STATES.PLAYING && !state.studyCard && state.gameMode !== GAME_MODES.STUDY ? 'shadow-[inset_0_0_100px_rgba(244,63,94,0.2)]' : ''}`} />
@@ -112,9 +111,9 @@ export default function App() {
         <ResultScreen 
           score={state.score} reason={state.endReason} bestScore={state.bestScore} 
           guessedCount={state.guessedCountries.length} 
-          coinsEarned={Math.floor(state.score / 10) + (state.endReason === 'daily_win' ? 500 : 0)} 
+          coinsEarned={state.lastCoinsEarned} 
           gameMode={state.gameMode} onRestart={() => actions.startGame(state.gameMode)} 
-          onHome={() => { actions.quitGame(); if (globeRef.current) globeRef.current.resetPosition(); }} 
+          onHome={() => { actions.quitGame(); actions.resetGlobe(); }} 
         />
       )}
 
