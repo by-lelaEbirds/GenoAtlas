@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { playTone, playSound } from '../utils/audio';
+import { saveNativeData, getNativeData } from '../utils/storage';
 import { GAME_STATES, GAME_MODES, MAP_THEMES, ACHIEVEMENTS_LIST } from '../constants';
 import { FOOTBALL_CLUBS } from '../constants/football';
 import { CAPITALS_MAP } from '../constants/capitals';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
-import { Preferences } from '@capacitor/preferences';
 
 const getDailyCountries = (pool) => {
   const today = new Date();
@@ -21,10 +21,6 @@ const getDailyCountries = (pool) => {
   return shuffled.filter(c => c.pop > 10000000).slice(0, 5);
 };
 
-const saveNativeData = async (key, val) => {
-  try { await Preferences.set({ key, value: val.toString() }); } catch (e) { console.error(e); }
-};
-
 export function useGeoGame(globeRef) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
@@ -33,13 +29,14 @@ export function useGeoGame(globeRef) {
   const [guessedCountries, setGuessedCountries] = useState([]);
   const [travelArcs, setTravelArcs] = useState([]);
   const [impactRings, setImpactRings] = useState([]);
-  const [capitals] = useState(CAPITALS_MAP);
+  const capitals = CAPITALS_MAP;
 
   const [gameState, setGameState] = useState(GAME_STATES.START);
   const [gameMode, setGameMode] = useState(GAME_MODES.NORMAL);
   const [endReason, setEndReason] = useState('');
 
   const [coins, setCoins] = useState(0);
+  const [lastCoinsEarned, setLastCoinsEarned] = useState(0); // Centralizando o cálculo de moedas
   const [unlockedThemes, setUnlockedThemes] = useState(['explorador']); 
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.explorador);
   const [activeRegion, setActiveRegion] = useState('all');
@@ -87,35 +84,31 @@ export function useGeoGame(globeRef) {
 
   useEffect(() => {
     const loadSavedData = async () => {
-      try {
-        const getVal = async (k) => (await Preferences.get({ key: k })).value;
-        
-        const savedScore = await getVal('geoGuessBestScore');
-        const savedCoins = await getVal('geoGuessCoins');
-        const savedThemes = await getVal('geoGuessThemes');
-        const savedAchievements = await getVal('geoGuessAchievements');
-        const hasSeenTuto = await getVal('geoGuessTutorial');
-        const savedSmooth = await getVal('geoGuessSmoothMode');
-        const savedDaily = await getVal('geoGuessDaily');
+      const savedScore = await getNativeData('geoGuessBestScore');
+      const savedCoins = await getNativeData('geoGuessCoins');
+      const savedThemes = await getNativeData('geoGuessThemes');
+      const savedAchievements = await getNativeData('geoGuessAchievements');
+      const hasSeenTuto = await getNativeData('geoGuessTutorial');
+      const savedSmooth = await getNativeData('geoGuessSmoothMode');
+      const savedDaily = await getNativeData('geoGuessDaily');
 
-        if (savedScore) setBestScore(parseInt(savedScore, 10));
-        if (savedCoins) setCoins(parseInt(savedCoins, 10));
-        
-        if (savedThemes) {
-          const savedIds = JSON.parse(savedThemes);
-          const validIds = [...new Set(['explorador', ...savedIds])].filter(id => id in MAP_THEMES);
-          setUnlockedThemes(validIds);
-        } else {
-          setUnlockedThemes(['explorador']);
-        }
-        
-        if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
-        if (!hasSeenTuto) setShowTutorial(true);
-        if (savedDaily) setLastDailyDate(savedDaily);
+      if (savedScore) setBestScore(parseInt(savedScore, 10));
+      if (savedCoins) setCoins(parseInt(savedCoins, 10));
+      
+      if (savedThemes) {
+        const savedIds = JSON.parse(savedThemes);
+        const validIds = [...new Set(['explorador', ...savedIds])].filter(id => id in MAP_THEMES);
+        setUnlockedThemes(validIds);
+      } else {
+        setUnlockedThemes(['explorador']);
+      }
+      
+      if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
+      if (!hasSeenTuto) setShowTutorial(true);
+      if (savedDaily) setLastDailyDate(savedDaily);
 
-        if (savedSmooth === null) setShowSettingsPrompt(true);
-        else setIsSmoothMode(savedSmooth === 'true');
-      } catch (e) { console.error("Erro no cofre:", e); }
+      if (savedSmooth === null) setShowSettingsPrompt(true);
+      else setIsSmoothMode(savedSmooth === 'true');
     };
 
     const fetchGeoData = async () => {
@@ -145,7 +138,7 @@ export function useGeoGame(globeRef) {
         setGeoData(translatedFeatures);
         setAllCountries(valid);
       } catch (e) {
-        console.error("Falha ao fazer lazy loading do mapa", e);
+        console.error("GenoAtlas - Falha ao carregar mapa", e);
       }
     };
 
@@ -255,6 +248,7 @@ export function useGeoGame(globeRef) {
       }
     }
 
+    setLastCoinsEarned(earnedCoins);
     const newCoinsTotal = coinsRef.current + earnedCoins;
     setCoins(newCoinsTotal);
     saveNativeData('geoGuessCoins', newCoinsTotal);
@@ -284,7 +278,11 @@ export function useGeoGame(globeRef) {
     setFreezeTimeLeft(0);
   };
 
-  const pickNextCountry = (pool, currentMode = gameMode, currentStreak = streak, isFirst = false, clubPool = remainingClubs) => {
+  const resetGlobe = useCallback(() => {
+    if (globeRef.current) globeRef.current.resetPosition();
+  }, [globeRef]);
+
+  const pickNextCountry = useCallback((pool, currentMode = gameMode, currentStreak = streak, isFirst = false, clubPool = remainingClubs) => {
     let selectedCountry;
     if (currentMode === GAME_MODES.FOOTBALL) {
       if (clubPool.length === 0) return endGame('win');
@@ -298,17 +296,22 @@ export function useGeoGame(globeRef) {
       setRemainingCountries(pool.slice(1));
     } else {
       if (pool.length === 0) return endGame('win');
+      
       let availablePool = pool;
+      // Dificuldade dinâmica: facilita nas 2 primeiras rodadas da streak limitando a países populosos
       if (currentStreak < 2) {
         const easyPool = pool.filter(c => c.pop > 30000000);
         if (easyPool.length > 0) availablePool = easyPool;
       }
+      
       selectedCountry = availablePool[Math.floor(Math.random() * availablePool.length)];
+      // Remove o selecionado do pool real (independente de ter sido do easyPool ou não)
       setRemainingCountries(pool.filter(c => c.iso !== selectedCountry.iso));
     }
+    
     setTargetCountry(selectedCountry);
     if (!isFirst) setTargetStartTime(Date.now());
-  };
+  }, [allCountries, endGame, gameMode, remainingClubs, streak]);
 
   const startGame = (mode = GAME_MODES.NORMAL) => {
     if (allCountries.length === 0) return;
@@ -388,6 +391,7 @@ export function useGeoGame(globeRef) {
   };
 
   const handleCountryClick = useCallback((polygon, lat, lng, event) => {
+    // Uso da ref garante bloqueio de cliques simultâneos sem re-renderizações desnecessárias
     if (gameState !== GAME_STATES.PLAYING || !targetCountry || !isGameActive || studyCard || isProcessingRef.current) return;
 
     const clicked = polygon.properties.COUNTRY_OBJ;
@@ -402,72 +406,75 @@ export function useGeoGame(globeRef) {
     setImpactRings(prev => [...prev, { lat, lng, color: clicked.iso === targetCountry.iso ? '#34d399' : '#f43f5e' }]);
 
     if (clicked.iso === targetCountry.iso) {
-      const curStreak = streak + 1;
-      setStreak(curStreak);
-      const pointsGained = (isCombo ? 200 : 100) + (curStreak * 10);
-      setScore(s => s + pointsGained);
+      setStreak(prev => {
+        const curStreak = prev + 1;
+        const pointsGained = (isCombo ? 200 : 100) + (curStreak * 10);
+        setScore(s => s + pointsGained);
 
-      unlockAchievement('first_country');
-      if (curStreak === 3) unlockAchievement('combo_3');
-      if (curStreak === 5) unlockAchievement('combo_5');
+        unlockAchievement('first_country');
+        if (curStreak === 3) unlockAchievement('combo_3');
+        if (curStreak === 5) unlockAchievement('combo_5');
 
-      if (isCombo) setTimeLeft(t => t + 5);
-      
-      try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
-      
-      if (gameMode === GAME_MODES.FOOTBALL) playSound('stadium', 0.8);
-      else playSound('success', isCombo ? 0.9 : 0.6);
+        if (isCombo) setTimeLeft(t => t + 5);
+        
+        try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
+        
+        if (gameMode === GAME_MODES.FOOTBALL) playSound('stadium', 0.8);
+        else playSound('success', isCombo ? 0.9 : 0.6);
 
-      const newGuess = { ...clicked, lat, lng };
-      const prevGuessed = guessedRef.current;
-      
-      if (prevGuessed.length > 0) {
-        const last = prevGuessed[prevGuessed.length - 1];
-        setTravelArcs(arcs => [...arcs, { startLat: last.lat, startLng: last.lng, endLat: lat, endLng: lng }]);
-      }
-      setGuessedCountries(prev => [...prev, newGuess]);
+        const newGuess = { ...clicked, lat, lng };
+        const prevGuessed = guessedRef.current;
+        
+        if (prevGuessed.length > 0) {
+          const last = prevGuessed[prevGuessed.length - 1];
+          setTravelArcs(arcs => [...arcs, { startLat: last.lat, startLng: last.lng, endLat: lat, endLng: lng }]);
+        }
+        setGuessedCountries(g => [...g, newGuess]);
 
-      setScreenFlash('success');
-      spawnFloatingPoint(`+${pointsGained}`, clickX, clickY, isCombo ? 'text-amber-400 font-black scale-125' : 'text-emerald-400');
+        setScreenFlash('success');
+        spawnFloatingPoint(`+${pointsGained}`, clickX, clickY, isCombo ? 'text-amber-400 font-black scale-125' : 'text-emerald-400');
 
-      if (gameMode === GAME_MODES.STUDY) {
-        setTimeout(() => {
-          setScreenFlash('');
-          setIsTimerFrozen(true); 
-          setStudyCard({ ...targetCountry, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: true, pointsGained, curStreak });
-          isProcessingRef.current = false;
-        }, 300);
-      } else {
-        setTimeout(() => setScreenFlash(''), 300);
-        setTimeout(() => {
-          pickNextCountry(remainingCountries, gameMode, curStreak, false, remainingClubs);
-          isProcessingRef.current = false;
-        }, 300); 
-      }
+        if (gameMode === GAME_MODES.STUDY) {
+          setTimeout(() => {
+            setScreenFlash('');
+            setIsTimerFrozen(true); 
+            setStudyCard({ ...targetCountry, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: true, pointsGained, curStreak });
+            isProcessingRef.current = false;
+          }, 300);
+        } else {
+          setTimeout(() => setScreenFlash(''), 300);
+          setTimeout(() => {
+            pickNextCountry(remainingCountries, gameMode, curStreak, false, remainingClubs);
+            isProcessingRef.current = false;
+          }, 300); 
+        }
+        return curStreak;
+      });
 
     } else {
       setStreak(0);
-      const newLives = lives - 1;
-      setLives(newLives);
+      setLives(prev => {
+        const newLives = prev - 1;
+        try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+        
+        playSound('error', 0.6);
+        setScreenFlash('error');
+        setIsShaking(true);
+        spawnFloatingPoint('ERRADO', clickX, clickY, 'text-rose-500 font-black');
 
-      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
-      
-      playSound('error', 0.6);
-      setScreenFlash('error');
-      setIsShaking(true);
-      spawnFloatingPoint('ERRADO', clickX, clickY, 'text-rose-500 font-black');
-
-      setTimeout(() => {
-        setScreenFlash('');
-        setIsShaking(false);
-        if (gameMode === GAME_MODES.STUDY || newLives <= 0) {
-          setIsTimerFrozen(true);
-          setStudyCard({ ...targetCountry, clickedName: clicked.name, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: false, livesRemaining: newLives });
-        }
-        isProcessingRef.current = false;
-      }, 400);
+        setTimeout(() => {
+          setScreenFlash('');
+          setIsShaking(false);
+          if (gameMode === GAME_MODES.STUDY || newLives <= 0) {
+            setIsTimerFrozen(true);
+            setStudyCard({ ...targetCountry, clickedName: clicked.name, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: false, livesRemaining: newLives });
+          }
+          isProcessingRef.current = false;
+        }, 400);
+        return newLives;
+      });
     }
-  }, [gameState, isGameActive, targetCountry, targetStartTime, remainingCountries, remainingClubs, streak, isTimerFrozen, freezeTimeLeft, gameMode, capitals, studyCard, lives, unlockAchievement]);
+  }, [gameState, isGameActive, targetCountry, targetStartTime, remainingCountries, remainingClubs, isTimerFrozen, freezeTimeLeft, gameMode, capitals, studyCard, pickNextCountry, unlockAchievement]);
 
   const dismissStudyCard = () => {
     playTone(500, 'square', 0.1);
@@ -488,7 +495,7 @@ export function useGeoGame(globeRef) {
   return {
     state: {
       isMobile, geoData, guessedCountries, travelArcs, impactRings,
-      gameState, gameMode, endReason, coins, unlockedThemes,
+      gameState, gameMode, endReason, coins, lastCoinsEarned, unlockedThemes,
       activeTheme, activeRegion, timeLeft, score, streak,
       bestScore, lives, targetCountry, targetClub, screenFlash, isShaking,
       floatingPoints, todayStr, lastDailyDate, studyCard,
@@ -496,7 +503,7 @@ export function useGeoGame(globeRef) {
       freezeTimeLeft, isSmoothMode, showSettingsPrompt
     },
     actions: {
-      startGame, endGame, quitGame, setCoins, setUnlockedThemes,
+      startGame, endGame, quitGame, resetGlobe, setCoins, setUnlockedThemes,
       setActiveTheme, setActiveRegion, handleCountryClick, dismissStudyCard,
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
       skipCountry, revive, freezeTime, applySettings
