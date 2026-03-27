@@ -9,7 +9,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
   const onStartRef = useRef(null);
   const onEndRef = useRef(null);
 
-  const getIdealAltitude = () => isMobile ? 2.8 : 1.8;
+  // CORREÇÃO: Aproximei o globo no mobile (de 2.8 para 2.4) para não ficar minúsculo
+  const getIdealAltitude = () => isMobile ? 2.4 : 1.8;
 
   useImperativeHandle(ref, () => ({
     resetPosition: () => {
@@ -37,7 +38,7 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
       const controls = globeEl.current.controls?.();
       if (!controls) return;
       
-      controlsToCleanup = controls; // Salvando a referência correta para limpar sem memory leaks
+      controlsToCleanup = controls; 
 
       controls.enableDamping = isSmoothMode; 
       controls.dampingFactor = 0.05;
