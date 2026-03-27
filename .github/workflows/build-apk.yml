@@ -1,0 +1,64 @@
+name: Gerar APK Android
+
+on:
+  workflow_dispatch: # Botão mágico na aba Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar Código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Java (Motor Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Instalar Dependências e Capacitor
+        run: |
+          npm install
+          npm install @capacitor/core @capacitor/android
+          npm install -D @capacitor/cli @capacitor/assets
+
+      - name: Compilar o Jogo (Vite Build)
+        run: npm run build
+
+      - name: Adicionar Plataforma Android
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Gerar Ícones e Splash Screen Nativa (A Mágica)
+        # O robô procura a pasta /assets na raiz com o icon.png e splash.png
+        # O "|| true" garante que se a imagem faltar, o build não quebra!
+        run: npx capacitor-assets generate --android || true
+
+      - name: Corrigir Conflito do Kotlin (Mágica do Robô)
+        run: |
+          cat <<EOF >> android/app/build.gradle
+          
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+              }
+          }
+          EOF
+
+      - name: Compilar o APK (Gradle)
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Disponibilizar o APK para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: GenoAtlas-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk

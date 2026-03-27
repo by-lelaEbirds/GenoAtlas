@@ -1,0 +1,57 @@
+name: Baixar Assets Automaticamente
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Baixar Código
+        uses: actions/checkout@v4
+
+      - name: Criar as pastas (se não existirem)
+        run: |
+          mkdir -p public/assets/globes
+          mkdir -p public/assets/logos
+          mkdir -p public/assets/flags
+
+      - name: Baixar Texturas do Globo
+        run: |
+          curl -sL -o public/assets/globes/earth-blue-marble.jpg "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+          curl -sL -o public/assets/globes/night-sky.png "https://unpkg.com/three-globe/example/img/night-sky.png"
+          curl -sL -o public/assets/globes/earth-topology.png "https://unpkg.com/three-globe/example/img/earth-topology.png"
+          curl -sL -o public/assets/globes/earth-day.jpg "https://unpkg.com/three-globe/example/img/earth-day.jpg"
+          curl -sL -o public/assets/globes/earth-dark.jpg "https://unpkg.com/three-globe/example/img/earth-dark.jpg"
+
+      - name: Baixar Escudos de Futebol (Com Identificação Oficial GenoAtlas)
+        run: |
+          # A política da Wikimedia exige que o bot se identifique com o nome e repositório
+          UA="GenoAtlasBot/1.0 (https://github.com/by-lelaEbirds/GenoAtlas)"
+          
+          curl -sL -A "$UA" -o public/assets/logos/real-madrid.png "https://upload.wikimedia.org/wikipedia/pt/9/98/Real_Madrid.png"
+          curl -sL -A "$UA" -o public/assets/logos/barcelona.png "https://upload.wikimedia.org/wikipedia/pt/thumb/4/43/FCBarcelona.svg/500px-FCBarcelona.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/man-city.png "https://upload.wikimedia.org/wikipedia/pt/0/02/Manchester_City_Football_Club.png"
+          curl -sL -A "$UA" -o public/assets/logos/man-united.png "https://upload.wikimedia.org/wikipedia/pt/0/0c/Manchester_United_Football_Club.png"
+          curl -sL -A "$UA" -o public/assets/logos/bayern.png "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/500px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/psg.png "https://upload.wikimedia.org/wikipedia/pt/4/4a/Paris_Saint-Germain_Football_Club.png"
+          curl -sL -A "$UA" -o public/assets/logos/juventus.png "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Juventus_FC_-_rect_logo_%28black_bg%29.svg/500px-Juventus_FC_-_rect_logo_%28black_bg%29.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/flamengo.png "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Flamengo_braz_logo.svg/500px-Flamengo_braz_logo.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/palmeiras.png "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Palmeiras_logo.svg/500px-Palmeiras_logo.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/boca.png "https://upload.wikimedia.org/wikipedia/commons/c/c9/Boca_escudo.png"
+          curl -sL -A "$UA" -o public/assets/logos/river.png "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Escudo_del_Club_Atl%C3%A9tico_River_Plate.svg/500px-Escudo_del_Club_Atl%C3%A9tico_River_Plate.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/benfica.png "https://upload.wikimedia.org/wikipedia/pt/thumb/3/37/SL_Benfica_logo.svg/500px-SL_Benfica_logo.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/porto.png "https://upload.wikimedia.org/wikipedia/pt/thumb/f/f1/FC_Porto_logotipo.svg/500px-FC_Porto_logotipo.svg.png"
+          curl -sL -A "$UA" -o public/assets/logos/alnassr.png "https://upload.wikimedia.org/wikipedia/pt/b/b8/Al-Nassr_FC_logo.png"
+          curl -sL -A "$UA" -o public/assets/logos/inter-miami.png "https://upload.wikimedia.org/wikipedia/pt/6/68/Escudo_do_Club_Internacional_de_F%C3%BAtbol_Miami.png"
+
+      - name: Salvar (Commit) as imagens no repositório
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add public/assets/
+          git commit -m "chore: download com identidade GenoAtlasBot" || echo "Nenhuma imagem nova para commitar"
+          git push
