@@ -55,28 +55,28 @@ export default function App() {
       {state.showTutorial && <TutorialModal onClose={actions.closeTutorial} />}
       {state.showAchievements && <AchievementsModal onClose={() => actions.setShowAchievements(false)} unlockedIds={state.unlockedAchievements} />}
 
-      {/* MODAL CONFIGURAÇÕES DOBRADO E GIGANTE */}
+      {/* MODAL DE CONFIGURAÇÕES ESCALADO PARA MOBILE GIGANTE */}
       {state.showSettingsPrompt && (
         <div className="absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-6 animate-fade-in-up">
           <div className="bg-white border-b-[12px] border-stone-200 p-12 pt-16 rounded-[4rem] max-w-2xl w-full shadow-2xl relative">
             
-            <h3 className="text-[56px] font-black text-stone-800 mb-4 text-center uppercase tracking-tighter">Estilo de Jogo</h3>
+            <h3 className="text-[48px] font-black text-stone-800 mb-4 text-center uppercase tracking-tighter">Estilo de Jogo</h3>
             <p className="text-stone-400 text-[20px] font-bold uppercase tracking-widest mb-12 text-center">Como você prefere explorar?</p>
             
             <div className="flex flex-col gap-6">
-              <button onClick={() => actions.applySettings(false)} className="bg-sky-50 text-sky-900 p-8 rounded-[2.5rem] border-b-[8px] border-sky-200 flex items-center gap-8 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
+              <button onClick={() => actions.applySettings(false)} className="bg-sky-50 text-sky-900 p-8 rounded-[2.5rem] border-b-[8px] border-sky-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
                 <div className="bg-white p-6 rounded-full text-sky-500 border-[6px] border-sky-100 shadow-inner group-hover:scale-110 transition-transform"><Rocket size={48} /></div>
                 <div>
                   <div className="font-black uppercase tracking-widest text-[32px] whitespace-nowrap">Competitivo</div>
-                  <div className="text-sky-700 text-[20px] font-bold mt-2 leading-tight">Para imediatamente. Alta performance.</div>
+                  <div className="text-sky-700 text-[18px] font-bold mt-2 leading-tight">Para imediatamente. Alta performance.</div>
                 </div>
               </button>
 
-              <button onClick={() => actions.applySettings(true)} className="bg-green-50 text-green-900 p-8 rounded-[2.5rem] border-b-[8px] border-green-200 flex items-center gap-8 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
+              <button onClick={() => actions.applySettings(true)} className="bg-green-50 text-green-900 p-8 rounded-[2.5rem] border-b-[8px] border-green-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
                 <div className="bg-white p-6 rounded-full text-green-500 border-[6px] border-green-100 shadow-inner group-hover:scale-110 transition-transform"><Film size={48} /></div>
                 <div>
                   <div className="font-black uppercase tracking-widest text-[32px] whitespace-nowrap">Cinematográfico</div>
-                  <div className="text-green-700 text-[20px] font-bold mt-2 leading-tight">Desliza suavemente. Foco visual.</div>
+                  <div className="text-green-700 text-[18px] font-bold mt-2 leading-tight">Desliza suavemente. Foco visual.</div>
                 </div>
               </button>
             </div>
@@ -116,7 +116,7 @@ export default function App() {
 
       <GameHUD state={state} actions={actions} />
       
-      {/* MODAL DE MORTE (STUDY CARD) SUPER ESCALADO */}
+      {/* MODAL DE MORTE (STUDY CARD) ESCALADO PARA MOBILE GIGANTE */}
       {state.studyCard && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-6 animate-fade-in-up pointer-events-auto">
           <div className="bg-white border-b-[16px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative pt-32 mt-16">
@@ -125,28 +125,28 @@ export default function App() {
               <img 
                 src={`https://flagcdn.com/w320/${state.studyCard.iso.toLowerCase()}.png`} 
                 alt={`Bandeira`} 
-                className="w-[280px] h-[180px] object-cover rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.2)] border-[12px] border-white bg-stone-100" 
+                className="w-[260px] h-[160px] object-cover rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.2)] border-[12px] border-white bg-stone-100" 
               />
             </div>
             
-            <div className="text-center mt-6">
-              <h3 className="text-[56px] font-black text-stone-800 mb-2 tracking-tighter uppercase whitespace-nowrap">{state.studyCard.name}</h3>
-              {!state.studyCard.isCorrect && ( <p className="text-[24px] text-rose-500 mb-10 font-black uppercase tracking-widest bg-rose-50 inline-block px-8 py-3 rounded-full border-[4px] border-rose-100 whitespace-nowrap">Clicou em: {state.studyCard.clickedName}</p> )}
-              {state.studyCard.isCorrect && ( <p className="text-[24px] text-green-600 mb-10 font-black uppercase tracking-widest bg-green-50 inline-block px-8 py-3 rounded-full border-[4px] border-green-100 whitespace-nowrap">+{state.studyCard.pointsGained} Pontos!</p> )}
+            <div className="text-center mt-4">
+              <h3 className="text-[48px] font-black text-stone-800 mb-2 tracking-tighter uppercase whitespace-nowrap">{state.studyCard.name}</h3>
+              {!state.studyCard.isCorrect && ( <p className="text-[20px] text-rose-500 mb-8 font-black uppercase tracking-widest bg-rose-50 inline-block px-8 py-3 rounded-full border-[4px] border-rose-100 whitespace-nowrap">Clicou em: {state.studyCard.clickedName}</p> )}
+              {state.studyCard.isCorrect && ( <p className="text-[20px] text-green-600 mb-8 font-black uppercase tracking-widest bg-green-50 inline-block px-8 py-3 rounded-full border-[4px] border-green-100 whitespace-nowrap">+{state.studyCard.pointsGained} Pontos!</p> )}
 
-              <div className="flex flex-col gap-6 text-left bg-stone-50 rounded-[2.5rem] p-10 mb-12 border-4 border-stone-100 shadow-inner">
-                <div className="flex justify-between items-center border-b-4 border-stone-200 pb-6">
-                  <span className="text-stone-400 text-[24px] font-black uppercase tracking-widest whitespace-nowrap">Capital</span>
-                  <span className="text-stone-800 text-[32px] font-bold whitespace-nowrap">{state.studyCard.capital}</span>
+              <div className="flex flex-col gap-6 text-left bg-stone-50 rounded-[2.5rem] p-10 mb-10 border-4 border-stone-100 shadow-inner">
+                <div className="flex justify-between items-center border-b-4 border-stone-200 pb-4">
+                  <span className="text-stone-400 text-[20px] font-black uppercase tracking-widest whitespace-nowrap">Capital</span>
+                  <span className="text-stone-800 text-[28px] font-bold whitespace-nowrap">{state.studyCard.capital}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-stone-400 text-[24px] font-black uppercase tracking-widest whitespace-nowrap">Continente</span>
-                  <span className="text-stone-800 text-[32px] font-bold whitespace-nowrap">{state.studyCard.continent}</span>
+                  <span className="text-stone-400 text-[20px] font-black uppercase tracking-widest whitespace-nowrap">Continente</span>
+                  <span className="text-stone-800 text-[28px] font-bold whitespace-nowrap">{state.studyCard.continent}</span>
                 </div>
               </div>
 
               {(!state.studyCard.isCorrect && state.studyCard.livesRemaining <= 0 && state.gameMode !== GAME_MODES.DAILY) ? (
-                <div className="flex gap-6">
+                <div className="flex gap-4">
                   <button onClick={actions.dismissStudyCard} className="w-1/3 bg-stone-100 text-stone-500 py-10 rounded-[2.5rem] border-b-[10px] border-stone-200 font-black uppercase tracking-widest text-[28px] active:translate-y-[10px] active:border-b-0 transition-all hover:bg-stone-200 whitespace-nowrap">
                     Sair
                   </button>
