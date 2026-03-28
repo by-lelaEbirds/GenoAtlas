@@ -12,7 +12,6 @@ import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
 export default function App() {
   const globeRef = useRef();
   const { state, actions } = useGeoGame(globeRef);
-  const basePath = import.meta.env.BASE_URL;
   
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -58,13 +57,9 @@ export default function App() {
 
       {state.showSettingsPrompt && (
         <div className="absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/70 backdrop-blur-sm px-4 animate-fade-in-up">
-          <div className="bg-white border-b-[6px] border-stone-200 p-6 md:p-8 pt-12 md:pt-12 rounded-[2.5rem] max-w-sm w-full shadow-2xl relative">
+          <div className="bg-white border-b-[6px] border-stone-200 p-6 md:p-8 pt-8 md:pt-8 rounded-[2.5rem] max-w-sm w-full shadow-2xl relative">
             
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-                <img src={`${basePath}assets/icon.png`} alt="Guia de Configurações" className="w-24 md:w-28 h-auto drop-shadow-lg scale-110" />
-            </div>
-
-            <h3 className="text-2xl md:text-3xl font-black text-stone-800 mb-2 text-center uppercase tracking-tighter mt-4">Estilo de Jogo</h3>
+            <h3 className="text-2xl md:text-3xl font-black text-stone-800 mb-2 text-center uppercase tracking-tighter">Estilo de Jogo</h3>
             <p className="text-stone-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-6 md:mb-8 text-center">Como você prefere explorar?</p>
             
             <div className="flex flex-col gap-3 md:gap-4">
