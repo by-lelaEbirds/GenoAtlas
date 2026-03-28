@@ -35,14 +35,16 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
   const themeNodes = Object.values(themes);
   
+  // CORREÇÃO: Posições alteradas! Eles não ficam mais nas laterais (right-16), 
+  // agora eles descem (top-[420px]) para o caminho tracejado, intercalando os lados!
   const sideMissions = [
-    { label: 'Futebol', icon: <Shield size={56} className="text-white" strokeWidth={2.5} />, onClick: onFootball, bg: 'bg-[#4bbaff]', border: 'border-[#14adf8]', shadow: 'shadow-[0_10px_0_#00618f]', text: 'text-[#00618f]', pos: 'absolute -right-16 md:-right-32 top-8' },
-    { label: 'Estudo', icon: <GraduationCap size={56} className="text-white" strokeWidth={2.5} />, onClick: onStudy, bg: 'bg-emerald-400', border: 'border-emerald-500', shadow: 'shadow-[0_10px_0_#047857]', text: 'text-emerald-800', pos: 'absolute -left-16 md:-left-32 top-8' },
-    { label: 'Diário', icon: dailyCompleted ? <CheckCircle size={56} className="text-white" /> : <Calendar size={56} className="text-white" strokeWidth={2.5} />, onClick: dailyCompleted ? null : onDaily, bg: dailyCompleted ? 'bg-stone-400 grayscale' : 'bg-rose-500', border: dailyCompleted ? 'border-stone-500' : 'border-rose-600', shadow: dailyCompleted ? 'shadow-[0_10px_0_#78716c]' : 'shadow-[0_10px_0_#9f1239]', text: dailyCompleted ? 'text-stone-600' : 'text-rose-900', pos: 'absolute -right-16 md:-right-32 top-8', disabled: dailyCompleted }
+    { label: 'Futebol', icon: <Shield size={56} className="text-white" strokeWidth={2.5} />, onClick: onFootball, bg: 'bg-[#4bbaff]', border: 'border-[#14adf8]', shadow: 'shadow-[0_10px_0_#00618f]', text: 'text-[#00618f]', pos: 'absolute top-[420px] left-1/2 ml-6' },
+    { label: 'Estudo', icon: <GraduationCap size={56} className="text-white" strokeWidth={2.5} />, onClick: onStudy, bg: 'bg-emerald-400', border: 'border-emerald-500', shadow: 'shadow-[0_10px_0_#047857]', text: 'text-emerald-800', pos: 'absolute top-[420px] right-1/2 mr-6' },
+    { label: 'Diário', icon: dailyCompleted ? <CheckCircle size={56} className="text-white" /> : <Calendar size={56} className="text-white" strokeWidth={2.5} />, onClick: dailyCompleted ? null : onDaily, bg: dailyCompleted ? 'bg-stone-400 grayscale' : 'bg-rose-500', border: dailyCompleted ? 'border-stone-500' : 'border-rose-600', shadow: dailyCompleted ? 'shadow-[0_10px_0_#78716c]' : 'shadow-[0_10px_0_#9f1239]', text: dailyCompleted ? 'text-stone-600' : 'text-rose-900', pos: 'absolute top-[420px] left-1/2 ml-6', disabled: dailyCompleted }
   ];
 
   return (
-    <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[500px]">
+    <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
@@ -74,7 +76,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-[24px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-8 py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[5500px] pt-[420px]">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[320px]">
         
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[16px] border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
@@ -84,7 +86,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const sideMission = sideMissions[index]; 
 
           return (
-            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[800px]">
+            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[600px]">
               
               {isCurrent && (
                 <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
@@ -174,7 +176,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-      {/* MODAL DE REGIÕES PADRONIZADO COM O TAMANHO "COLOSSAL" DAS CONFIGURAÇÕES */}
       {showRegionModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-sky-900/80 backdrop-blur-md px-6 animate-fade-in-up">
           <div className="bg-white border-b-[12px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[90dvh]">
