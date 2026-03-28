@@ -9,7 +9,6 @@ const saveNativeData = async (key, val) => {
 
 export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted }) {
   
-  // ESTADO PARA CONTROLAR O MODAL DE REGIÕES
   const [showRegionModal, setShowRegionModal] = useState(false);
 
   const handleThemeSelect = (theme) => {
@@ -29,7 +28,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
     }
   };
 
-  // FUNÇÃO QUE RODA QUANDO VOCÊ CLICA NUMA REGIÃO DO MODAL
   const handleRegionSelect = (regionId) => {
     setShowRegionModal(false);
     onStart(regionId);
@@ -44,7 +42,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   ];
 
   return (
-    <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[280px]">
+    // Espaçamento de rolagem aumentado para pb-[400px]
+    <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
@@ -76,7 +75,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-[24px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-8 py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[2000px] pt-20">
+      {/* Aumentei a altura mínima para caber o espaçamento maior */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[2800px] pt-20">
         
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[16px] border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
@@ -86,7 +86,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const sideMission = sideMissions[index]; 
 
           return (
-            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[240px]">
+            // CORREÇÃO AQUI: Margem inferior saltou de 240px para 400px para impedir sobreposição
+            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[400px]">
               
               {isCurrent && (
                 <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
@@ -103,7 +104,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 onClick={() => {
                   if (isUnlocked) { 
                     setTheme(t); 
-                    setShowRegionModal(true); // AGORA ELE ABRE O MODAL EM VEZ DE INICIAR O JOGO
+                    setShowRegionModal(true); 
                   } 
                   else { handleThemeSelect(t); }
                 }}
@@ -149,7 +150,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           );
         })}
 
-        <div className="relative flex flex-col items-center opacity-80 mt-32 mb-40">
+        <div className="relative flex flex-col items-center opacity-80 mt-10 mb-40">
           <div className="w-[248px] h-[248px] bg-gradient-to-b from-rose-500 to-rose-700 rounded-full flex items-center justify-center border-[16px] border-rose-300 shadow-[0_28px_0_#881337,0_0_100px_rgba(225,29,72,0.8)] z-10 relative cursor-not-allowed">
             <Trophy size={120} className="text-white" strokeWidth={2.5} />
           </div>
@@ -176,7 +177,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-      {/* O NOVO MODAL DE ESCOLHA DE REGIÃO GIGANTESCO */}
       {showRegionModal && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-sky-900/80 backdrop-blur-md animate-fade-in pb-0">
           <div className="bg-white w-full max-w-2xl rounded-t-[5rem] p-12 pb-24 shadow-[0_-20px_60px_rgba(0,0,0,0.2)] transform transition-transform animate-fade-in-up">
