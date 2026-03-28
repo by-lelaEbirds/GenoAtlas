@@ -42,7 +42,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   ];
 
   return (
-    // pb aumentadopara garantir rolagem finalpb-[500px]
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[500px]">
       
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
@@ -75,8 +74,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-[24px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-8 py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
       </div>
 
-      {/* CORREÇÃO AQUI: pt-[450px] DE SUPER RESPIRO NO TOPO PARA O PINO GIGANTE NÃO BATER NO TEXTO */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[5500px] pt-[450px]">
+      {/* CORREÇÃO DO ENCAVALAMENTO NO TOPO: pt-[420px] DE SUPER RESPIRO INICIAL */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[5500px] pt-[420px]">
         
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[16px] border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
@@ -86,8 +85,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const sideMission = sideMissions[index]; 
 
           return (
-            // CORREÇÃO DOS ENCAVALADOS: mb-[850px] AGORA É SUPER ESPAÇAMENTO ENTRE CADA PLANETA
-            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[850px]">
+            // CORREÇÃO DOS ENCAVALADOS ENTRE NÍVEIS: mb-[800px] AGORA É SUPER ESPAÇAMENTO
+            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[800px]">
               
               {isCurrent && (
                 <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
@@ -177,7 +176,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-      {/* MANTIDO O ROLLBACK DO MODAL COMPACTO DE REGIÕES */}
       {showRegionModal && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-sky-900/80 backdrop-blur-md animate-fade-in pb-0">
           <div className="bg-white w-full max-w-md rounded-t-[3rem] p-8 pb-12 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform transition-transform animate-fade-in-up">
