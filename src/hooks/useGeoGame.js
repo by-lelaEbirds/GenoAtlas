@@ -36,9 +36,11 @@ export function useGeoGame(globeRef) {
   const [endReason, setEndReason] = useState('');
 
   const [coins, setCoins] = useState(0);
-  const [lastCoinsEarned, setLastCoinsEarned] = useState(0); // Centralizando o cálculo de moedas
+  const [lastCoinsEarned, setLastCoinsEarned] = useState(0);
   const [unlockedThemes, setUnlockedThemes] = useState(['explorador']); 
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.explorador);
+  
+  // O ESTADO DA REGIÃO AINDA VIVE AQUI
   const [activeRegion, setActiveRegion] = useState('all');
 
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
@@ -298,14 +300,12 @@ export function useGeoGame(globeRef) {
       if (pool.length === 0) return endGame('win');
       
       let availablePool = pool;
-      // Dificuldade dinâmica: facilita nas 2 primeiras rodadas da streak limitando a países populosos
       if (currentStreak < 2) {
         const easyPool = pool.filter(c => c.pop > 30000000);
         if (easyPool.length > 0) availablePool = easyPool;
       }
       
       selectedCountry = availablePool[Math.floor(Math.random() * availablePool.length)];
-      // Remove o selecionado do pool real (independente de ter sido do easyPool ou não)
       setRemainingCountries(pool.filter(c => c.iso !== selectedCountry.iso));
     }
     
@@ -313,8 +313,13 @@ export function useGeoGame(globeRef) {
     if (!isFirst) setTargetStartTime(Date.now());
   }, [allCountries, endGame, gameMode, remainingClubs, streak]);
 
-  const startGame = (mode = GAME_MODES.NORMAL) => {
+  // AJUSTE: A função startGame agora aceita o forcedRegion para atualizar os filtros de continente na hora!
+  const startGame = (mode = GAME_MODES.NORMAL, forcedRegion = null) => {
     if (allCountries.length === 0) return;
+    
+    // Atualiza a região escolhida pelo jogador antes de filtrar os países
+    const finalRegion = forcedRegion || activeRegion;
+    if (forcedRegion) setActiveRegion(forcedRegion);
 
     playTone(600, 'square', 0.1); 
     setScore(0); setStreak(0); setTimeLeft(60); 
@@ -337,7 +342,8 @@ export function useGeoGame(globeRef) {
       setRemainingClubs(initialClubPool);
       pool = allCountries; 
     } else {
-      pool = activeRegion === 'all' ? allCountries : allCountries.filter(c => c.continent === activeRegion || (activeRegion === 'Americas' && c.continent.includes('America')));
+      // MAGIA ACONTECE AQUI: O jogo filtra o mapa apenas pelo continente selecionado!
+      pool = finalRegion === 'all' ? allCountries : allCountries.filter(c => c.continent === finalRegion || (finalRegion === 'Americas' && c.continent.includes('America')));
     }
 
     setRemainingCountries([...pool]);
@@ -391,7 +397,6 @@ export function useGeoGame(globeRef) {
   };
 
   const handleCountryClick = useCallback((polygon, lat, lng, event) => {
-    // Uso da ref garante bloqueio de cliques simultâneos sem re-renderizações desnecessárias
     if (gameState !== GAME_STATES.PLAYING || !targetCountry || !isGameActive || studyCard || isProcessingRef.current) return;
 
     const clicked = polygon.properties.COUNTRY_OBJ;
