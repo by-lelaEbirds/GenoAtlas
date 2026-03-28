@@ -35,10 +35,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
   const themeNodes = Object.values(themes);
   
+  // CORREÇÃO DEFINITIVA: Os botões foram jogados lá para baixo (top-[420px]) 
+  // para flutuarem entre os planetas em vez de brigarem por espaço nas laterais.
   const sideMissions = [
-    { label: 'Futebol', icon: <Shield size={56} className="text-white" strokeWidth={2.5} />, onClick: onFootball, bg: 'bg-[#4bbaff]', border: 'border-[#14adf8]', shadow: 'shadow-[0_10px_0_#00618f]', text: 'text-[#00618f]', pos: 'absolute -right-16 md:-right-32 top-8' },
-    { label: 'Estudo', icon: <GraduationCap size={56} className="text-white" strokeWidth={2.5} />, onClick: onStudy, bg: 'bg-emerald-400', border: 'border-emerald-500', shadow: 'shadow-[0_10px_0_#047857]', text: 'text-emerald-800', pos: 'absolute -left-16 md:-left-32 top-8' },
-    { label: 'Diário', icon: dailyCompleted ? <CheckCircle size={56} className="text-white" /> : <Calendar size={56} className="text-white" strokeWidth={2.5} />, onClick: dailyCompleted ? null : onDaily, bg: dailyCompleted ? 'bg-stone-400 grayscale' : 'bg-rose-500', border: dailyCompleted ? 'border-stone-500' : 'border-rose-600', shadow: dailyCompleted ? 'shadow-[0_10px_0_#78716c]' : 'shadow-[0_10px_0_#9f1239]', text: dailyCompleted ? 'text-stone-600' : 'text-rose-900', pos: 'absolute -right-16 md:-right-32 top-8', disabled: dailyCompleted }
+    { label: 'Futebol', icon: <Shield size={56} className="text-white" strokeWidth={2.5} />, onClick: onFootball, bg: 'bg-[#4bbaff]', border: 'border-[#14adf8]', shadow: 'shadow-[0_10px_0_#00618f]', text: 'text-[#00618f]', pos: 'absolute -right-[20px] md:-right-[80px] top-[420px]' },
+    { label: 'Estudo', icon: <GraduationCap size={56} className="text-white" strokeWidth={2.5} />, onClick: onStudy, bg: 'bg-emerald-400', border: 'border-emerald-500', shadow: 'shadow-[0_10px_0_#047857]', text: 'text-emerald-800', pos: 'absolute -left-[20px] md:-left-[80px] top-[420px]' },
+    { label: 'Diário', icon: dailyCompleted ? <CheckCircle size={56} className="text-white" /> : <Calendar size={56} className="text-white" strokeWidth={2.5} />, onClick: dailyCompleted ? null : onDaily, bg: dailyCompleted ? 'bg-stone-400 grayscale' : 'bg-rose-500', border: dailyCompleted ? 'border-stone-500' : 'border-rose-600', shadow: dailyCompleted ? 'shadow-[0_10px_0_#78716c]' : 'shadow-[0_10px_0_#9f1239]', text: dailyCompleted ? 'text-stone-600' : 'text-rose-900', pos: 'absolute -right-[20px] md:-right-[80px] top-[420px]', disabled: dailyCompleted }
   ];
 
   return (
@@ -74,8 +76,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-[24px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-8 py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
       </div>
 
-      {/* CORREÇÃO DO ENCAVALAMENTO NO TOPO: pt-[420px] DE SUPER RESPIRO INICIAL */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[5500px] pt-[420px]">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[5500px] pt-[450px]">
         
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[16px] border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
@@ -85,8 +86,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const sideMission = sideMissions[index]; 
 
           return (
-            // CORREÇÃO DOS ENCAVALADOS ENTRE NÍVEIS: mb-[800px] AGORA É SUPER ESPAÇAMENTO
-            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[800px]">
+            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[850px]">
               
               {isCurrent && (
                 <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
@@ -137,6 +137,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 </div>
               )}
 
+              {/* O BOTÃO AGORA RENDERIZA MUITO MAIS PARA BAIXO */}
               {sideMission && (
                 <button onClick={sideMission.onClick} disabled={sideMission.disabled} className={`${sideMission.pos} flex flex-col items-center cursor-pointer group transition-all z-0 ${sideMission.disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}>
                   <div className={`w-[152px] h-[152px] rounded-[2.4rem] ${index % 2 === 0 ? 'rotate-12' : '-rotate-12'} flex items-center justify-center border-[8px] shadow-2xl ${sideMission.bg} ${sideMission.border} ${sideMission.shadow}`}>
