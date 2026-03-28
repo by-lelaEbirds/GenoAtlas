@@ -85,7 +85,8 @@ export default function App() {
 
       {state.gameState === GAME_STATES.START && (
         <StartScreen 
-          onStart={() => actions.startGame('normal')} 
+          // AJUSTE: O onStart agora envia a região do modal para o jogo
+          onStart={(region) => actions.startGame('normal', region)} 
           onStudy={() => actions.startGame('study')}
           onFootball={() => actions.startGame('football')} 
           onDaily={() => actions.startGame('daily')} 
