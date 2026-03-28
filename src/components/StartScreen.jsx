@@ -42,7 +42,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   ];
 
   return (
-    <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
+    // pb aumentadopara garantir rolagem finalpb-[500px]
+    <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[500px]">
       
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
@@ -74,8 +75,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-[24px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-8 py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
       </div>
 
-      {/* CORREÇÃO AQUI: pt-[320px] DE EMPURRÃO PARA O PRIMEIRO PLANETA NÃO BATER NO TEXTO */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[320px]">
+      {/* CORREÇÃO AQUI: pt-[450px] DE SUPER RESPIRO NO TOPO PARA O PINO GIGANTE NÃO BATER NO TEXTO */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[5500px] pt-[450px]">
         
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[16px] border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
@@ -85,8 +86,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const sideMission = sideMissions[index]; 
 
           return (
-            // CORREÇÃO AQUI: mb-[600px] PARA OS PLANETAS NÃO ENCAVALAREM
-            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[600px]">
+            // CORREÇÃO DOS ENCAVALADOS: mb-[850px] AGORA É SUPER ESPAÇAMENTO ENTRE CADA PLANETA
+            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[850px]">
               
               {isCurrent && (
                 <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
@@ -111,7 +112,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   isUnlocked 
                     ? isCurrent 
                       ? 'bg-amber-400 border-white shadow-[0_24px_0_#b45309,0_0_60px_rgba(251,191,36,0.6)] active:translate-y-[16px] active:shadow-[0_8px_0_#b45309]' 
-                      : 'bg-white border-stone-300 shadow-[0_20px_0_#a8a29e] active:translate-y-[12px] active:shadow-[0_8px_0_#a8a29e] hover:scale-105'
+                      : 'bg-white border-stone-300 shadow-[0_10px_0_#a8a29e] active:translate-y-[12px] active:shadow-[0_8px_0_#a8a29e] hover:scale-105'
                     : 'bg-stone-300 border-stone-400 shadow-[0_20px_0_#78716c] active:translate-y-[12px] active:shadow-[0_8px_0_#78716c] opacity-90'
                 }`}
               >
@@ -176,7 +177,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-      {/* ROLLBACK AQUI: MODAL DE REGIÕES VOLTOU PARA O TAMANHO COMPACTO / INFERIOR */}
+      {/* MANTIDO O ROLLBACK DO MODAL COMPACTO DE REGIÕES */}
       {showRegionModal && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-sky-900/80 backdrop-blur-md animate-fade-in pb-0">
           <div className="bg-white w-full max-w-md rounded-t-[3rem] p-8 pb-12 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform transition-transform animate-fade-in-up">
