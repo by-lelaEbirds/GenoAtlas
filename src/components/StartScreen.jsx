@@ -42,7 +42,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   ];
 
   return (
-    // Espaçamento de rolagem aumentado para pb-[400px]
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
@@ -75,8 +74,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <p className="text-sky-900 font-bold text-[24px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-8 py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
       </div>
 
-      {/* Aumentei a altura mínima para caber o espaçamento maior */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[2800px] pt-20">
+      {/* AUMENTADA MIN-HEIGHT PARA COMPENSAR A MARGEM AUMENTADA */}
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[3500px] pt-20">
         
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[16px] border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
@@ -86,8 +85,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const sideMission = sideMissions[index]; 
 
           return (
-            // CORREÇÃO AQUI: Margem inferior saltou de 240px para 400px para impedir sobreposição
-            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[400px]">
+            // CORREÇÃO DOS ENCAVALADOS: mb-[560px] ESPAÇAMENTO GIGANTESCO AGORA
+            <div key={t.id} className="relative flex flex-col items-center z-10 mb-[560px]">
               
               {isCurrent && (
                 <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
@@ -177,46 +176,47 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
+      {/* MODAL DE REGIÕES TAMBÉM NO TAMANHO COLOSSAL */}
       {showRegionModal && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-sky-900/80 backdrop-blur-md animate-fade-in pb-0">
-          <div className="bg-white w-full max-w-2xl rounded-t-[5rem] p-12 pb-24 shadow-[0_-20px_60px_rgba(0,0,0,0.2)] transform transition-transform animate-fade-in-up">
+          <div className="bg-white w-full max-w-2xl rounded-t-[5rem] p-16 pb-32 shadow-[0_-20px_60px_rgba(0,0,0,0.2)] transform transition-transform animate-fade-in-up">
             
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-[40px] font-black text-sky-900 uppercase tracking-tighter">Escolha o Destino</h2>
-              <button onClick={() => setShowRegionModal(false)} className="bg-stone-100 p-5 rounded-full text-stone-500 active:scale-90">
-                <X size={48} strokeWidth={3} />
+            <div className="flex justify-between items-center mb-12">
+              <h2 className="text-[56px] font-black text-sky-900 uppercase tracking-tighter">Onde Pousar?</h2>
+              <button onClick={() => setShowRegionModal(false)} className="bg-stone-100 p-6 rounded-full text-stone-500 active:scale-90">
+                <X size={64} strokeWidth={3} />
               </button>
             </div>
             
-            <div className="grid grid-cols-2 gap-8">
-              <button onClick={() => handleRegionSelect('all')} className="col-span-2 bg-gradient-to-r from-sky-400 to-sky-500 rounded-[2.5rem] p-8 flex items-center justify-center gap-6 shadow-[0_16px_0_#0369a1] active:translate-y-[10px] active:shadow-[0_6px_0_#0369a1] transition-all">
-                <span className="text-[64px]">🌍</span>
-                <span className="text-[36px] font-black text-white uppercase tracking-widest">Mundo Todo</span>
+            <div className="grid grid-cols-2 gap-10">
+              <button onClick={() => handleRegionSelect('all')} className="col-span-2 bg-gradient-to-r from-sky-400 to-sky-500 rounded-[4rem] p-12 flex items-center justify-center gap-8 shadow-[0_20px_0_#0369a1] active:translate-y-[12px] active:shadow-[0_8px_0_#0369a1] transition-all">
+                <span className="text-[96px]">🌍</span>
+                <span className="text-[48px] font-black text-white uppercase tracking-widest">Mundo Todo</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Americas')} className="bg-emerald-100 border-[8px] border-emerald-400 rounded-[2.5rem] p-8 flex flex-col items-center justify-center gap-4 shadow-[0_16px_0_#34d399] active:translate-y-[10px] active:shadow-[0_6px_0_#34d399] transition-all">
-                <span className="text-[64px]">🌎</span>
-                <span className="text-[28px] font-black text-emerald-800 uppercase tracking-widest">Américas</span>
+              <button onClick={() => handleRegionSelect('Americas')} className="bg-emerald-100 border-[12px] border-emerald-400 rounded-[4rem] p-12 flex flex-col items-center justify-center gap-6 shadow-[0_20px_0_#34d399] active:translate-y-[12px] active:shadow-[0_8px_0_#34d399] transition-all">
+                <span className="text-[80px]">🌎</span>
+                <span className="text-[40px] font-black text-emerald-800 uppercase tracking-widest">Américas</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Europe')} className="bg-indigo-100 border-[8px] border-indigo-400 rounded-[2.5rem] p-8 flex flex-col items-center justify-center gap-4 shadow-[0_16px_0_#818cf8] active:translate-y-[10px] active:shadow-[0_6px_0_#818cf8] transition-all">
-                <span className="text-[64px]">🏰</span>
-                <span className="text-[28px] font-black text-indigo-800 uppercase tracking-widest">Europa</span>
+              <button onClick={() => handleRegionSelect('Europe')} className="bg-indigo-100 border-[12px] border-indigo-400 rounded-[4rem] p-12 flex flex-col items-center justify-center gap-6 shadow-[0_20px_0_#818cf8] active:translate-y-[12px] active:shadow-[0_8px_0_#818cf8] transition-all">
+                <span className="text-[80px]">🏰</span>
+                <span className="text-[40px] font-black text-indigo-800 uppercase tracking-widest">Europa</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Asia')} className="bg-rose-100 border-[8px] border-rose-400 rounded-[2.5rem] p-8 flex flex-col items-center justify-center gap-4 shadow-[0_16px_0_#fb7185] active:translate-y-[10px] active:shadow-[0_6px_0_#fb7185] transition-all">
-                <span className="text-[64px]">⛩️</span>
-                <span className="text-[28px] font-black text-rose-800 uppercase tracking-widest">Ásia</span>
+              <button onClick={() => handleRegionSelect('Asia')} className="bg-rose-100 border-[12px] border-rose-400 rounded-[4rem] p-12 flex flex-col items-center justify-center gap-6 shadow-[0_20px_0_#fb7185] active:translate-y-[12px] active:shadow-[0_8px_0_#fb7185] transition-all">
+                <span className="text-[80px]">⛩️</span>
+                <span className="text-[40px] font-black text-rose-800 uppercase tracking-widest">Ásia</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Africa')} className="bg-amber-100 border-[8px] border-amber-400 rounded-[2.5rem] p-8 flex flex-col items-center justify-center gap-4 shadow-[0_16px_0_#fbbf24] active:translate-y-[10px] active:shadow-[0_6px_0_#fbbf24] transition-all">
-                <span className="text-[64px]">🦁</span>
-                <span className="text-[28px] font-black text-amber-800 uppercase tracking-widest">África</span>
+              <button onClick={() => handleRegionSelect('Africa')} className="bg-amber-100 border-[12px] border-amber-400 rounded-[4rem] p-12 flex flex-col items-center justify-center gap-6 shadow-[0_20px_0_#fbbf24] active:translate-y-[12px] active:shadow-[0_8px_0_#fbbf24] transition-all">
+                <span className="text-[80px]">🦁</span>
+                <span className="text-[40px] font-black text-amber-800 uppercase tracking-widest">África</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Oceania')} className="col-span-2 bg-teal-100 border-[8px] border-teal-400 rounded-[2.5rem] p-8 flex items-center justify-center gap-6 shadow-[0_16px_0_#2dd4bf] active:translate-y-[10px] active:shadow-[0_6px_0_#2dd4bf] transition-all mt-4">
-                <span className="text-[64px]">🦘</span>
-                <span className="text-[36px] font-black text-teal-800 uppercase tracking-widest">Oceania</span>
+              <button onClick={() => handleRegionSelect('Oceania')} className="col-span-2 bg-teal-100 border-[12px] border-teal-400 rounded-[4rem] p-12 flex items-center justify-center gap-8 shadow-[0_20px_0_#2dd4bf] active:translate-y-[12px] active:shadow-[0_8px_0_#2dd4bf] transition-all mt-6">
+                <span className="text-[80px]">🦘</span>
+                <span className="text-[48px] font-black text-teal-800 uppercase tracking-widest">Oceania</span>
               </button>
             </div>
             
