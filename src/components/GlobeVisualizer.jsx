@@ -78,6 +78,8 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
 
     return () => {
       clearTimeout(safetyTimeout);
+      if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
+      
       if (controlsToCleanup) {
         if (onStartRef.current) controlsToCleanup.removeEventListener('start', onStartRef.current);
         if (onEndRef.current) controlsToCleanup.removeEventListener('end', onEndRef.current);
@@ -114,7 +116,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
           polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
           polygonStrokeColor={() => theme.polyStroke}
           
-          // Otimização Visual: Suaviza a transição de cor (em vez de piscar instantaneamente com 0)
           polygonTransitionDuration={250} 
           
           onPolygonHover={isMobile ? undefined : setHoverD}
