@@ -14,11 +14,39 @@ export default function App() {
   const { state, actions } = useGeoGame(globeRef);
   
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  // ESTADOS DE FECHAMENTO
+  const [isClosingSettings, setIsClosingSettings] = useState(false);
+  const [isClosingStudyCard, setIsClosingStudyCard] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 150);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleCloseSettings = (isSmooth) => {
+    setIsClosingSettings(true);
+    setTimeout(() => {
+      actions.applySettings(isSmooth);
+      setIsClosingSettings(false);
+    }, 200); // 200ms para a animação rodar antes de destruir
+  };
+
+  const handleDismissStudyCard = () => {
+    setIsClosingStudyCard(true);
+    setTimeout(() => {
+      actions.dismissStudyCard();
+      setIsClosingStudyCard(false);
+    }, 200);
+  };
+
+  const handleRevive = () => {
+    setIsClosingStudyCard(true);
+    setTimeout(() => {
+      actions.revive();
+      setIsClosingStudyCard(false);
+    }, 200);
+  };
 
   return (
     <div className={`relative w-full h-[100dvh] overflow-hidden select-none bg-white transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0 scale-105'}`}>
@@ -55,16 +83,16 @@ export default function App() {
       {state.showTutorial && <TutorialModal onClose={actions.closeTutorial} />}
       {state.showAchievements && <AchievementsModal onClose={() => actions.setShowAchievements(false)} unlockedIds={state.unlockedAchievements} />}
 
-      {/* MODAL DE CONFIGURAÇÕES ESCALADO PARA MOBILE GIGANTE */}
+      {/* APLICADO A ANIMAÇÃO DE FECHAR NAS CONFIGURAÇÕES */}
       {state.showSettingsPrompt && (
-        <div className="absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-6 animate-fade-in-up">
-          <div className="bg-white border-b-[12px] border-stone-200 p-12 pt-16 rounded-[4rem] max-w-2xl w-full shadow-2xl relative">
+        <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className={`bg-white border-b-[12px] border-stone-200 p-12 pt-16 rounded-[4rem] max-w-2xl w-full shadow-2xl relative ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <h3 className="text-[48px] font-black text-stone-800 mb-4 text-center uppercase tracking-tighter">Estilo de Jogo</h3>
             <p className="text-stone-400 text-[20px] font-bold uppercase tracking-widest mb-12 text-center">Como você prefere explorar?</p>
             
             <div className="flex flex-col gap-6">
-              <button onClick={() => actions.applySettings(false)} className="bg-sky-50 text-sky-900 p-8 rounded-[2.5rem] border-b-[8px] border-sky-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
+              <button onClick={() => handleCloseSettings(false)} className="bg-sky-50 text-sky-900 p-8 rounded-[2.5rem] border-b-[8px] border-sky-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
                 <div className="bg-white p-6 rounded-full text-sky-500 border-[6px] border-sky-100 shadow-inner group-hover:scale-110 transition-transform"><Rocket size={48} /></div>
                 <div>
                   <div className="font-black uppercase tracking-widest text-[32px] whitespace-nowrap">Competitivo</div>
@@ -72,7 +100,7 @@ export default function App() {
                 </div>
               </button>
 
-              <button onClick={() => actions.applySettings(true)} className="bg-green-50 text-green-900 p-8 rounded-[2.5rem] border-b-[8px] border-green-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
+              <button onClick={() => handleCloseSettings(true)} className="bg-green-50 text-green-900 p-8 rounded-[2.5rem] border-b-[8px] border-green-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
                 <div className="bg-white p-6 rounded-full text-green-500 border-[6px] border-green-100 shadow-inner group-hover:scale-110 transition-transform"><Film size={48} /></div>
                 <div>
                   <div className="font-black uppercase tracking-widest text-[32px] whitespace-nowrap">Cinematográfico</div>
@@ -116,10 +144,10 @@ export default function App() {
 
       <GameHUD state={state} actions={actions} />
       
-      {/* MODAL DE MORTE (STUDY CARD) ESCALADO PARA MOBILE GIGANTE */}
+      {/* APLICADO A ANIMAÇÃO DE FECHAR NO CARD DE ESTUDO */}
       {state.studyCard && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-6 animate-fade-in-up pointer-events-auto">
-          <div className="bg-white border-b-[16px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative pt-32 mt-16">
+        <div className={`absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-6 pointer-events-auto ${isClosingStudyCard ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className={`bg-white border-b-[16px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative pt-32 mt-16 ${isClosingStudyCard ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <div className="absolute -top-24 left-1/2 -translate-x-1/2">
               <img 
@@ -147,15 +175,15 @@ export default function App() {
 
               {(!state.studyCard.isCorrect && state.studyCard.livesRemaining <= 0 && state.gameMode !== GAME_MODES.DAILY) ? (
                 <div className="flex gap-4">
-                  <button onClick={actions.dismissStudyCard} className="w-1/3 bg-stone-100 text-stone-500 py-10 rounded-[2.5rem] border-b-[10px] border-stone-200 font-black uppercase tracking-widest text-[28px] active:translate-y-[10px] active:border-b-0 transition-all hover:bg-stone-200 whitespace-nowrap">
+                  <button onClick={handleDismissStudyCard} className="w-1/3 bg-stone-100 text-stone-500 py-10 rounded-[2.5rem] border-b-[10px] border-stone-200 font-black uppercase tracking-widest text-[28px] active:translate-y-[10px] active:border-b-0 transition-all hover:bg-stone-200 whitespace-nowrap">
                     Sair
                   </button>
-                  <button onClick={actions.revive} disabled={state.coins < 100} className="w-2/3 bg-amber-400 text-amber-900 py-10 rounded-[2.5rem] border-b-[10px] border-amber-500 font-black uppercase tracking-widest text-[28px] flex justify-center items-center gap-4 active:translate-y-[10px] active:border-b-0 disabled:opacity-50 disabled:grayscale transition-all hover:bg-amber-500 whitespace-nowrap">
+                  <button onClick={handleRevive} disabled={state.coins < 100} className="w-2/3 bg-amber-400 text-amber-900 py-10 rounded-[2.5rem] border-b-[10px] border-amber-500 font-black uppercase tracking-widest text-[28px] flex justify-center items-center gap-4 active:translate-y-[10px] active:border-b-0 disabled:opacity-50 disabled:grayscale transition-all hover:bg-amber-500 whitespace-nowrap">
                     Reviver (100 <Coins size={36} />)
                   </button>
                 </div>
               ) : (
-                <button onClick={actions.dismissStudyCard} className={`w-full py-10 rounded-[2.5rem] font-black uppercase tracking-widest text-[36px] flex items-center justify-center gap-4 active:translate-y-[10px] active:border-b-0 transition-all whitespace-nowrap ${state.studyCard.isCorrect ? 'bg-green-500 text-white border-b-[12px] border-green-700 hover:bg-green-600' : 'bg-rose-500 text-white border-b-[12px] border-rose-700 hover:bg-rose-600'}`}>
+                <button onClick={handleDismissStudyCard} className={`w-full py-10 rounded-[2.5rem] font-black uppercase tracking-widest text-[36px] flex items-center justify-center gap-4 active:translate-y-[10px] active:border-b-0 transition-all whitespace-nowrap ${state.studyCard.isCorrect ? 'bg-green-500 text-white border-b-[12px] border-green-700 hover:bg-green-600' : 'bg-rose-500 text-white border-b-[12px] border-rose-700 hover:bg-rose-600'}`}>
                   Continuar
                 </button>
               )}
