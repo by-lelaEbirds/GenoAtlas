@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle, ShieldAlert, Award, Trophy } from 'lucide-react';
 import { ACHIEVEMENTS_LIST } from '../constants';
 
 export function TutorialModal({ onClose }) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 200); // Espera a animação terminar antes de destruir
+  };
+
   return (
-    <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm px-6 animate-fade-in-up">
-      <div className="bg-stone-900 border-[8px] border-stone-800 p-12 rounded-[4rem] max-w-2xl w-full relative shadow-2xl">
+    <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm px-6 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div className={`bg-stone-900 border-[8px] border-stone-800 p-12 rounded-[4rem] max-w-2xl w-full relative shadow-2xl ${isClosing ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
         <div className="w-32 h-32 bg-sky-500/20 text-sky-400 rounded-full flex items-center justify-center mx-auto mb-8">
           <ShieldAlert size={64} />
         </div>
@@ -26,7 +33,7 @@ export function TutorialModal({ onClose }) {
           </div>
         </div>
 
-        <button onClick={onClose} className="w-full bg-green-500 text-white py-8 rounded-[2.5rem] shadow-[0_12px_0_0_#15803d] font-black uppercase tracking-widest text-[32px] flex items-center justify-center gap-4 active:translate-y-[8px] active:shadow-none transition-all">
+        <button onClick={handleClose} className="w-full bg-green-500 text-white py-8 rounded-[2.5rem] shadow-[0_12px_0_0_#15803d] font-black uppercase tracking-widest text-[32px] flex items-center justify-center gap-4 active:translate-y-[8px] active:shadow-none transition-all">
           Entendido <CheckCircle size={40} />
         </button>
       </div>
@@ -35,11 +42,18 @@ export function TutorialModal({ onClose }) {
 }
 
 export function AchievementsModal({ onClose, unlockedIds }) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 200);
+  };
+
   return (
-    <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm px-6 animate-fade-in-up py-16">
-      <div className="bg-white border-[12px] border-stone-200 p-10 rounded-[4rem] max-w-2xl w-full relative shadow-2xl flex flex-col max-h-[85dvh]">
+    <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-sm px-6 py-16 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div className={`bg-white border-[12px] border-stone-200 p-10 rounded-[4rem] max-w-2xl w-full relative shadow-2xl flex flex-col max-h-[85dvh] ${isClosing ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
         
-        <button onClick={onClose} className="absolute top-8 right-8 bg-stone-100 p-4 rounded-full text-stone-400 hover:text-rose-500 hover:bg-stone-200 transition-colors shadow-sm active:scale-95">
+        <button onClick={handleClose} className="absolute top-8 right-8 bg-stone-100 p-4 rounded-full text-stone-400 hover:text-rose-500 hover:bg-stone-200 transition-colors shadow-sm active:scale-95">
           <X size={36} strokeWidth={3} />
         </button>
 
