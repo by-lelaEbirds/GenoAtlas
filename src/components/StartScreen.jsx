@@ -10,6 +10,7 @@ const saveNativeData = async (key, val) => {
 export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted }) {
   
   const [showRegionModal, setShowRegionModal] = useState(false);
+  const [isClosingRegion, setIsClosingRegion] = useState(false);
 
   const handleThemeSelect = (theme) => {
     if (coins >= theme.price) {
@@ -29,14 +30,24 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   };
 
   const handleRegionSelect = (regionId) => {
-    setShowRegionModal(false);
-    onStart(regionId);
+    setIsClosingRegion(true);
+    setTimeout(() => {
+      setShowRegionModal(false);
+      setIsClosingRegion(false);
+      onStart(regionId);
+    }, 200);
+  };
+
+  const closeRegionModal = () => {
+    setIsClosingRegion(true);
+    setTimeout(() => {
+      setShowRegionModal(false);
+      setIsClosingRegion(false);
+    }, 200);
   };
 
   const themeNodes = Object.values(themes);
   
-  // CORREÇÃO: Posições alteradas! Eles não ficam mais nas laterais (right-16), 
-  // agora eles descem (top-[420px]) para o caminho tracejado, intercalando os lados!
   const sideMissions = [
     { label: 'Futebol', icon: <Shield size={56} className="text-white" strokeWidth={2.5} />, onClick: onFootball, bg: 'bg-[#4bbaff]', border: 'border-[#14adf8]', shadow: 'shadow-[0_10px_0_#00618f]', text: 'text-[#00618f]', pos: 'absolute top-[420px] left-1/2 ml-6' },
     { label: 'Estudo', icon: <GraduationCap size={56} className="text-white" strokeWidth={2.5} />, onClick: onStudy, bg: 'bg-emerald-400', border: 'border-emerald-500', shadow: 'shadow-[0_10px_0_#047857]', text: 'text-emerald-800', pos: 'absolute top-[420px] right-1/2 mr-6' },
@@ -176,13 +187,14 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
+      {/* APLICADO A ANIMAÇÃO DE FECHAR AQUI NO MODAL DE REGIÕES */}
       {showRegionModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-sky-900/80 backdrop-blur-md px-6 animate-fade-in-up">
-          <div className="bg-white border-b-[12px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[90dvh]">
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-sky-900/80 backdrop-blur-md px-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className={`bg-white border-b-[12px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <div className="flex justify-between items-center mb-8 shrink-0">
               <h2 className="text-[48px] font-black text-sky-900 uppercase tracking-tighter">Onde Pousar?</h2>
-              <button onClick={() => setShowRegionModal(false)} className="bg-stone-100 p-4 rounded-full text-stone-500 hover:bg-rose-100 hover:text-rose-500 active:scale-90 transition-all">
+              <button onClick={closeRegionModal} className="bg-stone-100 p-4 rounded-full text-stone-500 hover:bg-rose-100 hover:text-rose-500 active:scale-90 transition-all">
                 <X size={40} strokeWidth={3} />
               </button>
             </div>
