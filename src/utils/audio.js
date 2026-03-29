@@ -25,11 +25,11 @@ export function playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
     osc.start();
     osc.stop(globalAudioCtx.currentTime + duration);
   } catch (e) {
-    console.error("Audio Web API bloqueada", e);
+    console.warn("Audio Web API bloqueada ou indisponível:", e);
   }
 }
 
-const basePath = import.meta.env.BASE_URL;
+const basePath = import.meta.env.BASE_URL || '/';
 
 const SOUND_PATHS = {
   success: `${basePath}assets/sounds/success.mp3`,
@@ -47,12 +47,26 @@ export function playSound(name, volume = 0.5) {
       premiumSounds[name] = new Audio(SOUND_PATHS[name]);
       premiumSounds[name].preload = 'auto';
     }
-    premiumSounds[name].pause();
-    premiumSounds[name].currentTime = 0;
-    premiumSounds[name].volume = volume;
-    const p = premiumSounds[name].play();
-    if (p !== undefined) p.catch(() => {});
+    
+    const sound = premiumSounds[name];
+    
+    // Reseta o áudio caso ele já esteja tocando
+    sound.pause();
+    sound.currentTime = 0;
+    sound.volume = volume;
+    
+    const playPromise = sound.play();
+    
+    // Previne erros no console de "The play() request was interrupted by a call to pause()"
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        // Interrupções de áudio são normais em cliques rápidos, ignoramos o erro silenciosamente
+        if (error.name !== 'AbortError') {
+          console.debug('Erro ao tocar som:', error);
+        }
+      });
+    }
   } catch (e) {
-    console.error('Erro ao tocar som:', e);
+    console.error('Erro geral ao tocar som:', e);
   }
 }
