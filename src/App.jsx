@@ -71,14 +71,13 @@ export default function App() {
         <div key={point.id} className={`absolute z-50 pointer-events-none animate-float-point text-[32px] font-black drop-shadow-md ${point.colorClass}`} style={{ left: point.x - 30, top: point.y - 60 }}>{point.text}</div>
       ))}
 
-      {state.gameState !== GAME_STATES.START && (
-        <GlobeVisualizer 
-          ref={globeRef} geoData={state.geoData} onCountryClick={actions.handleCountryClick} 
-          theme={state.activeTheme} gameState={state.gameState} guessedCountries={state.guessedCountries} 
-          travelArcs={state.travelArcs} impactRings={state.impactRings} isMobile={state.isMobile} 
-          isSmoothMode={state.isSmoothMode} 
-        />
-      )}
+      {/* O Globo agora é renderizado sempre para que a animação de fundo da Start Screen funcione */}
+      <GlobeVisualizer 
+        ref={globeRef} geoData={state.geoData} onCountryClick={actions.handleCountryClick} 
+        theme={state.activeTheme} gameState={state.gameState} guessedCountries={state.guessedCountries} 
+        travelArcs={state.travelArcs} impactRings={state.impactRings} isMobile={state.isMobile} 
+        isSmoothMode={state.isSmoothMode} 
+      />
       
       {state.showTutorial && <TutorialModal onClose={actions.closeTutorial} />}
       {state.showAchievements && <AchievementsModal onClose={() => actions.setShowAchievements(false)} unlockedIds={state.unlockedAchievements} />}
