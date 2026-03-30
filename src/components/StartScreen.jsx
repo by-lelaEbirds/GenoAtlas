@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight } from 'lucide-react';
+import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { Preferences } from '@capacitor/preferences';
 
@@ -7,7 +7,7 @@ const saveNativeData = async (key, val) => {
   try { await Preferences.set({ key, value: val.toString() }); } catch (e) {}
 };
 
-export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted }) {
+export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, activeAvatar, setShowShop }) {
   
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
@@ -54,23 +54,18 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   const themeNodes = Object.values(themes);
   const currentIndex = themeNodes.findIndex(t => t.id === currentTheme.id);
   
-  // Distância matemática para o Pino deslizar corretamente na linha vertical
-  // Mobile: 160 (altura botão) + 450 (margem) = 610px por item
-  // Desktop: 208 (altura botão) + 600 (margem) = 808px por item
   const stepHeight = isMobile ? 610 : 808; 
   const pinOffset = currentIndex * stepHeight;
 
   return (
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
-      {/* Fundo Decorativo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
         <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.4) 2px, transparent 2px), linear-gradient(90deg, rgba(255, 255, 255, 0.4) 2px, transparent 2px)', backgroundSize: '96px 96px' }}></div>
       </div>
       
-      {/* Header Fixo */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-white/80 backdrop-blur-md border-b-2 border-white/50 shadow-sm">
         <div className="flex items-center gap-2 md:gap-4">
           <div className="w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 shadow-sm border-[3px] md:border-[4px] border-white ring-[3px] md:ring-[4px] ring-sky-100">
@@ -85,7 +80,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
       </header>
 
-      {/* NOVA SESSÃO: Modos de Jogo (Carrossel Horizontal) */}
       <div className="relative z-10 pt-[calc(140px+env(safe-area-inset-top))] pb-8 animate-fade-in-up">
         <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
           <h2 className="text-[20px] md:text-[32px] font-black uppercase tracking-widest text-sky-900">Modos de Jogo</h2>
@@ -121,7 +115,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
       </div>
 
-      {/* SESSÃO DE PROGRESSÃO (A Jornada) */}
       <div className="relative z-10 text-center mb-16 px-6 md:px-12 animate-fade-in-up mt-8">
         <div className="inline-flex items-center gap-3 md:gap-4 bg-sky-600 px-8 py-3 md:px-12 md:py-4 rounded-full text-white shadow-lg border-b-[6px] md:border-b-[8px] border-sky-800">
           <Compass className="w-6 h-6 md:w-10 md:h-10" strokeWidth={2.5} />
@@ -131,16 +124,19 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-10">
         
-        {/* Linha Tracejada Central */}
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[12px] md:w-[16px] border-l-[12px] md:border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
 
-        {/* O PINO DINÂMICO (Fora do laço, desliza magicamente!) */}
+        {/* O AVATAR VOADOR DINÂMICO! */}
         <div 
           className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
           style={{ transform: `translate(-50%, ${pinOffset}px)`, top: isMobile ? '-90px' : '-120px' }}
         >
           <div className="bg-white w-[80px] h-[80px] md:w-[112px] md:h-[112px] rounded-[24px] md:rounded-[32px] shadow-2xl border-[8px] md:border-[10px] border-amber-400 flex items-center justify-center animate-bounce-short">
-             <MapPin className="w-10 h-10 md:w-14 md:h-14 text-amber-500" strokeWidth={3} fill="currentColor" />
+             {activeAvatar.type === 'emoji' ? (
+                <span className="text-[40px] md:text-[56px] leading-none drop-shadow-sm">{activeAvatar.icon}</span>
+             ) : (
+                <img src={activeAvatar.icon} alt={activeAvatar.name} className="w-12 h-12 md:w-16 md:h-16 object-contain drop-shadow-sm" />
+             )}
           </div>
           <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short"></div>
         </div>
@@ -152,7 +148,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           return (
             <div key={t.id} className="relative flex flex-col items-center z-10 mb-[450px] md:mb-[600px] w-full max-w-[320px]">
               
-              {/* Botão Principal Circular */}
               <button 
                 onClick={() => {
                   if (isUnlocked) { 
@@ -176,7 +171,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 )}
               </button>
 
-              {/* Botão de Texto Embaixo (Agora clicável também!) */}
               <button 
                 onClick={() => {
                   if (isUnlocked) { setTheme(t); setShowRegionModal(true); } 
@@ -213,23 +207,29 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <div className="w-full mt-16 scale-125 md:scale-150 transform origin-top"><AdBanner dataAdSlot="START_SCREEN_SLOT" /></div>
       </div>
 
-      {/* Nav de Baixo Fixo */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl flex justify-around items-center px-2 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4 md:pt-8 border-t-2 border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.03)] rounded-t-[2.5rem] md:rounded-t-[4rem]">
-        <button className="flex flex-col items-center justify-center text-sky-500 active:scale-95 transition-all group w-24 md:w-40">
-          <div className="bg-sky-100 p-3 md:p-5 rounded-[1.5rem] md:rounded-[2rem] mb-2 md:mb-3 group-active:bg-sky-200 transition-colors"><Home className="w-8 h-8 md:w-12 md:h-12" strokeWidth={2.5} /></div>
-          <span className="text-[14px] md:text-[22px] font-black uppercase tracking-widest whitespace-nowrap">Início</span>
+      {/* NAV BAR: Agora com o Botão da Lojinha! */}
+      <nav className="fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl flex justify-around items-center px-1 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 md:pt-6 border-t-2 border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.03)] rounded-t-[2.5rem] md:rounded-t-[4rem]">
+        <button className="flex flex-col items-center justify-center text-sky-500 active:scale-95 transition-all group w-20 md:w-32">
+          <div className="bg-sky-100 p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 group-active:bg-sky-200 transition-colors"><Home className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
+          <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap">Início</span>
         </button>
-        <button onClick={onOpenAchievements} className="flex flex-col items-center justify-center text-stone-400 hover:text-amber-500 active:scale-95 transition-all group w-24 md:w-40">
-          <div className="p-3 md:p-5 mb-2 md:mb-3 group-active:bg-stone-100 rounded-[1.5rem] md:rounded-[2rem] transition-colors"><Trophy className="w-8 h-8 md:w-12 md:h-12" strokeWidth={2.5} /></div>
-          <span className="text-[14px] md:text-[22px] font-black uppercase tracking-widest whitespace-nowrap group-hover:text-amber-500">Conquistas</span>
+        
+        {/* BOTÃO DA LOJA */}
+        <button onClick={() => setShowShop(true)} className="flex flex-col items-center justify-center text-emerald-500 active:scale-95 transition-all group w-20 md:w-32">
+          <div className="bg-emerald-100 p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 group-active:bg-emerald-200 transition-colors shadow-sm"><ShoppingCart className="w-7 h-7 md:w-10 md:h-10 text-emerald-600" strokeWidth={2.5} /></div>
+          <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap">Loja</span>
         </button>
-        <button onClick={onOpenSettings} className="flex flex-col items-center justify-center text-stone-400 hover:text-stone-700 active:scale-95 transition-all group w-24 md:w-40">
-          <div className="p-3 md:p-5 mb-2 md:mb-3 group-active:bg-stone-100 rounded-[1.5rem] md:rounded-[2rem] transition-colors"><Settings className="w-8 h-8 md:w-12 md:h-12" strokeWidth={2.5} /></div>
-          <span className="text-[14px] md:text-[22px] font-black uppercase tracking-widest whitespace-nowrap group-hover:text-stone-700">Ajustes</span>
+
+        <button onClick={onOpenAchievements} className="flex flex-col items-center justify-center text-stone-400 hover:text-amber-500 active:scale-95 transition-all group w-20 md:w-32">
+          <div className="p-2.5 md:p-4 mb-1.5 md:mb-3 group-active:bg-stone-100 rounded-[1.2rem] md:rounded-[1.8rem] transition-colors"><Trophy className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
+          <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap group-hover:text-amber-500">Conquistas</span>
+        </button>
+        <button onClick={onOpenSettings} className="flex flex-col items-center justify-center text-stone-400 hover:text-stone-700 active:scale-95 transition-all group w-20 md:w-32">
+          <div className="p-2.5 md:p-4 mb-1.5 md:mb-3 group-active:bg-stone-100 rounded-[1.2rem] md:rounded-[1.8rem] transition-colors"><Settings className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
+          <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap group-hover:text-stone-700">Ajustes</span>
         </button>
       </nav>
 
-      {/* Modal de Regiões */}
       {showRegionModal && (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
@@ -276,7 +276,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
       )}
-
     </div>
   );
 }
