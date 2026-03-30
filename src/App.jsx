@@ -3,7 +3,7 @@ import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
-import { TutorialModal, AchievementsModal } from './components/Modals';
+import { TutorialModal, AchievementsModal, ShopModal } from './components/Modals';
 import { Trophy, Coins, Rocket, Film } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
@@ -15,7 +15,7 @@ export default function App() {
   
   const [isLoaded, setIsLoaded] = useState(false);
   
-  // ESTADOS DE FECHAMENTO
+  // ESTADOS DE FECHAMENTO PARA ANIMAÇÕES
   const [isClosingSettings, setIsClosingSettings] = useState(false);
   const [isClosingStudyCard, setIsClosingStudyCard] = useState(false);
 
@@ -51,8 +51,10 @@ export default function App() {
   return (
     <div className={`relative w-full h-[100dvh] overflow-hidden select-none bg-white transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0 scale-105'}`}>
       
+      {/* OVERLAY DE FLASH DE TELA (ACERTO, ERRO E TEMPO ACABANDO) */}
       <div className={`absolute inset-0 pointer-events-none z-10 transition-colors duration-200 ${state.screenFlash === 'success' ? 'bg-green-500/20' : state.screenFlash === 'error' ? 'bg-rose-500/20' : state.timeLeft <= 10 && state.gameState === GAME_STATES.PLAYING && !state.studyCard && state.gameMode !== GAME_MODES.STUDY ? 'shadow-[inset_0_0_100px_rgba(244,63,94,0.2)]' : ''}`} />
 
+      {/* TOAST DE CONQUISTAS */}
       {state.achievementToast && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[200] animate-fade-in-up w-max max-w-[90vw]">
           <div className="bg-amber-400 p-[6px] rounded-full shadow-lg">
@@ -67,11 +69,12 @@ export default function App() {
         </div>
       )}
 
+      {/* PONTOS FLUTUANTES NO CLIQUE */}
       {state.floatingPoints.map(point => (
         <div key={point.id} className={`absolute z-50 pointer-events-none animate-float-point text-[32px] font-black drop-shadow-md ${point.colorClass}`} style={{ left: point.x - 30, top: point.y - 60 }}>{point.text}</div>
       ))}
 
-      {/* O Globo agora é renderizado sempre para que a animação de fundo da Start Screen funcione */}
+      {/* GLOBO 3D */}
       <GlobeVisualizer 
         ref={globeRef} geoData={state.geoData} onCountryClick={actions.handleCountryClick} 
         theme={state.activeTheme} gameState={state.gameState} guessedCountries={state.guessedCountries} 
@@ -79,10 +82,26 @@ export default function App() {
         isSmoothMode={state.isSmoothMode} 
       />
       
+      {/* MODAIS GERAIS */}
       {state.showTutorial && <TutorialModal onClose={actions.closeTutorial} />}
       {state.showAchievements && <AchievementsModal onClose={() => actions.setShowAchievements(false)} unlockedIds={state.unlockedAchievements} />}
+      
+      {/* MODAL DA LOJA DE AVATARES E POWER-UPS */}
+      {state.showShop && (
+        <ShopModal 
+          onClose={() => actions.setShowShop(false)}
+          coins={state.coins}
+          setCoins={actions.setCoins}
+          unlockedAvatars={state.unlockedAvatars}
+          setUnlockedAvatars={actions.setUnlockedAvatars}
+          activeAvatar={state.activeAvatar}
+          setActiveAvatar={actions.setActiveAvatar}
+          powerUps={state.powerUps}
+          setPowerUps={actions.setPowerUps}
+        />
+      )}
 
-      {/* APLICADO A ANIMAÇÃO DE FECHAR NAS CONFIGURAÇÕES */}
+      {/* MODAL DE CONFIGURAÇÕES (ESTILO DE JOGO) */}
       {state.showSettingsPrompt && (
         <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[12px] border-stone-200 p-12 pt-16 rounded-[4rem] max-w-2xl w-full shadow-2xl relative ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
@@ -111,6 +130,7 @@ export default function App() {
         </div>
       )}
 
+      {/* TELA DE INÍCIO */}
       {state.gameState === GAME_STATES.START && (
         <StartScreen 
           onStart={(region) => actions.startGame('normal', region)} 
@@ -128,9 +148,14 @@ export default function App() {
           unlockedThemes={state.unlockedThemes}
           setUnlockedThemes={actions.setUnlockedThemes}
           dailyCompleted={state.lastDailyDate === state.todayStr} 
+          
+          // PROP DA LOJA INJETADAS NO MENU INICIAL
+          activeAvatar={state.activeAvatar}
+          setShowShop={actions.setShowShop}
         />
       )}
       
+      {/* TELA DE RESULTADOS */}
       {state.gameState === GAME_STATES.RESULT && (
         <ResultScreen 
           score={state.score} reason={state.endReason} bestScore={state.bestScore} 
@@ -141,9 +166,10 @@ export default function App() {
         />
       )}
 
+      {/* HUD DE JOGO */}
       <GameHUD state={state} actions={actions} />
       
-      {/* APLICADO A ANIMAÇÃO DE FECHAR NO CARD DE ESTUDO */}
+      {/* CARD DE ESTUDO (QUANDO O JOGADOR ERRA/ACERTA NO MODO ESTUDO) */}
       {state.studyCard && (
         <div className={`absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-6 pointer-events-auto ${isClosingStudyCard ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[16px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative pt-32 mt-16 ${isClosingStudyCard ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
