@@ -17,8 +17,16 @@ const getDailyCountries = (pool) => {
     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
-  const shuffled = [...pool].sort(() => random() - 0.5);
-  return shuffled.filter(c => c.pop > 10000000).slice(0, 5);
+
+  // Implementação correta do Algoritmo de Fisher-Yates para embaralhamento determinístico seguro
+  const filtered = pool.filter(c => c.pop > 10000000);
+  const shuffled = [...filtered];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled.slice(0, 5);
 };
 
 export function useGeoGame(globeRef) {
@@ -85,31 +93,35 @@ export function useGeoGame(globeRef) {
 
   useEffect(() => {
     const loadSavedData = async () => {
-      const savedScore = await getNativeData('geoGuessBestScore');
-      const savedCoins = await getNativeData('geoGuessCoins');
-      const savedThemes = await getNativeData('geoGuessThemes');
-      const savedAchievements = await getNativeData('geoGuessAchievements');
-      const hasSeenTuto = await getNativeData('geoGuessTutorial');
-      const savedSmooth = await getNativeData('geoGuessSmoothMode');
-      const savedDaily = await getNativeData('geoGuessDaily');
+      try {
+        const savedScore = await getNativeData('geoGuessBestScore');
+        const savedCoins = await getNativeData('geoGuessCoins');
+        const savedThemes = await getNativeData('geoGuessThemes');
+        const savedAchievements = await getNativeData('geoGuessAchievements');
+        const hasSeenTuto = await getNativeData('geoGuessTutorial');
+        const savedSmooth = await getNativeData('geoGuessSmoothMode');
+        const savedDaily = await getNativeData('geoGuessDaily');
 
-      if (savedScore) setBestScore(parseInt(savedScore, 10));
-      if (savedCoins) setCoins(parseInt(savedCoins, 10));
-      
-      if (savedThemes) {
-        const savedIds = JSON.parse(savedThemes);
-        const validIds = [...new Set(['explorador', ...savedIds])].filter(id => id in MAP_THEMES);
-        setUnlockedThemes(validIds);
-      } else {
-        setUnlockedThemes(['explorador']);
+        if (savedScore) setBestScore(parseInt(savedScore, 10));
+        if (savedCoins) setCoins(parseInt(savedCoins, 10));
+        
+        if (savedThemes) {
+          const savedIds = JSON.parse(savedThemes);
+          const validIds = [...new Set(['explorador', ...savedIds])].filter(id => id in MAP_THEMES);
+          setUnlockedThemes(validIds);
+        } else {
+          setUnlockedThemes(['explorador']);
+        }
+        
+        if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
+        if (!hasSeenTuto) setShowTutorial(true);
+        if (savedDaily) setLastDailyDate(savedDaily);
+
+        if (savedSmooth === null) setShowSettingsPrompt(true);
+        else setIsSmoothMode(savedSmooth === 'true');
+      } catch(e) {
+        console.warn("GenoAtlas - Erro recuperando salvamento:", e);
       }
-      
-      if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
-      if (!hasSeenTuto) setShowTutorial(true);
-      if (savedDaily) setLastDailyDate(savedDaily);
-
-      if (savedSmooth === null) setShowSettingsPrompt(true);
-      else setIsSmoothMode(savedSmooth === 'true');
     };
 
     const fetchGeoData = async () => {
