@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode }, ref) => {
+const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode }, ref) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
   const interactionTimeoutRef = useRef(null);
@@ -33,7 +33,6 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
       if (!globeEl.current) return;
       const renderer = globeEl.current.renderer();
       
-      // Otimização: usa o pixel ratio do dispositivo, mas limita a 2x para evitar thermal throttling severo
       if (renderer) {
         renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1);
       }
@@ -138,6 +137,9 @@ const GlobeVisualizer = forwardRef(({ geoData, onCountryClick, theme, gameState,
       </div>
     </div>
   );
-});
+}));
+
+// Evita avisos de linting no React por causa do forwardRef + memo
+GlobeVisualizer.displayName = 'GlobeVisualizer';
 
 export default GlobeVisualizer;
