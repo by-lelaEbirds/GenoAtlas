@@ -40,7 +40,6 @@ export function useGeoGame(globeRef) {
   const [unlockedThemes, setUnlockedThemes] = useState(['explorador']); 
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.explorador);
   
-  // O ESTADO DA REGIÃO AINDA VIVE AQUI
   const [activeRegion, setActiveRegion] = useState('all');
 
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
@@ -313,11 +312,9 @@ export function useGeoGame(globeRef) {
     if (!isFirst) setTargetStartTime(Date.now());
   }, [allCountries, endGame, gameMode, remainingClubs, streak]);
 
-  // AJUSTE: A função startGame agora aceita o forcedRegion para atualizar os filtros de continente na hora!
   const startGame = (mode = GAME_MODES.NORMAL, forcedRegion = null) => {
     if (allCountries.length === 0) return;
     
-    // Atualiza a região escolhida pelo jogador antes de filtrar os países
     const finalRegion = forcedRegion || activeRegion;
     if (forcedRegion) setActiveRegion(forcedRegion);
 
@@ -342,7 +339,6 @@ export function useGeoGame(globeRef) {
       setRemainingClubs(initialClubPool);
       pool = allCountries; 
     } else {
-      // MAGIA ACONTECE AQUI: O jogo filtra o mapa apenas pelo continente selecionado!
       pool = finalRegion === 'all' ? allCountries : allCountries.filter(c => c.continent === finalRegion || (finalRegion === 'Americas' && c.continent.includes('America')));
     }
 
@@ -411,75 +407,72 @@ export function useGeoGame(globeRef) {
     setImpactRings(prev => [...prev, { lat, lng, color: clicked.iso === targetCountry.iso ? '#34d399' : '#f43f5e' }]);
 
     if (clicked.iso === targetCountry.iso) {
-      setStreak(prev => {
-        const curStreak = prev + 1;
-        const pointsGained = (isCombo ? 200 : 100) + (curStreak * 10);
-        setScore(s => s + pointsGained);
+      const curStreak = streak + 1;
+      setStreak(curStreak);
 
-        unlockAchievement('first_country');
-        if (curStreak === 3) unlockAchievement('combo_3');
-        if (curStreak === 5) unlockAchievement('combo_5');
+      const pointsGained = (isCombo ? 200 : 100) + (curStreak * 10);
+      setScore(s => s + pointsGained);
 
-        if (isCombo) setTimeLeft(t => t + 5);
-        
-        try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
-        
-        if (gameMode === GAME_MODES.FOOTBALL) playSound('stadium', 0.8);
-        else playSound('success', isCombo ? 0.9 : 0.6);
+      unlockAchievement('first_country');
+      if (curStreak === 3) unlockAchievement('combo_3');
+      if (curStreak === 5) unlockAchievement('combo_5');
 
-        const newGuess = { ...clicked, lat, lng };
-        const prevGuessed = guessedRef.current;
-        
-        if (prevGuessed.length > 0) {
-          const last = prevGuessed[prevGuessed.length - 1];
-          setTravelArcs(arcs => [...arcs, { startLat: last.lat, startLng: last.lng, endLat: lat, endLng: lng }]);
-        }
-        setGuessedCountries(g => [...g, newGuess]);
+      if (isCombo) setTimeLeft(t => t + 5);
+      
+      try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
+      
+      if (gameMode === GAME_MODES.FOOTBALL) playSound('stadium', 0.8);
+      else playSound('success', isCombo ? 0.9 : 0.6);
 
-        setScreenFlash('success');
-        spawnFloatingPoint(`+${pointsGained}`, clickX, clickY, isCombo ? 'text-amber-400 font-black scale-125' : 'text-emerald-400');
+      const newGuess = { ...clicked, lat, lng };
+      const prevGuessed = guessedRef.current;
+      
+      if (prevGuessed.length > 0) {
+        const last = prevGuessed[prevGuessed.length - 1];
+        setTravelArcs(arcs => [...arcs, { startLat: last.lat, startLng: last.lng, endLat: lat, endLng: lng }]);
+      }
+      setGuessedCountries(g => [...g, newGuess]);
 
-        if (gameMode === GAME_MODES.STUDY) {
-          setTimeout(() => {
-            setScreenFlash('');
-            setIsTimerFrozen(true); 
-            setStudyCard({ ...targetCountry, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: true, pointsGained, curStreak });
-            isProcessingRef.current = false;
-          }, 300);
-        } else {
-          setTimeout(() => setScreenFlash(''), 300);
-          setTimeout(() => {
-            pickNextCountry(remainingCountries, gameMode, curStreak, false, remainingClubs);
-            isProcessingRef.current = false;
-          }, 300); 
-        }
-        return curStreak;
-      });
+      setScreenFlash('success');
+      spawnFloatingPoint(`+${pointsGained}`, clickX, clickY, isCombo ? 'text-amber-400 font-black scale-125' : 'text-emerald-400');
 
-    } else {
-      setStreak(0);
-      setLives(prev => {
-        const newLives = prev - 1;
-        try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
-        
-        playSound('error', 0.6);
-        setScreenFlash('error');
-        setIsShaking(true);
-        spawnFloatingPoint('ERRADO', clickX, clickY, 'text-rose-500 font-black');
-
+      if (gameMode === GAME_MODES.STUDY) {
         setTimeout(() => {
           setScreenFlash('');
-          setIsShaking(false);
-          if (gameMode === GAME_MODES.STUDY || newLives <= 0) {
-            setIsTimerFrozen(true);
-            setStudyCard({ ...targetCountry, clickedName: clicked.name, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: false, livesRemaining: newLives });
-          }
+          setIsTimerFrozen(true); 
+          setStudyCard({ ...targetCountry, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: true, pointsGained, curStreak });
           isProcessingRef.current = false;
-        }, 400);
-        return newLives;
-      });
+        }, 300);
+      } else {
+        setTimeout(() => setScreenFlash(''), 300);
+        setTimeout(() => {
+          pickNextCountry(remainingCountries, gameMode, curStreak, false, remainingClubs);
+          isProcessingRef.current = false;
+        }, 300); 
+      }
+    } else {
+      setStreak(0);
+      const newLives = lives - 1;
+      setLives(newLives);
+
+      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+      
+      playSound('error', 0.6);
+      setScreenFlash('error');
+      setIsShaking(true);
+      spawnFloatingPoint('ERRADO', clickX, clickY, 'text-rose-500 font-black');
+
+      setTimeout(() => {
+        setScreenFlash('');
+        setIsShaking(false);
+        if (gameMode === GAME_MODES.STUDY || newLives <= 0) {
+          setIsTimerFrozen(true);
+          setStudyCard({ ...targetCountry, clickedName: clicked.name, capital: capitals[targetCountry.iso] || 'Desconhecida', isCorrect: false, livesRemaining: newLives });
+        }
+        isProcessingRef.current = false;
+      }, 400);
     }
-  }, [gameState, isGameActive, targetCountry, targetStartTime, remainingCountries, remainingClubs, isTimerFrozen, freezeTimeLeft, gameMode, capitals, studyCard, pickNextCountry, unlockAchievement]);
+  }, [gameState, isGameActive, targetCountry, targetStartTime, remainingCountries, remainingClubs, isTimerFrozen, freezeTimeLeft, gameMode, capitals, studyCard, pickNextCountry, unlockAchievement, streak, lives]);
 
   const dismissStudyCard = () => {
     playTone(500, 'square', 0.1);
