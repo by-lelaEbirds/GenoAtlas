@@ -33,6 +33,7 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
       if (!globeEl.current) return;
       const renderer = globeEl.current.renderer();
       
+      // PROTEÇÃO DE PERFORMANCE ANDROID: Limita o pixelRatio a no máximo 2 para evitar OOM (Out Of Memory)
       if (renderer) {
         renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1);
       }
@@ -91,11 +92,17 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
     : 'translate-x-[15%] scale-100'; 
 
   return (
-    <div className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? startScreenTransform : 'translate-x-0 translate-y-0 scale-100'}`}>
+    // A11Y: role="application" avisa leitores de tela que este é o elemento interativo principal
+    <div 
+      role="application" 
+      aria-label="Globo terrestre interativo 3D"
+      className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? startScreenTransform : 'translate-x-0 translate-y-0 scale-100'}`}
+    >
       <div className={`w-full h-full transition-all duration-300`}>
         <Globe
           ref={globeEl}
-          rendererConfig={{ antialias: false, powerPreference: 'high-performance' }}
+          // PERFORMANCE: antialias desativado em mobile reduz gargalos severos de GPU Mali
+          rendererConfig={{ antialias: !isMobile, powerPreference: 'high-performance' }}
           
           globeImageUrl={theme.globeUrl}
           backgroundImageUrl={theme.bgImageUrl}
@@ -103,6 +110,7 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
           backgroundColor="rgba(0,0,0,0)"
           showAtmosphere={false} 
           
+          // PERFORMANCE: Polígonos de resolução menor em mobile
           polygonsData={geoData}
           polygonResolution={isMobile ? 1 : 2} 
           
@@ -139,7 +147,6 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
   );
 }));
 
-// Evita avisos de linting no React por causa do forwardRef + memo
 GlobeVisualizer.displayName = 'GlobeVisualizer';
 
 export default GlobeVisualizer;
