@@ -4,7 +4,7 @@ import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
 import { TutorialModal, AchievementsModal, ShopModal } from './components/Modals';
-import { Trophy, Coins, Rocket, Film } from 'lucide-react';
+import { Trophy, Coins, Rocket, Film, X } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
@@ -103,29 +103,35 @@ export default function App() {
 
       {/* MODAL DE CONFIGURAÇÕES (ESTILO DE JOGO) */}
       {state.showSettingsPrompt && (
-        <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
-          <div className={`bg-white border-b-[12px] border-stone-200 p-12 pt-16 rounded-[4rem] max-w-2xl w-full shadow-2xl relative ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+        <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
-            <h3 className="text-[48px] font-black text-stone-800 mb-4 text-center uppercase tracking-tighter">Estilo de Jogo</h3>
-            <p className="text-stone-400 text-[20px] font-bold uppercase tracking-widest mb-12 text-center">Como você prefere explorar?</p>
+            {/* NOVO: Botão Fechar! */}
+            <button onClick={() => handleCloseSettings(state.isSmoothMode)} className="absolute top-6 right-6 md:top-8 md:right-8 bg-stone-100 p-3 md:p-4 rounded-full text-stone-400 hover:text-rose-500 hover:bg-stone-200 transition-colors shadow-sm active:scale-95 z-10">
+              <X size={28} className="md:w-9 md:h-9" strokeWidth={3} />
+            </button>
+
+            <h3 className="text-[32px] md:text-[48px] font-black text-stone-800 mb-2 md:mb-4 text-center uppercase tracking-tighter leading-none mt-4 md:mt-0">Estilo Visual</h3>
+            <p className="text-stone-400 text-[16px] md:text-[20px] font-bold uppercase tracking-widest mb-8 md:mb-12 text-center bg-stone-50 py-2 rounded-full border-2 border-stone-100">Como prefere explorar?</p>
             
-            <div className="flex flex-col gap-6">
-              <button onClick={() => handleCloseSettings(false)} className="bg-sky-50 text-sky-900 p-8 rounded-[2.5rem] border-b-[8px] border-sky-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
-                <div className="bg-white p-6 rounded-full text-sky-500 border-[6px] border-sky-100 shadow-inner group-hover:scale-110 transition-transform"><Rocket size={48} /></div>
+            <div className="flex flex-col gap-4 md:gap-6 overflow-y-auto custom-scrollbar pr-2">
+              <button onClick={() => handleCloseSettings(false)} className={`p-6 md:p-8 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${!state.isSmoothMode ? 'bg-sky-400 text-sky-950 border-sky-500' : 'bg-sky-50 text-sky-900 border-sky-200 hover:bg-sky-100'}`}>
+                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${!state.isSmoothMode ? 'bg-white text-sky-500 border-sky-100' : 'bg-white text-sky-400 border-sky-100'}`}><Rocket size={32} className="md:w-10 md:h-10" /></div>
                 <div>
-                  <div className="font-black uppercase tracking-widest text-[32px] whitespace-nowrap">Competitivo</div>
-                  <div className="text-sky-700 text-[18px] font-bold mt-2 leading-tight">Para imediatamente. Alta performance.</div>
+                  <div className="font-black uppercase tracking-widest text-[20px] md:text-[28px] whitespace-nowrap leading-none mb-1">Competitivo</div>
+                  <div className={`text-[14px] md:text-[16px] font-bold leading-tight ${!state.isSmoothMode ? 'text-sky-900' : 'text-sky-700'}`}>Câmera rápida. Alta performance.</div>
                 </div>
               </button>
 
-              <button onClick={() => handleCloseSettings(true)} className="bg-green-50 text-green-900 p-8 rounded-[2.5rem] border-b-[8px] border-green-200 flex items-center gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group">
-                <div className="bg-white p-6 rounded-full text-green-500 border-[6px] border-green-100 shadow-inner group-hover:scale-110 transition-transform"><Film size={48} /></div>
+              <button onClick={() => handleCloseSettings(true)} className={`p-6 md:p-8 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${state.isSmoothMode ? 'bg-emerald-400 text-emerald-950 border-emerald-500' : 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'}`}>
+                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${state.isSmoothMode ? 'bg-white text-emerald-500 border-emerald-100' : 'bg-white text-emerald-400 border-emerald-100'}`}><Film size={32} className="md:w-10 md:h-10" /></div>
                 <div>
-                  <div className="font-black uppercase tracking-widest text-[32px] whitespace-nowrap">Cinematográfico</div>
-                  <div className="text-green-700 text-[18px] font-bold mt-2 leading-tight">Desliza suavemente. Foco visual.</div>
+                  <div className="font-black uppercase tracking-widest text-[20px] md:text-[28px] whitespace-nowrap leading-none mb-1">Cinematográfico</div>
+                  <div className={`text-[14px] md:text-[16px] font-bold leading-tight ${state.isSmoothMode ? 'text-emerald-900' : 'text-emerald-700'}`}>Desliza suavemente. Foco visual.</div>
                 </div>
               </button>
             </div>
+            
           </div>
         </div>
       )}
