@@ -36,14 +36,30 @@ export default function ResultScreen({ score, bestScore, guessedCount, reason, o
     const modeText = gameMode === 'football' ? 'clubes de futebol' : 'países';
     const shareText = `🌍 Fiz ${score} pontos e encontrei ${guessedCount} ${modeText} no GenoAtlas!\n\nConsegue bater o meu recorde? 🏆 jogue agora:`;
     const shareUrl = 'https://by-lelaebirds.github.io/GenoAtlas/';
+    const fullText = `${shareText} ${shareUrl}`;
 
+    // Tenta usar a API nativa de compartilhamento se o navegador suportar
     if (navigator.share) {
-      try { await navigator.share({ title: 'Meu Recorde', text: shareText, url: shareUrl }); } 
-      catch (err) { console.log('Cancelado', err); }
-    } else {
-      navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      try { 
+        await navigator.share({ title: 'Meu Recorde', text: shareText, url: shareUrl }); 
+        return; // Interrompe a execução caso o usuário tenha compartilhado com sucesso nativamente
+      } catch (err) { 
+        // Se o usuário abortar, nós não fazemos o fallback. Apenas logamos.
+        if (err.name !== 'AbortError') {
+          console.log('API de Compartilhamento falhou, tentando Clipboard...', err);
+        } else {
+          return;
+        }
+      }
+    } 
+    
+    // Fallback: Copia o link se a API nativa não estiver presente ou falhar
+    try {
+      await navigator.clipboard.writeText(fullText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Falha ao copiar para área de transferência', err);
     }
   };
 
