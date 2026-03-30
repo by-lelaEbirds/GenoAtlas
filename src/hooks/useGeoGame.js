@@ -4,6 +4,7 @@ import { saveNativeData, getNativeData } from '../utils/storage';
 import { GAME_STATES, GAME_MODES, MAP_THEMES, ACHIEVEMENTS_LIST } from '../constants';
 import { FOOTBALL_CLUBS } from '../constants/football';
 import { CAPITALS_MAP } from '../constants/capitals';
+import { AVATARS } from '../constants/shop';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
@@ -18,14 +19,12 @@ const getDailyCountries = (pool) => {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 
-  // Implementação correta do Algoritmo de Fisher-Yates para embaralhamento determinístico seguro
   const filtered = pool.filter(c => c.pop > 10000000);
   const shuffled = [...filtered];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  
   return shuffled.slice(0, 5);
 };
 
@@ -45,8 +44,14 @@ export function useGeoGame(globeRef) {
 
   const [coins, setCoins] = useState(0);
   const [lastCoinsEarned, setLastCoinsEarned] = useState(0);
+  
+  // SISTEMA DA LOJA
   const [unlockedThemes, setUnlockedThemes] = useState(['explorador']); 
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.explorador);
+  const [unlockedAvatars, setUnlockedAvatars] = useState(['pin']);
+  const [activeAvatar, setActiveAvatar] = useState(AVATARS[0]);
+  const [powerUps, setPowerUps] = useState({ extraLife: 0, freezeTime: 0, discount: 0 });
+  const [showShop, setShowShop] = useState(false);
   
   const [activeRegion, setActiveRegion] = useState('all');
 
@@ -101,6 +106,11 @@ export function useGeoGame(globeRef) {
         const hasSeenTuto = await getNativeData('geoGuessTutorial');
         const savedSmooth = await getNativeData('geoGuessSmoothMode');
         const savedDaily = await getNativeData('geoGuessDaily');
+        
+        // Carregando dados da Loja
+        const savedAvatars = await getNativeData('geoGuessAvatars');
+        const savedActiveAvatar = await getNativeData('geoGuessActiveAvatar');
+        const savedPowerUps = await getNativeData('geoGuessPowerUps');
 
         if (savedScore) setBestScore(parseInt(savedScore, 10));
         if (savedCoins) setCoins(parseInt(savedCoins, 10));
@@ -109,10 +119,15 @@ export function useGeoGame(globeRef) {
           const savedIds = JSON.parse(savedThemes);
           const validIds = [...new Set(['explorador', ...savedIds])].filter(id => id in MAP_THEMES);
           setUnlockedThemes(validIds);
-        } else {
-          setUnlockedThemes(['explorador']);
         }
         
+        if (savedAvatars) setUnlockedAvatars(JSON.parse(savedAvatars));
+        if (savedActiveAvatar) {
+          const found = AVATARS.find(a => a.id === savedActiveAvatar);
+          if (found) setActiveAvatar(found);
+        }
+        if (savedPowerUps) setPowerUps(JSON.parse(savedPowerUps));
+
         if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
         if (!hasSeenTuto) setShowTutorial(true);
         if (savedDaily) setLastDailyDate(savedDaily);
@@ -332,7 +347,11 @@ export function useGeoGame(globeRef) {
 
     playTone(600, 'square', 0.1); 
     setScore(0); setStreak(0); setTimeLeft(60); 
-    setLives(mode === GAME_MODES.DAILY ? 1 : 3);
+    
+    // APLICAÇÃO DO POWER-UP: VIDA EXTRA
+    const baseLives = mode === GAME_MODES.DAILY ? 1 : 3;
+    setLives(baseLives + powerUps.extraLife);
+
     setGuessedCountries([]); setTravelArcs([]); setImpactRings([]); setFloatingPoints([]);
     setIsTimerFrozen(false);
     setFreezeTimeLeft(0);
@@ -366,8 +385,11 @@ export function useGeoGame(globeRef) {
   };
 
   const skipCountry = () => {
-    if (coinsRef.current >= 50) {
-      const nextCoins = coinsRef.current - 50;
+    // APLICAÇÃO DO POWER-UP: PULO MAIS BARATO
+    const cost = 50 - (powerUps.discount * 5); 
+    
+    if (coinsRef.current >= cost) {
+      const nextCoins = coinsRef.current - cost;
       setCoins(nextCoins);
       saveNativeData('geoGuessCoins', nextCoins);
       playSound('coin', 0.6);
@@ -394,7 +416,9 @@ export function useGeoGame(globeRef) {
       setCoins(nextCoins);
       saveNativeData('geoGuessCoins', nextCoins);
       playSound('coin', 0.6); 
-      setFreezeTimeLeft(10); 
+      
+      // APLICAÇÃO DO POWER-UP: TEMPO CONGELADO EXTRA (+2s por level)
+      setFreezeTimeLeft(10 + (powerUps.freezeTime * 2)); 
     }
   };
 
@@ -510,13 +534,15 @@ export function useGeoGame(globeRef) {
       bestScore, lives, targetCountry, targetClub, screenFlash, isShaking,
       floatingPoints, todayStr, lastDailyDate, studyCard,
       unlockedAchievements, showTutorial, showAchievements, achievementToast,
-      freezeTimeLeft, isSmoothMode, showSettingsPrompt
+      freezeTimeLeft, isSmoothMode, showSettingsPrompt,
+      unlockedAvatars, activeAvatar, powerUps, showShop
     },
     actions: {
       startGame, endGame, quitGame, resetGlobe, setCoins, setUnlockedThemes,
       setActiveTheme, setActiveRegion, handleCountryClick, dismissStudyCard,
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
-      skipCountry, revive, freezeTime, applySettings
+      skipCountry, revive, freezeTime, applySettings, 
+      setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop // Ações da loja
     }
   };
 }
