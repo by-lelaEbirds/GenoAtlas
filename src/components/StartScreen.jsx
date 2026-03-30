@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart } from 'lucide-react';
+import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles } from 'lucide-react';
 import AdBanner from './AdBanner';
-import { saveNativeData } from '../utils/storage'; // IMPORTAÇÃO CENTRALIZADA
+import { saveNativeData } from '../utils/storage';
 
 export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, activeAvatar, setShowShop }) {
   
@@ -56,7 +56,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   return (
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
-      {/* A11Y: aria-hidden true esconde do TalkBack do Android para não poluir a leitura de tela */}
+      {/* BACKGROUND DECORATIVO */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
         <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
@@ -77,6 +77,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
       </header>
 
+      {/* CARROSSEL DE MODOS DE JOGO */}
       <div className="relative z-10 pt-[calc(140px+env(safe-area-inset-top))] pb-8 animate-fade-in-up">
         <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
           <h2 className="text-[20px] md:text-[32px] font-black uppercase tracking-widest text-sky-900">Modos de Jogo</h2>
@@ -84,7 +85,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
         
         <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-6 snap-x custom-scrollbar">
-          
           <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center border-[6px] md:border-[8px] transition-all group ${dailyCompleted ? 'bg-stone-300 border-stone-400 opacity-80 cursor-not-allowed' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 active:scale-95 shadow-lg'}`}>
             <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mb-4 border-[6px] shadow-inner ${dailyCompleted ? 'bg-stone-400 border-stone-500 text-stone-200' : 'bg-rose-500 border-rose-600 text-white group-hover:scale-110 transition-transform'}`}>
               {dailyCompleted ? <CheckCircle size={40} strokeWidth={2.5}/> : <Calendar size={40} strokeWidth={2.5} />}
@@ -108,7 +108,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-emerald-800">Estudo</span>
             <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-emerald-500">Sem pressa</span>
           </button>
-
         </div>
       </div>
 
@@ -120,8 +119,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-10">
-        <div aria-hidden="true" className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[12px] md:w-[16px] border-l-[12px] md:border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
-
+        
+        {/* AVATAR DESLIZANTE */}
         <div 
           aria-hidden="true"
           className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
@@ -137,12 +136,18 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short"></div>
         </div>
 
+        {/* NODOS DA JORNADA */}
         {themeNodes.map((t, index) => {
           const isUnlocked = unlockedThemes.includes(t.id);
           const isCurrent = currentTheme.id === t.id;
+          
+          // Lógica para acender a trilha apenas se o PRÓXIMO bioma estiver desbloqueado
+          const nextTheme = themeNodes[index + 1];
+          const isNextUnlocked = nextTheme ? unlockedThemes.includes(nextTheme.id) : false;
 
           return (
             <div key={t.id} className="relative flex flex-col items-center z-10 mb-[450px] md:mb-[600px] w-full max-w-[320px]">
+              
               <button 
                 aria-label={isUnlocked ? `Tema ${t.name} Desbloqueado` : `Desbloquear tema ${t.name} por ${t.price} moedas`}
                 onClick={() => {
@@ -152,7 +157,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   } 
                   else { handleThemeSelect(t); }
                 }}
-                className={`w-[160px] h-[160px] md:w-[208px] md:h-[208px] rounded-full flex items-center justify-center border-[10px] md:border-[12px] relative transition-all group ${
+                className={`w-[160px] h-[160px] md:w-[208px] md:h-[208px] rounded-full flex items-center justify-center border-[10px] md:border-[12px] relative transition-all group z-20 ${
                   isUnlocked 
                     ? isCurrent 
                       ? 'bg-amber-400 border-white shadow-[0_16px_0_#b45309,0_0_40px_rgba(251,191,36,0.6)] md:shadow-[0_24px_0_#b45309,0_0_60px_rgba(251,191,36,0.6)] active:translate-y-[12px] md:active:translate-y-[16px] active:shadow-[0_6px_0_#b45309]' 
@@ -174,7 +179,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   if (isUnlocked) { setTheme(t); setShowRegionModal(true); } 
                   else { handleThemeSelect(t); }
                 }}
-                className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-20 whitespace-nowrap scale-100 md:scale-110 transition-all active:scale-95 ${isUnlocked ? 'bg-white border-stone-300 shadow-xl cursor-pointer hover:bg-stone-50' : 'bg-stone-100 border-stone-300 cursor-not-allowed'}`}
+                className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-30 whitespace-nowrap scale-100 md:scale-110 transition-all active:scale-95 ${isUnlocked ? 'bg-white border-stone-300 shadow-xl cursor-pointer hover:bg-stone-50' : 'bg-stone-100 border-stone-300 cursor-not-allowed'}`}
               >
                 <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest ${isUnlocked ? 'text-stone-800' : 'text-stone-400'}`}>
                   {isUnlocked && isCurrent ? 'Jogar Agora' : t.name}
@@ -182,13 +187,32 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               </button>
 
               {!isUnlocked && (
-                <div aria-hidden="true" className="absolute -bottom-[100px] md:-bottom-[140px] flex flex-col items-center animate-pulse-slow pointer-events-none">
+                <div aria-hidden="true" className="absolute -bottom-[100px] md:-bottom-[140px] flex flex-col items-center animate-pulse-slow pointer-events-none z-30">
                   <div className="bg-amber-400 px-6 py-2 md:px-10 md:py-4 rounded-full border-2 border-amber-500 shadow-xl flex items-center gap-2 md:gap-3 scale-100 md:scale-110 whitespace-nowrap min-w-max">
                     <Lock className="w-5 h-5 md:w-7 md:h-7 text-amber-900"/>
                     <span className="text-[18px] md:text-[24px] font-black text-amber-900">Desbloquear: {t.price} 🪙</span>
                   </div>
                 </div>
               )}
+
+              {/* NOVA TRILHA GAMIFICADA (Scenery & Stepping Stones) */}
+              <div aria-hidden="true" className="absolute top-[160px] md:top-[208px] left-1/2 -translate-x-1/2 h-[450px] md:h-[600px] w-full flex flex-col items-center justify-evenly py-10 md:py-16 z-0 pointer-events-none">
+                
+                {/* Pedrinhas (Stepping Stones) */}
+                {[...Array(isMobile ? 4 : 5)].map((_, i) => (
+                  <div key={i} className={`w-4 h-4 md:w-6 md:h-6 rounded-full transition-colors duration-500 ${isNextUnlocked ? 'bg-amber-300 shadow-[inset_0_3px_6px_rgba(180,83,9,0.3)]' : 'bg-stone-200 shadow-inner'}`}></div>
+                ))}
+
+                {/* Elementos flutuantes de cenário (Nuvens, Árvores, Montanhas, Brilhos) */}
+                <div className={`absolute top-[20%] ${index % 2 === 0 ? 'left-[-40px] md:left-[-120px]' : 'right-[-40px] md:right-[-120px]'} animate-float opacity-70 drop-shadow-sm`}>
+                  {index % 3 === 0 ? <Cloud size={isMobile ? 80 : 130} className="text-sky-200 fill-sky-50" strokeWidth={2}/> : index % 3 === 1 ? <TreePine size={isMobile ? 80 : 130} className="text-emerald-200 fill-emerald-50" strokeWidth={2}/> : <Mountain size={isMobile ? 80 : 130} className="text-stone-300 fill-stone-100" strokeWidth={2}/>}
+                </div>
+
+                <div className={`absolute top-[65%] ${index % 2 === 0 ? 'right-[-50px] md:right-[-150px]' : 'left-[-50px] md:left-[-150px]'} animate-float opacity-60 drop-shadow-sm`} style={{ animationDelay: '1.5s' }}>
+                  {index % 2 === 0 ? <Cloud size={isMobile ? 60 : 100} className="text-sky-200 fill-sky-50" strokeWidth={2}/> : <Sparkles size={isMobile ? 50 : 80} className="text-amber-200 fill-amber-50" strokeWidth={2}/>}
+                </div>
+
+              </div>
             </div>
           );
         })}
@@ -205,7 +229,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <div className="w-full mt-16 scale-125 md:scale-150 transform origin-top"><AdBanner dataAdSlot="START_SCREEN_SLOT" /></div>
       </div>
 
-      {/* NAV BAR INFERIOR */}
       <nav aria-label="Navegação Principal" className="fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl flex justify-around items-center px-1 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 md:pt-6 border-t-2 border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.03)] rounded-t-[2.5rem] md:rounded-t-[4rem]">
         <button aria-label="Ir para Início" className="flex flex-col items-center justify-center text-sky-500 active:scale-95 transition-all group w-20 md:w-32">
           <div className="bg-sky-100 p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 group-active:bg-sky-200 transition-colors"><Home className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
@@ -274,7 +297,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
       )}
-
     </div>
   );
 }
