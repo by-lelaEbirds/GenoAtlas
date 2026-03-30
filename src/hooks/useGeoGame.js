@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { playTone, playSound } from '../utils/audio';
 import { saveNativeData, getNativeData } from '../utils/storage';
-import { GAME_STATES, GAME_MODES, MAP_THEMES, ACHIEVEMENTS_LIST } from '../constants';
+import { GAME_STATES, GAME_MODES, MAP_THEMES } from '../constants';
 import { FOOTBALL_CLUBS } from '../constants/football';
 import { CAPITALS_MAP } from '../constants/capitals';
 import { AVATARS } from '../constants/shop';
 import { PROMO_CODES } from '../constants/promoCodes';
+import { ACHIEVEMENTS_LIST } from '../constants/achievements'; // NOVA IMPORTAÇÃO DE CONQUISTAS
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
@@ -53,7 +54,6 @@ export function useGeoGame(globeRef) {
   const [powerUps, setPowerUps] = useState({ extraLife: 0, freezeTime: 0, discount: 0 });
   const [showShop, setShowShop] = useState(false);
   
-  // ESTADO DE CÓDIGOS PROMOCIONAIS
   const [redeemedCodes, setRedeemedCodes] = useState([]);
   
   const [activeRegion, setActiveRegion] = useState('all');
@@ -75,6 +75,9 @@ export function useGeoGame(globeRef) {
   const [streak, setStreak] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
+
+  // NOVO: Acompanhamento de vitórias diárias para Conquistas
+  const [dailyWinsCount, setDailyWinsCount] = useState(0);
 
   const scoreRef = useRef(0);
   const coinsRef = useRef(0);
@@ -109,15 +112,15 @@ export function useGeoGame(globeRef) {
         const hasSeenTuto = await getNativeData('geoGuessTutorial');
         const savedSmooth = await getNativeData('geoGuessSmoothMode');
         const savedDaily = await getNativeData('geoGuessDaily');
+        const savedDailyWins = await getNativeData('geoGuessDailyWinsCount');
         const savedAvatars = await getNativeData('geoGuessAvatars');
         const savedActiveAvatar = await getNativeData('geoGuessActiveAvatar');
         const savedPowerUps = await getNativeData('geoGuessPowerUps');
-        
-        // Carregando códigos já usados
         const savedRedeemedCodes = await getNativeData('geoGuessRedeemedCodes');
 
         if (savedScore) setBestScore(parseInt(savedScore, 10));
         if (savedCoins) setCoins(parseInt(savedCoins, 10));
+        if (savedDailyWins) setDailyWinsCount(parseInt(savedDailyWins, 10));
         
         if (savedThemes) {
           const savedIds = JSON.parse(savedThemes);
@@ -131,9 +134,7 @@ export function useGeoGame(globeRef) {
           if (found) setActiveAvatar(found);
         }
         if (savedPowerUps) setPowerUps(JSON.parse(savedPowerUps));
-        
         if (savedRedeemedCodes) setRedeemedCodes(JSON.parse(savedRedeemedCodes));
-
         if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
         if (!hasSeenTuto) setShowTutorial(true);
         if (savedDaily) setLastDailyDate(savedDaily);
@@ -242,27 +243,37 @@ export function useGeoGame(globeRef) {
   };
 
   const unlockAchievement = useCallback((id) => {
-    if (unlockedAchievements.includes(id)) return;
-    const achievementData = ACHIEVEMENTS_LIST.find(a => a.id === id);
-    if (!achievementData) return;
+    setUnlockedAchievements(prev => {
+      if (prev.includes(id)) return prev;
+      
+      const achievementData = ACHIEVEMENTS_LIST.find(a => a.id === id);
+      if (!achievementData) return prev;
 
-    const newUnlocked = [...unlockedAchievements, id];
-    setUnlockedAchievements(newUnlocked);
-    saveNativeData('geoGuessAchievements', JSON.stringify(newUnlocked));
-    
-    if (achievementData.reward > 0) {
-      const nextCoins = coinsRef.current + achievementData.reward;
-      setCoins(nextCoins);
-      saveNativeData('geoGuessCoins', nextCoins);
-    }
-    setAchievementToast(achievementData);
-    try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
-    playSound('coin', 0.7);
-    setTimeout(() => setAchievementToast(null), 4000);
-  }, [unlockedAchievements]);
+      const newUnlocked = [...prev, id];
+      saveNativeData('geoGuessAchievements', JSON.stringify(newUnlocked));
+      
+      if (achievementData.reward > 0) {
+        setCoins(c => {
+          const nextCoins = c + achievementData.reward;
+          saveNativeData('geoGuessCoins', nextCoins);
+          return nextCoins;
+        });
+      }
+      
+      setAchievementToast(achievementData);
+      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+      playSound('coin', 0.7);
+      setTimeout(() => setAchievementToast(null), 4000);
+      
+      return newUnlocked;
+    });
+  }, []);
 
+  // VERIFICADOR CONSTANTE DE CONQUISTAS DE RIQUEZA
   useEffect(() => {
-    if (coins >= 1000) unlockAchievement('wealthy');
+    if (coins >= 1000) unlockAchievement('wealthy_1');
+    if (coins >= 5000) unlockAchievement('wealthy_2');
+    if (coins >= 10000) unlockAchievement('wealthy_3');
   }, [coins, unlockAchievement]);
 
   const endGame = useCallback((reason) => {
@@ -278,7 +289,16 @@ export function useGeoGame(globeRef) {
       setLastDailyDate(todayStr);
       if (reason === 'daily_win') {
         earnedCoins += 500;
-        unlockAchievement('daily_win');
+        
+        // NOVO: Adiciona a vitória e checa as conquistas do diário
+        setDailyWinsCount(prev => {
+          const newTotal = prev + 1;
+          saveNativeData('geoGuessDailyWinsCount', newTotal);
+          if (newTotal === 1) unlockAchievement('daily_win_1');
+          if (newTotal === 5) unlockAchievement('daily_win_5');
+          if (newTotal === 10) unlockAchievement('daily_win_10');
+          return newTotal;
+        });
       }
     }
 
@@ -291,6 +311,11 @@ export function useGeoGame(globeRef) {
       setBestScore(scoreRef.current);
       saveNativeData('geoGuessBestScore', scoreRef.current);
     }
+    
+    // VERIFICAÇÃO DE CONQUISTAS DE PONTOS
+    if (scoreRef.current >= 1000) unlockAchievement('score_1000');
+    if (scoreRef.current >= 5000) unlockAchievement('score_5000');
+    if (scoreRef.current >= 10000) unlockAchievement('score_10000');
 
     if (reason === 'daily_loss' || reason === 'time') playSound('error', 0.6);
     else if (reason === 'daily_win' || reason === 'win') playSound('success', 0.8);
@@ -316,7 +341,6 @@ export function useGeoGame(globeRef) {
     if (globeRef.current) globeRef.current.resetPosition();
   }, [globeRef]);
 
-  // FUNÇÃO DE RESGATE DE CÓDIGO PROMOCIONAL
   const redeemCode = (rawCode) => {
     const code = rawCode.trim().toUpperCase();
     if (!code) return { success: false, message: 'Digite um código válido!' };
@@ -338,9 +362,11 @@ export function useGeoGame(globeRef) {
         saveNativeData('geoGuessCoins', nextCoins);
       }
       
+      unlockAchievement('promo_code'); // Aciona a conquista de Apoiador
+      
       try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
       playSound('success', 0.8);
-      setTimeout(() => playSound('coin', 0.9), 500); // Toca sonzinho de moeda logo depois
+      setTimeout(() => playSound('coin', 0.9), 500);
       
       return { success: true, message: promo.message };
     }
@@ -486,6 +512,7 @@ export function useGeoGame(globeRef) {
       unlockAchievement('first_country');
       if (curStreak === 3) unlockAchievement('combo_3');
       if (curStreak === 5) unlockAchievement('combo_5');
+      if (curStreak === 10) unlockAchievement('combo_10'); // NOVA CONQUISTA ADICIONADA AQUI
 
       if (isCombo) setTimeLeft(t => t + 5);
       
