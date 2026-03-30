@@ -193,45 +193,45 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-      {/* APLICADO A ANIMAÇÃO DE FECHAR AQUI NO MODAL DE REGIÕES */}
+{/* APLICADO O PADRÃO DE OVERLAY E BORDAS NO MODAL DE REGIÕES */}
       {showRegionModal && (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-sky-900/80 backdrop-blur-md px-4 md:px-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
-          <div className={`bg-white border-b-[8px] md:border-b-[12px] border-stone-200 p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
               <h2 className="text-[32px] md:text-[48px] font-black text-sky-900 uppercase tracking-tighter leading-none">Onde Pousar?</h2>
-              <button onClick={closeRegionModal} className="bg-stone-100 p-3 md:p-4 rounded-full text-stone-500 hover:bg-rose-100 hover:text-rose-500 active:scale-90 transition-all">
+              <button onClick={closeRegionModal} className="bg-stone-100 p-3 md:p-4 rounded-full text-stone-400 hover:bg-rose-100 hover:text-rose-500 active:scale-95 transition-all">
                 <X className="w-6 h-6 md:w-10 md:h-10" strokeWidth={3} />
               </button>
             </div>
             
             <div className="grid grid-cols-2 gap-3 md:gap-6 overflow-y-auto custom-scrollbar pb-4 pr-1 md:pr-2">
-              <button onClick={() => handleRegionSelect('all')} className="col-span-2 bg-gradient-to-r from-sky-400 to-sky-500 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 border-b-[6px] md:border-b-[8px] border-sky-600 shadow-lg active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-0 transition-all">
+              <button onClick={() => handleRegionSelect('all')} className="col-span-2 bg-gradient-to-r from-sky-400 to-sky-500 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 border-b-[8px] md:border-b-[10px] border-sky-600 shadow-lg active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-0 transition-all">
                 <span className="text-[40px] md:text-[64px] leading-none drop-shadow-md">🌍</span>
                 <span className="text-[20px] md:text-[32px] font-black text-white uppercase tracking-widest mt-1 md:mt-2 drop-shadow-sm">Mundo Todo</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Americas')} className="bg-emerald-50 border-[6px] border-b-[8px] md:border-[8px] md:border-b-[12px] border-emerald-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-emerald-100 active:translate-y-[8px] md:active:translate-y-[12px] active:border-b-[4px] md:active:border-b-[8px] transition-all">
+              <button onClick={() => handleRegionSelect('Americas')} className="bg-emerald-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-emerald-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-emerald-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
                 <span className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">🌎</span>
-                <span className="text-[16px] md:text-[24px] font-black text-emerald-800 uppercase tracking-widest">Américas</span>
+                <span className="text-[14px] md:text-[20px] font-black text-emerald-800 uppercase tracking-widest">Américas</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Europe')} className="bg-indigo-50 border-[6px] border-b-[8px] md:border-[8px] md:border-b-[12px] border-indigo-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-indigo-100 active:translate-y-[8px] md:active:translate-y-[12px] active:border-b-[4px] md:active:border-b-[8px] transition-all">
+              <button onClick={() => handleRegionSelect('Europe')} className="bg-indigo-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-indigo-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-indigo-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
                 <span className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">🏰</span>
-                <span className="text-[16px] md:text-[24px] font-black text-indigo-800 uppercase tracking-widest">Europa</span>
+                <span className="text-[14px] md:text-[20px] font-black text-indigo-800 uppercase tracking-widest">Europa</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Asia')} className="bg-rose-50 border-[6px] border-b-[8px] md:border-[8px] md:border-b-[12px] border-rose-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-rose-100 active:translate-y-[8px] md:active:translate-y-[12px] active:border-b-[4px] md:active:border-b-[8px] transition-all">
+              <button onClick={() => handleRegionSelect('Asia')} className="bg-rose-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-rose-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-rose-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
                 <span className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">⛩️</span>
-                <span className="text-[16px] md:text-[24px] font-black text-rose-800 uppercase tracking-widest">Ásia</span>
+                <span className="text-[14px] md:text-[20px] font-black text-rose-800 uppercase tracking-widest">Ásia</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Africa')} className="bg-amber-50 border-[6px] border-b-[8px] md:border-[8px] md:border-b-[12px] border-amber-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-amber-100 active:translate-y-[8px] md:active:translate-y-[12px] active:border-b-[4px] md:active:border-b-[8px] transition-all">
+              <button onClick={() => handleRegionSelect('Africa')} className="bg-amber-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-amber-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-amber-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
                 <span className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">🦁</span>
-                <span className="text-[16px] md:text-[24px] font-black text-amber-800 uppercase tracking-widest">África</span>
+                <span className="text-[14px] md:text-[20px] font-black text-amber-800 uppercase tracking-widest">África</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Oceania')} className="col-span-2 bg-teal-50 border-[6px] border-b-[8px] md:border-[8px] md:border-b-[12px] border-teal-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 shadow-sm hover:bg-teal-100 active:translate-y-[8px] md:active:translate-y-[12px] active:border-b-[4px] md:active:border-b-[8px] transition-all mt-1 md:mt-2">
+              <button onClick={() => handleRegionSelect('Oceania')} className="col-span-2 bg-teal-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-teal-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 shadow-sm hover:bg-teal-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all mt-1 md:mt-2">
                 <span className="text-[40px] md:text-[64px] leading-none drop-shadow-sm">🦘</span>
                 <span className="text-[20px] md:text-[32px] font-black text-teal-800 uppercase tracking-widest mt-1 md:mt-2">Oceania</span>
               </button>
