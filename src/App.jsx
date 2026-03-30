@@ -4,7 +4,7 @@ import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
 import { TutorialModal, AchievementsModal, ShopModal } from './components/Modals';
-import { Trophy, Coins, Rocket, Film, X, Gift } from 'lucide-react';
+import { Trophy, Coins, Rocket, Film, X, Gift, Compass } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
@@ -14,26 +14,34 @@ export default function App() {
   const { state, actions } = useGeoGame(globeRef);
   
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
   
-  // ESTADOS DE FECHAMENTO PARA ANIMAÇÕES
   const [isClosingSettings, setIsClosingSettings] = useState(false);
   const [isClosingStudyCard, setIsClosingStudyCard] = useState(false);
   
-  // ESTADOS LOCAIS PARA O CÓDIGO PROMOCIONAL
   const [promoInput, setPromoInput] = useState('');
   const [promoFeedback, setPromoFeedback] = useState(null);
 
+  // STARTUP INICIAL
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 150);
     return () => clearTimeout(timer);
   }, []);
+
+  // SISTEMA DE LOADING PARA TROCA DE BIOMAS (Otimização de GPU Android)
+  useEffect(() => {
+    if (!isLoaded) return;
+    setIsChangingTheme(true);
+    const themeTimer = setTimeout(() => setIsChangingTheme(false), 800);
+    return () => clearTimeout(themeTimer);
+  }, [state.activeTheme.id, isLoaded]);
 
   const handleCloseSettings = (isSmooth) => {
     setIsClosingSettings(true);
     setTimeout(() => {
       actions.applySettings(isSmooth);
       setIsClosingSettings(false);
-      setPromoFeedback(null); // Reseta a mensagem de promo ao fechar
+      setPromoFeedback(null); 
       setPromoInput('');
     }, 200); 
   };
@@ -54,7 +62,6 @@ export default function App() {
     }, 200);
   };
 
-  // FUNÇÃO QUE RODA NO CLIQUE DE "RESGATAR"
   const handleRedeemClick = () => {
     if(!promoInput) return;
     const result = actions.redeemCode(promoInput);
@@ -66,10 +73,8 @@ export default function App() {
   return (
     <div className={`relative w-full h-[100dvh] overflow-hidden select-none bg-white transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0 scale-105'}`}>
       
-      {/* OVERLAY DE FLASH DE TELA (ACERTO, ERRO E TEMPO ACABANDO) */}
       <div className={`absolute inset-0 pointer-events-none z-10 transition-colors duration-200 ${state.screenFlash === 'success' ? 'bg-green-500/20' : state.screenFlash === 'error' ? 'bg-rose-500/20' : state.timeLeft <= 10 && state.gameState === GAME_STATES.PLAYING && !state.studyCard && state.gameMode !== GAME_MODES.STUDY ? 'shadow-[inset_0_0_100px_rgba(244,63,94,0.2)]' : ''}`} />
 
-      {/* TOAST DE CONQUISTAS */}
       {state.achievementToast && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[200] animate-fade-in-up w-max max-w-[90vw]">
           <div className="bg-amber-400 p-[6px] rounded-full shadow-lg">
@@ -84,12 +89,16 @@ export default function App() {
         </div>
       )}
 
-      {/* PONTOS FLUTUANTES NO CLIQUE */}
       {state.floatingPoints.map(point => (
         <div key={point.id} className={`absolute z-50 pointer-events-none animate-float-point text-[32px] font-black drop-shadow-md ${point.colorClass}`} style={{ left: point.x - 30, top: point.y - 60 }}>{point.text}</div>
       ))}
 
-      {/* GLOBO 3D */}
+      {/* TELA DE LOADING AO TROCAR DE BIOMA (MASCARA O ENGASGO DO WEBGL) */}
+      <div aria-hidden={!isChangingTheme} className={`absolute inset-0 z-[150] bg-stone-900 flex flex-col items-center justify-center transition-opacity duration-300 pointer-events-none ${isChangingTheme ? 'opacity-100' : 'opacity-0'}`}>
+         <Compass className="text-sky-400 w-16 h-16 animate-spin-slow mb-4" strokeWidth={2.5} />
+         <p className="text-white font-black uppercase tracking-widest text-[18px]">Sincronizando Bioma...</p>
+      </div>
+
       <GlobeVisualizer 
         ref={globeRef} geoData={state.geoData} onCountryClick={actions.handleCountryClick} 
         theme={state.activeTheme} gameState={state.gameState} guessedCountries={state.guessedCountries} 
@@ -97,11 +106,9 @@ export default function App() {
         isSmoothMode={state.isSmoothMode} 
       />
       
-      {/* MODAIS GERAIS */}
       {state.showTutorial && <TutorialModal onClose={actions.closeTutorial} />}
       {state.showAchievements && <AchievementsModal onClose={() => actions.setShowAchievements(false)} unlockedIds={state.unlockedAchievements} />}
       
-      {/* MODAL DA LOJA DE AVATARES E POWER-UPS */}
       {state.showShop && (
         <ShopModal 
           onClose={() => actions.setShowShop(false)}
@@ -116,7 +123,6 @@ export default function App() {
         />
       )}
 
-      {/* MODAL DE CONFIGURAÇÕES (ESTILO DE JOGO + CÓDIGOS) */}
       {state.showSettingsPrompt && (
         <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
@@ -130,7 +136,6 @@ export default function App() {
             
             <div className="flex flex-col gap-4 md:gap-6 overflow-y-auto custom-scrollbar pr-2 pb-4">
               
-              {/* SESSÃO 1: ESTILO DE JOGO */}
               <button onClick={() => actions.applySettings(false)} className={`p-5 md:p-6 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${!state.isSmoothMode ? 'bg-sky-400 text-sky-950 border-sky-500' : 'bg-sky-50 text-sky-900 border-sky-200 hover:bg-sky-100'}`}>
                 <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${!state.isSmoothMode ? 'bg-white text-sky-500 border-sky-100' : 'bg-white text-sky-400 border-sky-100'}`}><Rocket size={28} className="md:w-8 md:h-8" /></div>
                 <div>
@@ -147,7 +152,6 @@ export default function App() {
                 </div>
               </button>
 
-              {/* SESSÃO 2: CÓDIGO PROMOCIONAL */}
               <div className="mt-2 border-t-[4px] border-stone-100 pt-6">
                 <div className="flex items-center gap-3 mb-4 justify-center">
                   <Gift className="text-amber-500 w-6 h-6 md:w-8 md:h-8" strokeWidth={2.5}/>
@@ -168,7 +172,7 @@ export default function App() {
                 </div>
                 
                 {promoFeedback && (
-                  <p className={`mt-4 text-center font-black uppercase tracking-widest text-[14px] md:text-[16px] animate-fade-in-up ${promoFeedback.success ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <p aria-live="polite" className={`mt-4 text-center font-black uppercase tracking-widest text-[14px] md:text-[16px] animate-fade-in-up ${promoFeedback.success ? 'text-emerald-500' : 'text-rose-500'}`}>
                     {promoFeedback.message}
                   </p>
                 )}
@@ -179,7 +183,6 @@ export default function App() {
         </div>
       )}
 
-      {/* TELA DE INÍCIO */}
       {state.gameState === GAME_STATES.START && (
         <StartScreen 
           onStart={(region) => actions.startGame('normal', region)} 
@@ -203,7 +206,6 @@ export default function App() {
         />
       )}
       
-      {/* TELA DE RESULTADOS */}
       {state.gameState === GAME_STATES.RESULT && (
         <ResultScreen 
           score={state.score} reason={state.endReason} bestScore={state.bestScore} 
@@ -214,10 +216,8 @@ export default function App() {
         />
       )}
 
-      {/* HUD DE JOGO */}
       <GameHUD state={state} actions={actions} />
       
-      {/* CARD DE ESTUDO */}
       {state.studyCard && (
         <div className={`absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-6 pointer-events-auto ${isClosingStudyCard ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[16px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative pt-32 mt-16 ${isClosingStudyCard ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
