@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { Preferences } from '@capacitor/preferences';
 
@@ -11,18 +11,23 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleThemeSelect = (theme) => {
     if (coins >= theme.price) {
       const newCoins = coins - theme.price;
-      
       let newThemes = unlockedThemes;
       if (!unlockedThemes.includes(theme.id)) {
         newThemes = [...unlockedThemes, theme.id];
         setUnlockedThemes(newThemes);
         saveNativeData('geoGuessThemes', JSON.stringify(newThemes));
       }
-      
       setCoins(newCoins); 
       saveNativeData('geoGuessCoins', newCoins);
       setTheme(theme);
@@ -47,73 +52,107 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   };
 
   const themeNodes = Object.values(themes);
+  const currentIndex = themeNodes.findIndex(t => t.id === currentTheme.id);
   
-  // AJUSTE MOBILE: Posições relativas ajustadas para não vazar a tela em aparelhos estreitos
-  const sideMissions = [
-    { label: 'Futebol', icon: <Shield className="w-10 h-10 md:w-14 md:h-14 text-white" strokeWidth={2.5} />, onClick: onFootball, bg: 'bg-[#4bbaff]', border: 'border-[#14adf8]', shadow: 'shadow-[0_8px_0_#00618f] md:shadow-[0_10px_0_#00618f]', text: 'text-[#00618f]', pos: 'absolute top-[380px] md:top-[420px] left-[55%] md:left-[60%]', disabled: false },
-    { label: 'Estudo', icon: <GraduationCap className="w-10 h-10 md:w-14 md:h-14 text-white" strokeWidth={2.5} />, onClick: onStudy, bg: 'bg-emerald-400', border: 'border-emerald-500', shadow: 'shadow-[0_8px_0_#047857] md:shadow-[0_10px_0_#047857]', text: 'text-emerald-800', pos: 'absolute top-[380px] md:top-[420px] right-[55%] md:right-[60%]', disabled: false },
-    { label: 'Diário', icon: dailyCompleted ? <CheckCircle className="w-10 h-10 md:w-14 md:h-14 text-white" /> : <Calendar className="w-10 h-10 md:w-14 md:h-14 text-white" strokeWidth={2.5} />, onClick: dailyCompleted ? null : onDaily, bg: dailyCompleted ? 'bg-stone-400 grayscale' : 'bg-rose-500', border: dailyCompleted ? 'border-stone-500' : 'border-rose-600', shadow: dailyCompleted ? 'shadow-[0_8px_0_#78716c] md:shadow-[0_10px_0_#9f1239]' : 'shadow-[0_8px_0_#9f1239] md:shadow-[0_10px_0_#9f1239]', text: dailyCompleted ? 'text-stone-600' : 'text-rose-900', pos: 'absolute top-[380px] md:top-[420px] left-[55%] md:left-[60%]', disabled: dailyCompleted }
-  ];
+  // Distância matemática para o Pino deslizar corretamente na linha vertical
+  // Mobile: 160 (altura botão) + 450 (margem) = 610px por item
+  // Desktop: 208 (altura botão) + 600 (margem) = 808px por item
+  const stepHeight = isMobile ? 610 : 808; 
+  const pinOffset = currentIndex * stepHeight;
 
   return (
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
+      {/* Fundo Decorativo */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
         <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-[20%] left-[20%] w-[400px] h-[400px] bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow" style={{animationDelay: '4s'}}></div>
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.4) 2px, transparent 2px), linear-gradient(90deg, rgba(255, 255, 255, 0.4) 2px, transparent 2px)', backgroundSize: '96px 96px' }}></div>
       </div>
       
-      {/* AJUSTE MOBILE: pt-[env(safe-area-inset-top)] previne o header de sumir no notch do iPhone/Android */}
+      {/* Header Fixo */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-white/80 backdrop-blur-md border-b-2 border-white/50 shadow-sm">
         <div className="flex items-center gap-2 md:gap-4">
-          <div className="w-14 h-14 md:w-24 md:h-24 rounded-full flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 shadow-sm border-[3px] md:border-[4px] border-white ring-[3px] md:ring-[4px] ring-sky-100">
-            <Globe className="w-8 h-8 md:w-14 md:h-14 text-white" strokeWidth={2.5} />
+          <div className="w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 shadow-sm border-[3px] md:border-[4px] border-white ring-[3px] md:ring-[4px] ring-sky-100">
+            <Globe className="w-7 h-7 md:w-12 md:h-12 text-white" strokeWidth={2.5} />
           </div>
-          <h1 className="font-black italic tracking-tighter text-[28px] md:text-[50px] text-sky-900 drop-shadow-sm ml-1 md:ml-2">GenoAtlas</h1>
+          <h1 className="font-black italic tracking-tighter text-[24px] md:text-[40px] text-sky-900 drop-shadow-sm ml-1 md:ml-2">GenoAtlas</h1>
         </div>
-        <div className="flex items-center gap-2 md:gap-4 bg-amber-400 border-b-[6px] md:border-b-[8px] border-amber-600 px-4 md:px-8 py-2 md:py-4 rounded-full shadow-sm">
-          <span className="text-amber-950 font-black text-[18px] md:text-[28px] tracking-widest flex items-center gap-2 md:gap-3 whitespace-nowrap">
-            {coins} <span className="text-amber-100 text-[20px] md:text-[28px]">🪙</span>
+        <div className="flex items-center gap-2 md:gap-4 bg-amber-400 border-b-[6px] md:border-b-[8px] border-amber-600 px-4 md:px-8 py-2 md:py-3 rounded-full shadow-sm">
+          <span className="text-amber-950 font-black text-[18px] md:text-[24px] tracking-widest flex items-center gap-2 md:gap-3 whitespace-nowrap">
+            {coins} <span className="text-amber-100 text-[20px] md:text-[24px]">🪙</span>
           </span>
         </div>
       </header>
 
-      {/* AJUSTE MOBILE: Espaçamento de topo calibrado para a nova header com safe-area */}
-      <div className="relative z-10 text-center mb-16 px-6 md:px-12 pt-[calc(180px+env(safe-area-inset-top))] animate-fade-in-up">
-        <div className="inline-flex items-center gap-3 md:gap-4 bg-sky-600 px-8 py-4 md:px-12 md:py-6 rounded-full text-white shadow-lg border-b-[6px] md:border-b-[8px] border-sky-800 mb-6">
-          <Compass className="w-8 h-8 md:w-12 md:h-12" strokeWidth={2.5} />
-          <span className="font-black text-[24px] md:text-[40px] uppercase tracking-widest">Jornada</span>
+      {/* NOVA SESSÃO: Modos de Jogo (Carrossel Horizontal) */}
+      <div className="relative z-10 pt-[calc(140px+env(safe-area-inset-top))] pb-8 animate-fade-in-up">
+        <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
+          <h2 className="text-[20px] md:text-[32px] font-black uppercase tracking-widest text-sky-900">Modos de Jogo</h2>
+          <span className="text-sky-600 font-bold text-xs md:text-sm uppercase tracking-widest flex items-center gap-1">Deslize <ChevronRight size={16}/></span>
         </div>
-        <br/>
-        <p className="text-sky-900 font-bold text-[16px] md:text-[28px] tracking-wide bg-sky-50 inline-block px-6 py-2 md:px-8 md:py-3 rounded-full border-2 border-sky-200 shadow-sm">Junte moedas e avance de bioma!</p>
+        
+        <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-6 snap-x custom-scrollbar">
+          
+          <button onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center border-[6px] md:border-[8px] transition-all group ${dailyCompleted ? 'bg-stone-300 border-stone-400 opacity-80 cursor-not-allowed' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 active:scale-95 shadow-lg'}`}>
+            <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mb-4 border-[6px] shadow-inner ${dailyCompleted ? 'bg-stone-400 border-stone-500 text-stone-200' : 'bg-rose-500 border-rose-600 text-white group-hover:scale-110 transition-transform'}`}>
+              {dailyCompleted ? <CheckCircle size={40} strokeWidth={2.5}/> : <Calendar size={40} strokeWidth={2.5} />}
+            </div>
+            <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none ${dailyCompleted ? 'text-stone-500' : 'text-rose-800'}`}>Diário</span>
+            <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 ${dailyCompleted ? 'text-stone-400' : 'text-rose-500'}`}>{dailyCompleted ? 'Feito hoje!' : 'Recompensa 500🪙'}</span>
+          </button>
+
+          <button onClick={onFootball} className="snap-center shrink-0 w-[240px] md:w-[320px] bg-sky-50 border-[6px] md:border-[8px] border-sky-200 hover:bg-sky-100 p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg">
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] bg-sky-500 border-[6px] border-sky-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              <Shield size={40} strokeWidth={2.5} />
+            </div>
+            <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-sky-800">Futebol</span>
+            <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-sky-500">Ache o Clube</span>
+          </button>
+
+          <button onClick={onStudy} className="snap-center shrink-0 w-[240px] md:w-[320px] bg-emerald-50 border-[6px] md:border-[8px] border-emerald-200 hover:bg-emerald-100 p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg">
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] bg-emerald-400 border-[6px] border-emerald-500 text-emerald-900 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              <GraduationCap size={40} strokeWidth={2.5} />
+            </div>
+            <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-emerald-800">Estudo</span>
+            <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-emerald-500">Sem pressa</span>
+          </button>
+
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[200px] md:pt-[320px]">
+      {/* SESSÃO DE PROGRESSÃO (A Jornada) */}
+      <div className="relative z-10 text-center mb-16 px-6 md:px-12 animate-fade-in-up mt-8">
+        <div className="inline-flex items-center gap-3 md:gap-4 bg-sky-600 px-8 py-3 md:px-12 md:py-4 rounded-full text-white shadow-lg border-b-[6px] md:border-b-[8px] border-sky-800">
+          <Compass className="w-6 h-6 md:w-10 md:h-10" strokeWidth={2.5} />
+          <span className="font-black text-[20px] md:text-[32px] uppercase tracking-widest">Sua Jornada</span>
+        </div>
+      </div>
+
+      <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-10">
         
+        {/* Linha Tracejada Central */}
         <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[12px] md:w-[16px] border-l-[12px] md:border-l-[16px] border-dashed border-stone-200/60 opacity-60 z-0"></div>
+
+        {/* O PINO DINÂMICO (Fora do laço, desliza magicamente!) */}
+        <div 
+          className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
+          style={{ transform: `translate(-50%, ${pinOffset}px)`, top: isMobile ? '-90px' : '-120px' }}
+        >
+          <div className="bg-white w-[80px] h-[80px] md:w-[112px] md:h-[112px] rounded-[24px] md:rounded-[32px] shadow-2xl border-[8px] md:border-[10px] border-amber-400 flex items-center justify-center animate-bounce-short">
+             <MapPin className="w-10 h-10 md:w-14 md:h-14 text-amber-500" strokeWidth={3} fill="currentColor" />
+          </div>
+          <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short"></div>
+        </div>
 
         {themeNodes.map((t, index) => {
           const isUnlocked = unlockedThemes.includes(t.id);
           const isCurrent = currentTheme.id === t.id;
-          const sideMission = sideMissions[index]; 
 
           return (
             <div key={t.id} className="relative flex flex-col items-center z-10 mb-[450px] md:mb-[600px] w-full max-w-[320px]">
               
-              {isCurrent && (
-                <div className="absolute -top-[90px] md:-top-[120px] left-1/2 -translate-x-1/2 z-20 animate-bounce-short">
-                  <div className="relative flex flex-col items-center">
-                    <div className="bg-white w-[80px] h-[80px] md:w-[112px] md:h-[112px] rounded-[24px] md:rounded-[32px] shadow-2xl border-[8px] md:border-[10px] border-amber-400 flex items-center justify-center">
-                       <MapPin className="w-10 h-10 md:w-14 md:h-14 text-amber-500" strokeWidth={3} fill="currentColor" />
-                    </div>
-                    <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400"></div>
-                  </div>
-                </div>
-              )}
-
-              {/* AJUSTE MOBILE: Reduzido o tamanho brutal dos botões principais no celular */}
+              {/* Botão Principal Circular */}
               <button 
                 onClick={() => {
                   if (isUnlocked) { 
@@ -137,29 +176,26 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 )}
               </button>
 
-              <div className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-20 whitespace-nowrap scale-100 md:scale-110 ${isUnlocked ? 'bg-white border-stone-300 shadow-xl' : 'bg-stone-100 border-stone-300'}`}>
+              {/* Botão de Texto Embaixo (Agora clicável também!) */}
+              <button 
+                onClick={() => {
+                  if (isUnlocked) { setTheme(t); setShowRegionModal(true); } 
+                  else { handleThemeSelect(t); }
+                }}
+                className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-20 whitespace-nowrap scale-100 md:scale-110 transition-all active:scale-95 ${isUnlocked ? 'bg-white border-stone-300 shadow-xl cursor-pointer hover:bg-stone-50' : 'bg-stone-100 border-stone-300 cursor-not-allowed'}`}
+              >
                 <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest ${isUnlocked ? 'text-stone-800' : 'text-stone-400'}`}>
                   {isUnlocked && isCurrent ? 'Jogar Agora' : t.name}
                 </span>
-              </div>
+              </button>
 
               {!isUnlocked && (
-                <div className="absolute -bottom-[100px] md:-bottom-[140px] flex flex-col items-center animate-pulse-slow">
+                <div className="absolute -bottom-[100px] md:-bottom-[140px] flex flex-col items-center animate-pulse-slow pointer-events-none">
                   <div className="bg-amber-400 px-6 py-2 md:px-10 md:py-4 rounded-full border-2 border-amber-500 shadow-xl flex items-center gap-2 md:gap-3 scale-100 md:scale-110 whitespace-nowrap min-w-max">
                     <Lock className="w-5 h-5 md:w-7 md:h-7 text-amber-900"/>
                     <span className="text-[18px] md:text-[24px] font-black text-amber-900">Desbloquear: {t.price} 🪙</span>
                   </div>
                 </div>
-              )}
-
-              {/* AJUSTE MOBILE: Proporções das missões secundárias adaptadas */}
-              {sideMission && (
-                <button onClick={sideMission.onClick} disabled={sideMission.disabled} className={`${sideMission.pos} flex flex-col items-center cursor-pointer group transition-all z-0 ${sideMission.disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}>
-                  <div className={`w-[110px] h-[110px] md:w-[152px] md:h-[152px] rounded-[1.8rem] md:rounded-[2.4rem] ${index % 2 === 0 ? 'rotate-12' : '-rotate-12'} flex items-center justify-center border-[6px] md:border-[8px] shadow-xl md:shadow-2xl ${sideMission.bg} ${sideMission.border} ${sideMission.shadow}`}>
-                    {sideMission.icon}
-                  </div>
-                  <span className={`text-[14px] md:text-[22px] font-black mt-4 md:mt-8 bg-white px-5 py-2 md:px-8 md:py-3 rounded-full uppercase tracking-widest border-2 border-stone-200 shadow-lg whitespace-nowrap min-w-max ${sideMission.text}`}>{sideMission.label}</span>
-                </button>
               )}
             </div>
           );
@@ -177,7 +213,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <div className="w-full mt-16 scale-125 md:scale-150 transform origin-top"><AdBanner dataAdSlot="START_SCREEN_SLOT" /></div>
       </div>
 
-      {/* AJUSTE MOBILE: safe-area-inset-bottom salva o design no iOS! */}
+      {/* Nav de Baixo Fixo */}
       <nav className="fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl flex justify-around items-center px-2 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4 md:pt-8 border-t-2 border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.03)] rounded-t-[2.5rem] md:rounded-t-[4rem]">
         <button className="flex flex-col items-center justify-center text-sky-500 active:scale-95 transition-all group w-24 md:w-40">
           <div className="bg-sky-100 p-3 md:p-5 rounded-[1.5rem] md:rounded-[2rem] mb-2 md:mb-3 group-active:bg-sky-200 transition-colors"><Home className="w-8 h-8 md:w-12 md:h-12" strokeWidth={2.5} /></div>
@@ -193,7 +229,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-{/* APLICADO O PADRÃO DE OVERLAY E BORDAS NO MODAL DE REGIÕES */}
+      {/* Modal de Regiões */}
       {showRegionModal && (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
