@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, ShieldAlert, Award, Trophy } from 'lucide-react';
+import { X, CheckCircle, ShieldAlert, Award, Trophy, ShoppingCart, Lock, ArrowUpCircle } from 'lucide-react';
 import { ACHIEVEMENTS_LIST } from '../constants';
+import { AVATARS, POWER_UPS } from '../constants/shop';
+import { saveNativeData } from '../utils/storage';
 
 export function TutorialModal({ onClose }) {
   const [isClosing, setIsClosing] = useState(false);
@@ -88,6 +90,155 @@ export function AchievementsModal({ onClose, unlockedIds }) {
               </div>
             );
           })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ShopModal({ onClose, coins, setCoins, unlockedAvatars, setUnlockedAvatars, activeAvatar, setActiveAvatar, powerUps, setPowerUps }) {
+  const [isClosing, setIsClosing] = useState(false);
+  const [tab, setTab] = useState('avatars'); // 'avatars' ou 'powerups'
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 200);
+  };
+
+  const buyAvatar = (avatar) => {
+    if (coins >= avatar.price && !unlockedAvatars.includes(avatar.id)) {
+      const newCoins = coins - avatar.price;
+      const newAvatars = [...unlockedAvatars, avatar.id];
+      
+      setCoins(newCoins);
+      setUnlockedAvatars(newAvatars);
+      saveNativeData('geoGuessCoins', newCoins);
+      saveNativeData('geoGuessAvatars', JSON.stringify(newAvatars));
+      
+      setActiveAvatar(avatar);
+      saveNativeData('geoGuessActiveAvatar', avatar.id);
+    }
+  };
+
+  const equipAvatar = (avatar) => {
+    if (unlockedAvatars.includes(avatar.id)) {
+      setActiveAvatar(avatar);
+      saveNativeData('geoGuessActiveAvatar', avatar.id);
+    }
+  };
+
+  const upgradePowerUp = (powerUpKey, data) => {
+    const currentLevel = powerUps[powerUpKey];
+    if (currentLevel < data.maxLevel) {
+      const cost = data.basePrice * (currentLevel + 1);
+      if (coins >= cost) {
+        const newCoins = coins - cost;
+        const newPowerUps = { ...powerUps, [powerUpKey]: currentLevel + 1 };
+        
+        setCoins(newCoins);
+        setPowerUps(newPowerUps);
+        saveNativeData('geoGuessCoins', newCoins);
+        saveNativeData('geoGuessPowerUps', JSON.stringify(newPowerUps));
+      }
+    }
+  };
+
+  return (
+    <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-10 md:py-16 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-6 md:p-10 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative shadow-2xl flex flex-col max-h-[85dvh] ${isClosing ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+        
+        <button onClick={handleClose} className="absolute top-6 right-6 md:top-8 md:right-8 bg-stone-100 p-3 md:p-4 rounded-full text-stone-400 hover:text-rose-500 hover:bg-stone-200 transition-colors shadow-sm active:scale-95 z-10">
+          <X size={28} className="md:w-9 md:h-9" strokeWidth={3} />
+        </button>
+
+        <div className="flex flex-col items-center mb-6 shrink-0">
+          <div className="w-20 h-20 md:w-28 md:h-28 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-4 border-[6px] md:border-[8px] border-emerald-200 shadow-inner">
+            <ShoppingCart size={40} className="md:w-14 md:h-14" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-[32px] md:text-[48px] font-black text-stone-800 tracking-tighter uppercase text-center leading-none mb-4">Lojinha</h2>
+          
+          <div className="flex bg-stone-100 p-2 rounded-full border-2 border-stone-200 w-full max-w-sm">
+            <button onClick={() => setTab('avatars')} className={`flex-1 py-3 rounded-full font-black uppercase tracking-widest text-[14px] md:text-[16px] transition-all ${tab === 'avatars' ? 'bg-white text-stone-800 shadow-sm border-b-[4px] border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}>Veículos</button>
+            <button onClick={() => setTab('powerups')} className={`flex-1 py-3 rounded-full font-black uppercase tracking-widest text-[14px] md:text-[16px] transition-all ${tab === 'powerups' ? 'bg-white text-stone-800 shadow-sm border-b-[4px] border-stone-200' : 'text-stone-400 hover:text-stone-600'}`}>Melhorias</button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 md:pr-4">
+          
+          {tab === 'avatars' && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {AVATARS.map(avatar => {
+                const isUnlocked = unlockedAvatars.includes(avatar.id);
+                const isEquipped = activeAvatar.id === avatar.id;
+                
+                return (
+                  <div key={avatar.id} className={`bg-stone-50 border-[4px] border-stone-100 rounded-[2rem] p-4 flex flex-col items-center text-center transition-all ${isEquipped ? 'ring-4 ring-amber-400 bg-amber-50' : ''}`}>
+                    <div className="text-[48px] md:text-[64px] mb-2 leading-none drop-shadow-md">
+                      {avatar.type === 'emoji' ? avatar.icon : <img src={avatar.icon} alt={avatar.name} className="w-16 h-16 object-contain"/>}
+                    </div>
+                    <span className="font-bold text-stone-600 uppercase text-[12px] md:text-[14px] mb-4 tracking-wider leading-tight line-clamp-2">{avatar.name}</span>
+                    
+                    {isUnlocked ? (
+                      <button 
+                        onClick={() => equipAvatar(avatar)}
+                        disabled={isEquipped}
+                        className={`w-full py-2 rounded-xl font-black uppercase text-[12px] md:text-[14px] transition-all ${isEquipped ? 'bg-stone-200 text-stone-400' : 'bg-emerald-400 text-emerald-900 border-b-[4px] border-emerald-500 active:translate-y-[4px] active:border-b-0'}`}
+                      >
+                        {isEquipped ? 'Em Uso' : 'Equipar'}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => buyAvatar(avatar)}
+                        disabled={coins < avatar.price}
+                        className={`w-full py-2 rounded-xl font-black uppercase text-[12px] md:text-[14px] transition-all flex items-center justify-center gap-1 border-b-[4px] ${coins >= avatar.price ? 'bg-amber-400 text-amber-900 border-amber-500 active:translate-y-[4px] active:border-b-0' : 'bg-stone-200 text-stone-400 border-stone-300'}`}
+                      >
+                        <Lock size={14}/> {avatar.price} 🪙
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === 'powerups' && (
+            <div className="space-y-4">
+              {POWER_UPS.map(up => {
+                const currentLvl = powerUps[up.id];
+                const isMax = currentLvl >= up.maxLevel;
+                const cost = up.basePrice * (currentLvl + 1);
+
+                return (
+                  <div key={up.id} className="bg-stone-50 border-[4px] border-stone-100 rounded-[2rem] p-5 md:p-6 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 md:gap-6">
+                    <div className="text-[48px] leading-none drop-shadow-sm shrink-0">{up.icon}</div>
+                    <div className="flex-1 w-full">
+                      <div className="flex justify-between items-center mb-1">
+                        <h4 className="font-black uppercase tracking-tight text-[18px] md:text-[22px] text-stone-800">{up.name}</h4>
+                        <span className="text-amber-500 font-black text-[14px] bg-amber-100 px-3 py-1 rounded-full border border-amber-200">NV {currentLvl}/{up.maxLevel}</span>
+                      </div>
+                      <p className="text-[14px] md:text-[16px] text-stone-500 font-bold leading-snug mb-4">{up.desc}</p>
+                      
+                      {/* Dots de Progresso */}
+                      <div className="flex gap-2 mb-4 justify-center sm:justify-start">
+                        {[...Array(up.maxLevel)].map((_, i) => (
+                          <div key={i} className={`h-3 flex-1 max-w-[40px] rounded-full ${i < currentLvl ? 'bg-emerald-400 shadow-inner' : 'bg-stone-200'}`} />
+                        ))}
+                      </div>
+
+                      <button 
+                        onClick={() => upgradePowerUp(up.id, up)}
+                        disabled={isMax || coins < cost}
+                        className={`w-full sm:w-auto px-6 py-3 rounded-[1.5rem] font-black uppercase text-[14px] md:text-[16px] transition-all flex items-center justify-center sm:justify-start gap-2 border-b-[4px] ${isMax ? 'bg-stone-200 text-stone-400 border-stone-300' : coins >= cost ? 'bg-sky-400 text-sky-950 border-sky-500 active:translate-y-[4px] active:border-b-0' : 'bg-stone-200 text-stone-400 border-stone-300'}`}
+                      >
+                        {isMax ? 'Máximo' : <><ArrowUpCircle size={20}/> Melhorar ({cost}🪙)</>}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
         </div>
       </div>
     </div>
