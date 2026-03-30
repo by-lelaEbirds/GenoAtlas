@@ -4,7 +4,7 @@ import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
 import { TutorialModal, AchievementsModal, ShopModal } from './components/Modals';
-import { Trophy, Coins, Rocket, Film, X } from 'lucide-react';
+import { Trophy, Coins, Rocket, Film, X, Gift } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
@@ -18,6 +18,10 @@ export default function App() {
   // ESTADOS DE FECHAMENTO PARA ANIMAÇÕES
   const [isClosingSettings, setIsClosingSettings] = useState(false);
   const [isClosingStudyCard, setIsClosingStudyCard] = useState(false);
+  
+  // ESTADOS LOCAIS PARA O CÓDIGO PROMOCIONAL
+  const [promoInput, setPromoInput] = useState('');
+  const [promoFeedback, setPromoFeedback] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 150);
@@ -29,7 +33,9 @@ export default function App() {
     setTimeout(() => {
       actions.applySettings(isSmooth);
       setIsClosingSettings(false);
-    }, 200); // 200ms para a animação rodar antes de destruir
+      setPromoFeedback(null); // Reseta a mensagem de promo ao fechar
+      setPromoInput('');
+    }, 200); 
   };
 
   const handleDismissStudyCard = () => {
@@ -46,6 +52,15 @@ export default function App() {
       actions.revive();
       setIsClosingStudyCard(false);
     }, 200);
+  };
+
+  // FUNÇÃO QUE RODA NO CLIQUE DE "RESGATAR"
+  const handleRedeemClick = () => {
+    if(!promoInput) return;
+    const result = actions.redeemCode(promoInput);
+    setPromoFeedback(result);
+    setPromoInput('');
+    setTimeout(() => setPromoFeedback(null), 4000);
   };
 
   return (
@@ -101,37 +116,65 @@ export default function App() {
         />
       )}
 
-      {/* MODAL DE CONFIGURAÇÕES (ESTILO DE JOGO) */}
+      {/* MODAL DE CONFIGURAÇÕES (ESTILO DE JOGO + CÓDIGOS) */}
       {state.showSettingsPrompt && (
         <div className={`absolute inset-0 z-[200] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[12px] md:border-b-[16px] border-stone-200 p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[85dvh] ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
-            {/* NOVO: Botão Fechar! */}
             <button onClick={() => handleCloseSettings(state.isSmoothMode)} className="absolute top-6 right-6 md:top-8 md:right-8 bg-stone-100 p-3 md:p-4 rounded-full text-stone-400 hover:text-rose-500 hover:bg-stone-200 transition-colors shadow-sm active:scale-95 z-10">
               <X size={28} className="md:w-9 md:h-9" strokeWidth={3} />
             </button>
 
-            <h3 className="text-[32px] md:text-[48px] font-black text-stone-800 mb-2 md:mb-4 text-center uppercase tracking-tighter leading-none mt-4 md:mt-0">Estilo Visual</h3>
-            <p className="text-stone-400 text-[16px] md:text-[20px] font-bold uppercase tracking-widest mb-8 md:mb-12 text-center bg-stone-50 py-2 rounded-full border-2 border-stone-100">Como prefere explorar?</p>
+            <h3 className="text-[32px] md:text-[48px] font-black text-stone-800 mb-2 md:mb-4 text-center uppercase tracking-tighter leading-none mt-4 md:mt-0">Ajustes</h3>
+            <p className="text-stone-400 text-[16px] md:text-[20px] font-bold uppercase tracking-widest mb-6 md:mb-8 text-center bg-stone-50 py-2 rounded-full border-2 border-stone-100">Como prefere explorar?</p>
             
-            <div className="flex flex-col gap-4 md:gap-6 overflow-y-auto custom-scrollbar pr-2">
-              <button onClick={() => handleCloseSettings(false)} className={`p-6 md:p-8 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${!state.isSmoothMode ? 'bg-sky-400 text-sky-950 border-sky-500' : 'bg-sky-50 text-sky-900 border-sky-200 hover:bg-sky-100'}`}>
-                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${!state.isSmoothMode ? 'bg-white text-sky-500 border-sky-100' : 'bg-white text-sky-400 border-sky-100'}`}><Rocket size={32} className="md:w-10 md:h-10" /></div>
+            <div className="flex flex-col gap-4 md:gap-6 overflow-y-auto custom-scrollbar pr-2 pb-4">
+              
+              {/* SESSÃO 1: ESTILO DE JOGO */}
+              <button onClick={() => actions.applySettings(false)} className={`p-5 md:p-6 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${!state.isSmoothMode ? 'bg-sky-400 text-sky-950 border-sky-500' : 'bg-sky-50 text-sky-900 border-sky-200 hover:bg-sky-100'}`}>
+                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${!state.isSmoothMode ? 'bg-white text-sky-500 border-sky-100' : 'bg-white text-sky-400 border-sky-100'}`}><Rocket size={28} className="md:w-8 md:h-8" /></div>
                 <div>
-                  <div className="font-black uppercase tracking-widest text-[20px] md:text-[28px] whitespace-nowrap leading-none mb-1">Competitivo</div>
-                  <div className={`text-[14px] md:text-[16px] font-bold leading-tight ${!state.isSmoothMode ? 'text-sky-900' : 'text-sky-700'}`}>Câmera rápida. Alta performance.</div>
+                  <div className="font-black uppercase tracking-widest text-[18px] md:text-[24px] whitespace-nowrap leading-none mb-1">Competitivo</div>
+                  <div className={`text-[12px] md:text-[14px] font-bold leading-tight ${!state.isSmoothMode ? 'text-sky-900' : 'text-sky-700'}`}>Câmera rápida. Alta performance.</div>
                 </div>
               </button>
 
-              <button onClick={() => handleCloseSettings(true)} className={`p-6 md:p-8 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${state.isSmoothMode ? 'bg-emerald-400 text-emerald-950 border-emerald-500' : 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'}`}>
-                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${state.isSmoothMode ? 'bg-white text-emerald-500 border-emerald-100' : 'bg-white text-emerald-400 border-emerald-100'}`}><Film size={32} className="md:w-10 md:h-10" /></div>
+              <button onClick={() => actions.applySettings(true)} className={`p-5 md:p-6 rounded-[2rem] border-b-[8px] flex items-center gap-4 md:gap-6 active:translate-y-[8px] active:border-b-0 transition-all text-left group ${state.isSmoothMode ? 'bg-emerald-400 text-emerald-950 border-emerald-500' : 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'}`}>
+                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] group-hover:scale-110 transition-transform ${state.isSmoothMode ? 'bg-white text-emerald-500 border-emerald-100' : 'bg-white text-emerald-400 border-emerald-100'}`}><Film size={28} className="md:w-8 md:h-8" /></div>
                 <div>
-                  <div className="font-black uppercase tracking-widest text-[20px] md:text-[28px] whitespace-nowrap leading-none mb-1">Cinematográfico</div>
-                  <div className={`text-[14px] md:text-[16px] font-bold leading-tight ${state.isSmoothMode ? 'text-emerald-900' : 'text-emerald-700'}`}>Desliza suavemente. Foco visual.</div>
+                  <div className="font-black uppercase tracking-widest text-[18px] md:text-[24px] whitespace-nowrap leading-none mb-1">Cinematográfico</div>
+                  <div className={`text-[12px] md:text-[14px] font-bold leading-tight ${state.isSmoothMode ? 'text-emerald-900' : 'text-emerald-700'}`}>Desliza suavemente. Foco visual.</div>
                 </div>
               </button>
+
+              {/* SESSÃO 2: CÓDIGO PROMOCIONAL */}
+              <div className="mt-2 border-t-[4px] border-stone-100 pt-6">
+                <div className="flex items-center gap-3 mb-4 justify-center">
+                  <Gift className="text-amber-500 w-6 h-6 md:w-8 md:h-8" strokeWidth={2.5}/>
+                  <h4 className="text-[20px] md:text-[28px] font-black text-stone-800 uppercase tracking-tighter leading-none">Código Promo</h4>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input 
+                    type="text" 
+                    value={promoInput} 
+                    onChange={e => setPromoInput(e.target.value.toUpperCase())} 
+                    placeholder="COLE O CÓDIGO" 
+                    className="flex-1 bg-stone-100 border-[4px] border-stone-200 rounded-[1.5rem] px-4 py-3 md:py-4 font-black text-stone-700 uppercase tracking-widest text-center focus:outline-none focus:border-amber-400 focus:bg-white transition-colors placeholder:text-stone-300"
+                  />
+                  <button onClick={handleRedeemClick} className="bg-amber-400 text-amber-950 px-6 py-3 md:py-4 rounded-[1.5rem] border-b-[6px] border-amber-500 font-black uppercase tracking-widest active:translate-y-[6px] active:border-b-0 transition-all flex items-center justify-center">
+                    Resgatar
+                  </button>
+                </div>
+                
+                {promoFeedback && (
+                  <p className={`mt-4 text-center font-black uppercase tracking-widest text-[14px] md:text-[16px] animate-fade-in-up ${promoFeedback.success ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {promoFeedback.message}
+                  </p>
+                )}
+              </div>
+
             </div>
-            
           </div>
         </div>
       )}
@@ -155,7 +198,6 @@ export default function App() {
           setUnlockedThemes={actions.setUnlockedThemes}
           dailyCompleted={state.lastDailyDate === state.todayStr} 
           
-          // PROP DA LOJA INJETADAS NO MENU INICIAL
           activeAvatar={state.activeAvatar}
           setShowShop={actions.setShowShop}
         />
@@ -175,7 +217,7 @@ export default function App() {
       {/* HUD DE JOGO */}
       <GameHUD state={state} actions={actions} />
       
-      {/* CARD DE ESTUDO (QUANDO O JOGADOR ERRA/ACERTA NO MODO ESTUDO) */}
+      {/* CARD DE ESTUDO */}
       {state.studyCard && (
         <div className={`absolute inset-0 z-50 flex items-center justify-center bg-stone-900/80 px-6 pointer-events-auto ${isClosingStudyCard ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white border-b-[16px] border-stone-200 p-12 rounded-[4rem] max-w-2xl w-full shadow-2xl relative pt-32 mt-16 ${isClosingStudyCard ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
