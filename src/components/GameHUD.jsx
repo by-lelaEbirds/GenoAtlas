@@ -5,12 +5,20 @@ import { GAME_STATES } from '../constants';
 export default function GameHUD({ state, actions }) {
   if (state.studyCard || state.gameState !== GAME_STATES.PLAYING) return null;
 
+  // Correção Semântica: Formatação correta para minutos e segundos, 
+  // permitindo que o relógio passe de 60s corretamente sem quebrar o layout ("01:05" ao invés de "00:65")
+  const formatTime = (totalSeconds) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   return (
     // AJUSTE MOBILE: pt-[calc(1rem+env(safe-area-inset-top))] garante que o HUD fique abaixo do Notch/Câmera de um celular moderno
     <div className={`absolute inset-0 pointer-events-none flex flex-col justify-between p-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-8 md:p-8 md:pt-[calc(1.5rem+env(safe-area-inset-top))] z-20 ${state.isShaking ? 'animate-shake' : ''}`}>
       
       <div className="relative flex justify-center items-start w-full">
-        {/* AJUSTE MOBILE: Botão de fechar não pode ser `absolute left-0 top-0` solto por causa do notch, fixado relativamente à safe area */}
+        {/* AJUSTE MOBILE: Botão de fechar não pode ser absolute left-0 top-0 solto por causa do notch */}
         <div className="absolute left-0 top-0 h-full flex items-start z-10">
           <button onClick={actions.quitGame} className="pointer-events-auto bg-white border-b-4 border-stone-200 p-2.5 md:p-3 rounded-full text-stone-400 hover:text-rose-500 shrink-0 active:translate-y-1 active:border-b-0 transition-all">
             <X size={20} strokeWidth={3} />
@@ -29,7 +37,7 @@ export default function GameHUD({ state, actions }) {
             {state.gameMode !== 'study' && (
               <div className="flex items-center gap-1 md:gap-2 font-mono border-l border-r border-stone-200 px-2 md:px-6 relative shrink-0">
                 <span className={`text-xl md:text-3xl font-black tracking-tighter ${state.freezeTimeLeft > 0 ? 'text-cyan-500 drop-shadow-sm' : state.timeLeft <= 10 ? 'text-rose-500 animate-pulse' : 'text-amber-500'}`}>
-                  00:{state.timeLeft.toString().padStart(2, '0')}
+                  {formatTime(state.timeLeft)}
                 </span>
               </div>
             )}
@@ -54,7 +62,6 @@ export default function GameHUD({ state, actions }) {
       <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto pointer-events-none relative pt-10">
         <div className={`w-full px-4 py-4 md:px-6 md:py-6 rounded-3xl flex flex-col items-center transform transition-all relative overflow-hidden group pointer-events-auto border-b-[6px] shadow-lg ${state.streak > 2 ? 'bg-amber-50 border-amber-300 scale-[1.02]' : 'bg-white border-stone-200'}`}>
           
-          {/* AJUSTE MOBILE: flex-wrap e ajustes de gap para garantir que botões longos não quebrem o layout em telas estreitas */}
           <div className="w-full flex flex-col sm:flex-row justify-between items-center sm:items-end mb-2 gap-3 sm:gap-1">
             <span className={`text-[10px] sm:text-xs uppercase tracking-[0.2em] font-black flex items-center gap-1.5 text-center w-full sm:w-auto justify-center ${state.streak > 2 ? 'text-amber-600' : 'text-stone-400'}`}>
               {state.gameMode === 'football' ? <Trophy size={14}/> : <Target size={14} />} 
@@ -82,7 +89,6 @@ export default function GameHUD({ state, actions }) {
             </div>
           ) : (
             <div className="w-full flex justify-center mt-1">
-              {/* AJUSTE MOBILE: line-clamp-2 e text-balance garantem que países gigantes não desapareçam da tela na quebra */}
               <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tighter transition-all duration-300 text-center leading-tight line-clamp-2 text-balance px-2 w-full ${state.streak > 2 ? 'text-amber-500' : 'text-stone-800'}`}>
                 {state.targetCountry?.name || 'Aguarde...'}
               </h2>
