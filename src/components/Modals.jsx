@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, ShieldAlert, Award, Trophy, ShoppingCart, Lock, ArrowUpCircle } from 'lucide-react';
-import { ACHIEVEMENTS_LIST } from '../constants';
+import { X, CheckCircle, ShieldAlert, Award, Trophy, ShoppingCart, Lock, ArrowUpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { AVATARS, POWER_UPS } from '../constants/shop';
+import { ACHIEVEMENTS_LIST } from '../constants/achievements';
 import { saveNativeData } from '../utils/storage';
 
 export function TutorialModal({ onClose }) {
@@ -46,10 +46,30 @@ export function TutorialModal({ onClose }) {
 
 export function AchievementsModal({ onClose, unlockedIds }) {
   const [isClosing, setIsClosing] = useState(false);
+  const [expandedId, setExpandedId] = useState(null); // Controla o Accordion
 
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(onClose, 200);
+  };
+
+  const toggleExpand = (id) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
+  // Calcula o total de moedas ganhas
+  const totalCoinsEarned = ACHIEVEMENTS_LIST.reduce((total, ach) => {
+    return unlockedIds.includes(ach.id) ? total + ach.reward : total;
+  }, 0);
+
+  // Define as cores baseadas no nível (Bronze, Prata, Ouro)
+  const getColorStyles = (colorType, isUnlocked) => {
+    if (!isUnlocked) return 'bg-stone-50 border-stone-200 text-stone-400';
+    switch (colorType) {
+      case 'gold': return 'bg-amber-100 border-amber-400 text-amber-800 shadow-[inset_0_0_15px_rgba(251,191,36,0.3)]';
+      case 'silver': return 'bg-slate-100 border-slate-400 text-slate-700 shadow-[inset_0_0_15px_rgba(148,163,184,0.3)]';
+      case 'bronze': default: return 'bg-orange-50 border-orange-300 text-orange-800 shadow-[inset_0_0_15px_rgba(251,146,60,0.2)]';
+    }
   };
 
   return (
@@ -60,32 +80,63 @@ export function AchievementsModal({ onClose, unlockedIds }) {
           <X size={28} className="md:w-9 md:h-9" strokeWidth={3} />
         </button>
 
-        <div className="flex flex-col items-center mb-8 md:mb-10 shrink-0">
-          <div className="w-24 h-24 md:w-32 md:h-32 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 md:mb-6 border-[6px] md:border-[8px] border-amber-200 shadow-inner">
-            <Award size={48} className="md:w-16 md:h-16" strokeWidth={2.5} />
+        <div className="flex flex-col items-center mb-6 shrink-0">
+          <div className="w-20 h-20 md:w-28 md:h-28 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4 border-[6px] md:border-[8px] border-amber-200 shadow-inner">
+            <Award size={40} className="md:w-16 md:h-16" strokeWidth={2.5} />
           </div>
-          <h2 className="text-[36px] md:text-[48px] font-black text-stone-800 tracking-tighter uppercase text-center leading-none mb-3 md:mb-4">Conquistas</h2>
-          <p className="text-stone-400 text-[14px] md:text-[18px] font-bold uppercase tracking-widest bg-stone-100 px-6 py-2 rounded-full border-2 border-stone-200 shadow-sm">
-            {unlockedIds.length} / {ACHIEVEMENTS_LIST.length} Desbloqueadas
-          </p>
+          <h2 className="text-[32px] md:text-[48px] font-black text-stone-800 tracking-tighter uppercase text-center leading-none mb-4">Conquistas</h2>
+          
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-4 w-full justify-center">
+            <div className="bg-stone-100 px-6 py-2 rounded-full border-2 border-stone-200 shadow-sm flex flex-col items-center">
+              <span className="text-[10px] md:text-[12px] font-black uppercase tracking-widest text-stone-400">Desbloqueadas</span>
+              <span className="text-[16px] md:text-[20px] font-black text-stone-700">{unlockedIds.length} / {ACHIEVEMENTS_LIST.length}</span>
+            </div>
+            <div className="bg-amber-50 px-6 py-2 rounded-full border-2 border-amber-200 shadow-sm flex flex-col items-center">
+              <span className="text-[10px] md:text-[12px] font-black uppercase tracking-widest text-amber-500">Total Recebido</span>
+              <span className="text-[16px] md:text-[20px] font-black text-amber-600">{totalCoinsEarned} 🪙</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 md:pr-4 space-y-4 md:space-y-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 md:pr-4 space-y-3 md:space-y-4">
           {ACHIEVEMENTS_LIST.map(ach => {
             const isUnlocked = unlockedIds.includes(ach.id);
+            const isExpanded = expandedId === ach.id;
+            const styleClass = getColorStyles(ach.color, isUnlocked);
+            
             return (
-              <div key={ach.id} className={`p-6 md:p-8 rounded-[2rem] border-b-[8px] flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 md:gap-6 transition-all ${isUnlocked ? 'bg-amber-50 border-amber-200' : 'bg-stone-50 border-stone-200 opacity-60 grayscale'}`}>
-                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shrink-0 shadow-inner border-[4px] ${isUnlocked ? 'bg-amber-400 text-amber-900 border-amber-500' : 'bg-stone-200 text-stone-400 border-stone-300'}`}>
-                  <Trophy size={28} className="md:w-9 md:h-9" strokeWidth={2.5}/>
+              <div 
+                key={ach.id} 
+                onClick={() => toggleExpand(ach.id)}
+                className={`rounded-[1.5rem] md:rounded-[2rem] border-[4px] border-b-[6px] md:border-[4px] md:border-b-[8px] overflow-hidden transition-all cursor-pointer active:translate-y-[2px] active:border-b-[4px] ${styleClass} ${!isUnlocked ? 'opacity-80 grayscale' : ''}`}
+              >
+                {/* Header Visível sempre */}
+                <div className="p-4 md:p-6 flex items-center gap-4">
+                  <div className="text-[32px] md:text-[40px] drop-shadow-sm shrink-0 leading-none">{ach.icon}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-black uppercase tracking-tight text-[18px] md:text-[22px] leading-none mb-1">{ach.title}</h4>
+                    </div>
+                    <span className={`text-[10px] md:text-[12px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${isUnlocked ? 'bg-white/50 border-white text-current' : 'bg-stone-200 border-stone-300'}`}>Nível {ach.level}</span>
+                  </div>
+                  <div className="shrink-0 flex items-center justify-center">
+                    {isUnlocked ? (
+                       <CheckCircle size={28} className="text-emerald-500 drop-shadow-sm bg-white rounded-full border-2 border-emerald-100" />
+                    ) : (
+                       <Lock size={24} className="text-stone-400" />
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className={`font-black uppercase tracking-tight text-[22px] md:text-[28px] leading-tight ${isUnlocked ? 'text-amber-800' : 'text-stone-500'}`}>{ach.title}</h4>
-                  <p className="text-[14px] md:text-[18px] text-stone-500 font-bold leading-snug mt-1 md:mt-2">{ach.desc}</p>
-                </div>
-                {isUnlocked && (
-                   <div className="sm:self-center shrink-0">
-                     <CheckCircle size={32} className="md:w-10 md:h-10 text-emerald-500 drop-shadow-sm" strokeWidth={2.5} />
-                   </div>
+
+                {/* Conteúdo Expandido (Accordion) */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 md:px-6 md:pb-6 pt-2 border-t-[3px] border-current/10 animate-fade-in-down flex flex-col">
+                    <p className="text-[14px] md:text-[16px] font-bold leading-snug mb-4 opacity-90">{ach.desc}</p>
+                    <div className="flex justify-between items-center bg-white/40 p-3 rounded-xl border border-white/50">
+                      <span className="font-black uppercase tracking-widest text-[12px] md:text-[14px]">Recompensa:</span>
+                      <span className="font-black text-[16px] md:text-[20px] flex items-center gap-1">{ach.reward} 🪙</span>
+                    </div>
+                  </div>
                 )}
               </div>
             );
@@ -98,7 +149,7 @@ export function AchievementsModal({ onClose, unlockedIds }) {
 
 export function ShopModal({ onClose, coins, setCoins, unlockedAvatars, setUnlockedAvatars, activeAvatar, setActiveAvatar, powerUps, setPowerUps }) {
   const [isClosing, setIsClosing] = useState(false);
-  const [tab, setTab] = useState('avatars'); // 'avatars' ou 'powerups'
+  const [tab, setTab] = useState('avatars');
 
   const handleClose = () => {
     setIsClosing(true);
@@ -218,7 +269,6 @@ export function ShopModal({ onClose, coins, setCoins, unlockedAvatars, setUnlock
                       </div>
                       <p className="text-[14px] md:text-[16px] text-stone-500 font-bold leading-snug mb-4">{up.desc}</p>
                       
-                      {/* Dots de Progresso */}
                       <div className="flex gap-2 mb-4 justify-center sm:justify-start">
                         {[...Array(up.maxLevel)].map((_, i) => (
                           <div key={i} className={`h-3 flex-1 max-w-[40px] rounded-full ${i < currentLvl ? 'bg-emerald-400 shadow-inner' : 'bg-stone-200'}`} />
