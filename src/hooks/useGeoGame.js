@@ -5,6 +5,7 @@ import { GAME_STATES, GAME_MODES, MAP_THEMES, ACHIEVEMENTS_LIST } from '../const
 import { FOOTBALL_CLUBS } from '../constants/football';
 import { CAPITALS_MAP } from '../constants/capitals';
 import { AVATARS } from '../constants/shop';
+import { PROMO_CODES } from '../constants/promoCodes';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
@@ -45,13 +46,15 @@ export function useGeoGame(globeRef) {
   const [coins, setCoins] = useState(0);
   const [lastCoinsEarned, setLastCoinsEarned] = useState(0);
   
-  // SISTEMA DA LOJA
   const [unlockedThemes, setUnlockedThemes] = useState(['explorador']); 
   const [activeTheme, setActiveTheme] = useState(MAP_THEMES.explorador);
   const [unlockedAvatars, setUnlockedAvatars] = useState(['pin']);
   const [activeAvatar, setActiveAvatar] = useState(AVATARS[0]);
   const [powerUps, setPowerUps] = useState({ extraLife: 0, freezeTime: 0, discount: 0 });
   const [showShop, setShowShop] = useState(false);
+  
+  // ESTADO DE CÓDIGOS PROMOCIONAIS
+  const [redeemedCodes, setRedeemedCodes] = useState([]);
   
   const [activeRegion, setActiveRegion] = useState('all');
 
@@ -106,11 +109,12 @@ export function useGeoGame(globeRef) {
         const hasSeenTuto = await getNativeData('geoGuessTutorial');
         const savedSmooth = await getNativeData('geoGuessSmoothMode');
         const savedDaily = await getNativeData('geoGuessDaily');
-        
-        // Carregando dados da Loja
         const savedAvatars = await getNativeData('geoGuessAvatars');
         const savedActiveAvatar = await getNativeData('geoGuessActiveAvatar');
         const savedPowerUps = await getNativeData('geoGuessPowerUps');
+        
+        // Carregando códigos já usados
+        const savedRedeemedCodes = await getNativeData('geoGuessRedeemedCodes');
 
         if (savedScore) setBestScore(parseInt(savedScore, 10));
         if (savedCoins) setCoins(parseInt(savedCoins, 10));
@@ -127,6 +131,8 @@ export function useGeoGame(globeRef) {
           if (found) setActiveAvatar(found);
         }
         if (savedPowerUps) setPowerUps(JSON.parse(savedPowerUps));
+        
+        if (savedRedeemedCodes) setRedeemedCodes(JSON.parse(savedRedeemedCodes));
 
         if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
         if (!hasSeenTuto) setShowTutorial(true);
@@ -310,6 +316,39 @@ export function useGeoGame(globeRef) {
     if (globeRef.current) globeRef.current.resetPosition();
   }, [globeRef]);
 
+  // FUNÇÃO DE RESGATE DE CÓDIGO PROMOCIONAL
+  const redeemCode = (rawCode) => {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) return { success: false, message: 'Digite um código válido!' };
+    
+    if (redeemedCodes.includes(code)) {
+      playSound('error', 0.6);
+      return { success: false, message: 'Código já foi utilizado!' };
+    }
+    
+    const promo = PROMO_CODES[code];
+    if (promo) {
+      const newCodesList = [...redeemedCodes, code];
+      setRedeemedCodes(newCodesList);
+      saveNativeData('geoGuessRedeemedCodes', JSON.stringify(newCodesList));
+
+      if (promo.type === 'coins') {
+        const nextCoins = coinsRef.current + promo.reward;
+        setCoins(nextCoins);
+        saveNativeData('geoGuessCoins', nextCoins);
+      }
+      
+      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+      playSound('success', 0.8);
+      setTimeout(() => playSound('coin', 0.9), 500); // Toca sonzinho de moeda logo depois
+      
+      return { success: true, message: promo.message };
+    }
+    
+    playSound('error', 0.6);
+    return { success: false, message: 'Código inválido ou expirado.' };
+  };
+
   const pickNextCountry = useCallback((pool, currentMode = gameMode, currentStreak = streak, isFirst = false, clubPool = remainingClubs) => {
     let selectedCountry;
     if (currentMode === GAME_MODES.FOOTBALL) {
@@ -348,7 +387,6 @@ export function useGeoGame(globeRef) {
     playTone(600, 'square', 0.1); 
     setScore(0); setStreak(0); setTimeLeft(60); 
     
-    // APLICAÇÃO DO POWER-UP: VIDA EXTRA
     const baseLives = mode === GAME_MODES.DAILY ? 1 : 3;
     setLives(baseLives + powerUps.extraLife);
 
@@ -385,9 +423,7 @@ export function useGeoGame(globeRef) {
   };
 
   const skipCountry = () => {
-    // APLICAÇÃO DO POWER-UP: PULO MAIS BARATO
     const cost = 50 - (powerUps.discount * 5); 
-    
     if (coinsRef.current >= cost) {
       const nextCoins = coinsRef.current - cost;
       setCoins(nextCoins);
@@ -416,8 +452,6 @@ export function useGeoGame(globeRef) {
       setCoins(nextCoins);
       saveNativeData('geoGuessCoins', nextCoins);
       playSound('coin', 0.6); 
-      
-      // APLICAÇÃO DO POWER-UP: TEMPO CONGELADO EXTRA (+2s por level)
       setFreezeTimeLeft(10 + (powerUps.freezeTime * 2)); 
     }
   };
@@ -535,14 +569,14 @@ export function useGeoGame(globeRef) {
       floatingPoints, todayStr, lastDailyDate, studyCard,
       unlockedAchievements, showTutorial, showAchievements, achievementToast,
       freezeTimeLeft, isSmoothMode, showSettingsPrompt,
-      unlockedAvatars, activeAvatar, powerUps, showShop
+      unlockedAvatars, activeAvatar, powerUps, showShop, redeemedCodes
     },
     actions: {
       startGame, endGame, quitGame, resetGlobe, setCoins, setUnlockedThemes,
       setActiveTheme, setActiveRegion, handleCountryClick, dismissStudyCard,
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
       skipCountry, revive, freezeTime, applySettings, 
-      setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop // Ações da loja
+      setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop, redeemCode
     }
   };
 }
