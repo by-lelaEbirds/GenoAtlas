@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map } from 'lucide-react';
+import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
 
@@ -56,6 +56,33 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   return (
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
+      {/* INJEÇÃO DE KEYFRAMES MÁGICOS (CSS) */}
+      <style>{`
+        @keyframes sweep {
+          0% { transform: translateX(-150%) skewX(-15deg); }
+          50%, 100% { transform: translateX(150%) skewX(-15deg); }
+        }
+        .animate-sweep { animation: sweep 3s infinite; }
+        
+        @keyframes pulse-ring {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+        .animate-pulse-ring { animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+        
+        @keyframes shadow-scale {
+          0%, 100% { transform: scale(1); opacity: 0.6; }
+          50% { transform: scale(0.6); opacity: 0.2; }
+        }
+        .animate-shadow-scale { animation: shadow-scale 2s infinite; }
+
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.8; }
+        }
+        .animate-twinkle { animation: twinkle 3s infinite ease-in-out; }
+      `}</style>
+
       {/* BACKGROUND DECORATIVO BASE */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
@@ -63,35 +90,42 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.4) 2px, transparent 2px), linear-gradient(90deg, rgba(255, 255, 255, 0.4) 2px, transparent 2px)', backgroundSize: '96px 96px' }}></div>
       </div>
 
-      {/* NOVO: POEIRA ESTELAR / PARTICULAS FLUTUANTES (EFEITO PARALLAX MÁGICO) */}
-      <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
-        {[...Array(30)].map((_, i) => (
-          <div 
-            key={i}
-            className="absolute bg-white rounded-full animate-float"
-            style={{
-              width: Math.random() * 8 + 3 + 'px',
-              height: Math.random() * 8 + 3 + 'px',
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              animationDuration: Math.random() * 15 + 10 + 's',
-              animationDelay: Math.random() * 5 + 's',
-              boxShadow: '0 0 10px rgba(255,255,255,0.8)'
-            }}
-          ></div>
-        ))}
+      {/* POEIRA ESTELAR / VAGALUMES MÁGICOS (PARALLAX + BLUR) */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-60">
+        {[...Array(40)].map((_, i) => {
+          const colors = ['bg-white', 'bg-amber-200', 'bg-sky-200', 'bg-emerald-200'];
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          const isLarge = Math.random() > 0.8;
+          return (
+            <div 
+              key={i}
+              className={`absolute rounded-full animate-float ${color} animate-twinkle ${isLarge ? 'blur-[2px]' : 'blur-[1px]'}`}
+              style={{
+                width: Math.random() * 8 + 4 + 'px',
+                height: Math.random() * 8 + 4 + 'px',
+                left: Math.random() * 100 + '%',
+                top: Math.random() * 100 + '%',
+                animationDuration: Math.random() * 15 + 10 + 's',
+                animationDelay: Math.random() * 5 + 's',
+                boxShadow: `0 0 ${isLarge ? 15 : 8}px currentColor`
+              }}
+            ></div>
+          );
+        })}
       </div>
       
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-white/80 backdrop-blur-md border-b-2 border-white/50 shadow-sm">
         <div className="flex items-center gap-2 md:gap-4">
-          <div className="w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 shadow-sm border-[3px] md:border-[4px] border-white ring-[3px] md:ring-[4px] ring-sky-100">
-            <Globe className="w-7 h-7 md:w-12 md:h-12 text-white" strokeWidth={2.5} />
+          <div className="w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 shadow-sm border-[3px] md:border-[4px] border-white ring-[3px] md:ring-[4px] ring-sky-100 relative overflow-hidden group">
+            <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12"></div>
+            <Globe className="w-7 h-7 md:w-12 md:h-12 text-white relative z-10" strokeWidth={2.5} />
           </div>
           <h1 className="font-black italic tracking-tighter text-[24px] md:text-[40px] text-sky-900 drop-shadow-sm ml-1 md:ml-2">GenoAtlas</h1>
         </div>
-        <div className="flex items-center gap-2 md:gap-4 bg-amber-400 border-b-[6px] md:border-b-[8px] border-amber-600 px-4 md:px-8 py-2 md:py-3 rounded-full shadow-sm" aria-label={`Você tem ${coins} moedas`}>
-          <span className="text-amber-950 font-black text-[18px] md:text-[24px] tracking-widest flex items-center gap-2 md:gap-3 whitespace-nowrap">
-            {coins} <span aria-hidden="true" className="text-amber-100 text-[20px] md:text-[24px]">🪙</span>
+        <div className="flex items-center gap-2 md:gap-4 bg-amber-400 border-b-[6px] md:border-b-[8px] border-amber-600 px-4 md:px-8 py-2 md:py-3 rounded-full shadow-sm relative overflow-hidden" aria-label={`Você tem ${coins} moedas`}>
+          <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" style={{animationDelay: '1.5s'}}></div>
+          <span className="text-amber-950 font-black text-[18px] md:text-[24px] tracking-widest flex items-center gap-2 md:gap-3 whitespace-nowrap relative z-10">
+            {coins} <span aria-hidden="true" className="text-amber-100 text-[20px] md:text-[24px] drop-shadow-md">🪙</span>
           </span>
         </div>
       </header>
@@ -104,58 +138,65 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
         
         <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-6 snap-x custom-scrollbar">
-          <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center border-[6px] md:border-[8px] transition-all group ${dailyCompleted ? 'bg-stone-300 border-stone-400 opacity-80 cursor-not-allowed' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 active:scale-95 shadow-lg'}`}>
-            <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mb-4 border-[6px] shadow-inner ${dailyCompleted ? 'bg-stone-400 border-stone-500 text-stone-200' : 'bg-rose-500 border-rose-600 text-white group-hover:scale-110 transition-transform'}`}>
+          <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center border-[6px] md:border-[8px] transition-all group relative overflow-hidden ${dailyCompleted ? 'bg-stone-300 border-stone-400 opacity-80 cursor-not-allowed' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 active:scale-95 shadow-lg'}`}>
+            {!dailyCompleted && <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>}
+            <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mb-4 border-[6px] shadow-inner relative z-10 ${dailyCompleted ? 'bg-stone-400 border-stone-500 text-stone-200' : 'bg-rose-500 border-rose-600 text-white group-hover:scale-110 transition-transform'}`}>
               {dailyCompleted ? <CheckCircle size={40} strokeWidth={2.5}/> : <Calendar size={40} strokeWidth={2.5} />}
             </div>
-            <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none ${dailyCompleted ? 'text-stone-500' : 'text-rose-800'}`}>Diário</span>
-            <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 ${dailyCompleted ? 'text-stone-400' : 'text-rose-500'}`}>{dailyCompleted ? 'Feito hoje!' : 'Recompensa 500🪙'}</span>
+            <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 ${dailyCompleted ? 'text-stone-500' : 'text-rose-800'}`}>Diário</span>
+            <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${dailyCompleted ? 'text-stone-400' : 'text-rose-500'}`}>{dailyCompleted ? 'Feito hoje!' : <><Star size={14} className="fill-current"/> Recompensa 500🪙</>}</span>
           </button>
 
-          <button aria-label="Modo de Jogo Futebol" onClick={onFootball} className="snap-center shrink-0 w-[240px] md:w-[320px] bg-sky-50 border-[6px] md:border-[8px] border-sky-200 hover:bg-sky-100 p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg">
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] bg-sky-500 border-[6px] border-sky-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner">
+          <button aria-label="Modo de Jogo Futebol" onClick={onFootball} className="snap-center shrink-0 w-[240px] md:w-[320px] bg-sky-50 border-[6px] md:border-[8px] border-sky-200 hover:bg-sky-100 p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg relative overflow-hidden">
+            <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] bg-sky-500 border-[6px] border-sky-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10">
               <Shield size={40} strokeWidth={2.5} />
             </div>
-            <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-sky-800">Futebol</span>
-            <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-sky-500">Ache o Clube</span>
+            <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-sky-800 relative z-10">Futebol</span>
+            <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-sky-500 relative z-10 flex items-center gap-1"><Zap size={14} className="fill-current"/> Ache o Clube</span>
           </button>
 
-          <button aria-label="Modo de Estudo" onClick={onStudy} className="snap-center shrink-0 w-[240px] md:w-[320px] bg-emerald-50 border-[6px] md:border-[8px] border-emerald-200 hover:bg-emerald-100 p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg">
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] bg-emerald-400 border-[6px] border-emerald-500 text-emerald-900 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner">
+          <button aria-label="Modo de Estudo" onClick={onStudy} className="snap-center shrink-0 w-[240px] md:w-[320px] bg-emerald-50 border-[6px] md:border-[8px] border-emerald-200 hover:bg-emerald-100 p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg relative overflow-hidden">
+            <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] bg-emerald-400 border-[6px] border-emerald-500 text-emerald-900 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10">
               <GraduationCap size={40} strokeWidth={2.5} />
             </div>
-            <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-emerald-800">Estudo</span>
-            <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-emerald-500">Sem pressa</span>
+            <span className="text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none text-emerald-800 relative z-10">Estudo</span>
+            <span className="text-[12px] md:text-[16px] font-bold uppercase mt-2 text-emerald-500 relative z-10 flex items-center gap-1"><Compass size={14} className="fill-current"/> Sem pressa</span>
           </button>
         </div>
       </div>
 
       <div className="relative z-10 text-center mb-16 px-6 md:px-12 animate-fade-in-up mt-8">
-        <div className="inline-flex items-center gap-3 md:gap-4 bg-sky-600 px-8 py-3 md:px-12 md:py-4 rounded-full text-white shadow-lg border-b-[6px] md:border-b-[8px] border-sky-800">
-          <Compass className="w-6 h-6 md:w-10 md:h-10" strokeWidth={2.5} />
-          <span className="font-black text-[20px] md:text-[32px] uppercase tracking-widest">Sua Jornada</span>
+        <div className="inline-flex items-center gap-3 md:gap-4 bg-sky-600 px-8 py-3 md:px-12 md:py-4 rounded-full text-white shadow-lg border-b-[6px] md:border-b-[8px] border-sky-800 relative overflow-hidden">
+          <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"></div>
+          <Compass className="w-6 h-6 md:w-10 md:h-10 relative z-10" strokeWidth={2.5} />
+          <span className="font-black text-[20px] md:text-[32px] uppercase tracking-widest relative z-10">Sua Jornada</span>
         </div>
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-10">
         
-        {/* AVATAR DESLIZANTE */}
+        {/* AVATAR DESLIZANTE COM SOMBRA DINÂMICA */}
         <div 
           aria-hidden="true"
           className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
           style={{ transform: `translate(-50%, ${pinOffset}px)`, top: isMobile ? '-90px' : '-120px' }}
         >
-          <div className="bg-white w-[80px] h-[80px] md:w-[112px] md:h-[112px] rounded-[24px] md:rounded-[32px] shadow-2xl border-[8px] md:border-[10px] border-amber-400 flex items-center justify-center animate-bounce-short">
+          <div className="bg-white w-[80px] h-[80px] md:w-[112px] md:h-[112px] rounded-[24px] md:rounded-[32px] shadow-[0_15px_30px_rgba(0,0,0,0.2)] border-[8px] md:border-[10px] border-amber-400 flex items-center justify-center animate-bounce-short relative z-10">
              {activeAvatar.type === 'emoji' ? (
                 <span className="text-[40px] md:text-[56px] leading-none drop-shadow-sm">{activeAvatar.icon}</span>
              ) : (
                 <img src={activeAvatar.icon} alt={activeAvatar.name} className="w-12 h-12 md:w-16 md:h-16 object-contain drop-shadow-sm" />
              )}
           </div>
-          <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short"></div>
+          <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short z-10"></div>
+          
+          {/* Sombra Dinâmica do Avatar */}
+          <div className="w-[40px] md:w-[60px] h-[10px] md:h-[15px] bg-stone-900/20 rounded-full mt-2 md:mt-4 blur-[2px] animate-shadow-scale"></div>
         </div>
 
-        {/* NODOS DA JORNADA */}
+        {/* NODOS DA JORNADA COM ANÉIS DE PULSAÇÃO */}
         {themeNodes.map((t, index) => {
           const isUnlocked = unlockedThemes.includes(t.id);
           const isCurrent = currentTheme.id === t.id;
@@ -166,6 +207,14 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           return (
             <div key={t.id} className="relative flex flex-col items-center z-10 mb-[450px] md:mb-[600px] w-full max-w-[320px]">
               
+              {/* Anéis Mágicos de Pulsação (Sonar) se for o Planeta Atual */}
+              {isCurrent && (
+                <div className="absolute top-[80px] md:top-[104px] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className="absolute inset-0 rounded-full border-[8px] border-amber-400/50 w-[160px] h-[160px] md:w-[208px] md:h-[208px] -translate-x-1/2 -translate-y-1/2 animate-pulse-ring"></div>
+                  <div className="absolute inset-0 rounded-full border-[8px] border-amber-400/30 w-[160px] h-[160px] md:w-[208px] md:h-[208px] -translate-x-1/2 -translate-y-1/2 animate-pulse-ring" style={{ animationDelay: '1s' }}></div>
+                </div>
+              )}
+
               <button 
                 aria-label={isUnlocked ? `Tema ${t.name} Desbloqueado` : `Desbloquear tema ${t.name} por ${t.price} moedas`}
                 onClick={() => {
@@ -175,7 +224,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   } 
                   else { handleThemeSelect(t); }
                 }}
-                className={`w-[160px] h-[160px] md:w-[208px] md:h-[208px] rounded-full flex items-center justify-center border-[10px] md:border-[12px] relative transition-all group z-20 ${
+                className={`w-[160px] h-[160px] md:w-[208px] md:h-[208px] rounded-full flex items-center justify-center border-[10px] md:border-[12px] relative transition-all group z-20 overflow-hidden ${
                   isUnlocked 
                     ? isCurrent 
                       ? 'bg-amber-400 border-white shadow-[0_16px_0_#b45309,0_0_40px_rgba(251,191,36,0.6)] md:shadow-[0_24px_0_#b45309,0_0_60px_rgba(251,191,36,0.6)] active:translate-y-[12px] md:active:translate-y-[16px] active:shadow-[0_6px_0_#b45309]' 
@@ -183,10 +232,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                     : 'bg-stone-300 border-stone-400 shadow-[0_14px_0_#78716c] md:shadow-[0_20px_0_#78716c] active:translate-y-[8px] md:active:translate-y-[12px] active:shadow-[0_6px_0_#78716c] opacity-90'
                 }`}
               >
+                {isUnlocked && isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>}
+                
                 {isUnlocked ? (
-                  <Compass className={`w-20 h-20 md:w-28 md:h-28 ${isCurrent ? 'text-amber-800' : 'text-stone-400'}`} strokeWidth={2.5} />
+                  <Compass className={`w-20 h-20 md:w-28 md:h-28 relative z-10 ${isCurrent ? 'text-amber-800' : 'text-stone-400'}`} strokeWidth={2.5} />
                 ) : (
-                  <Lock className="w-16 h-16 md:w-24 md:h-24 text-stone-500" strokeWidth={2.5} />
+                  <Lock className="w-16 h-16 md:w-24 md:h-24 text-stone-500 relative z-10" strokeWidth={2.5} />
                 )}
               </button>
 
@@ -197,10 +248,11 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   if (isUnlocked) { setTheme(t); setShowRegionModal(true); } 
                   else { handleThemeSelect(t); }
                 }}
-                className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-30 whitespace-nowrap scale-100 md:scale-110 transition-all active:scale-95 ${isUnlocked ? 'bg-white border-stone-300 shadow-xl cursor-pointer hover:bg-stone-50' : 'bg-stone-100 border-stone-300 cursor-not-allowed'}`}
+                className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-30 whitespace-nowrap scale-100 md:scale-110 transition-all active:scale-95 overflow-hidden ${isUnlocked ? 'bg-white border-stone-300 shadow-xl cursor-pointer hover:bg-stone-50' : 'bg-stone-100 border-stone-300 cursor-not-allowed'}`}
               >
-                <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest ${isUnlocked ? 'text-stone-800' : 'text-stone-400'}`}>
-                  {isUnlocked && isCurrent ? 'Jogar Agora' : t.name}
+                {isUnlocked && isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 z-0" style={{ animationDelay: '0.5s' }}></div>}
+                <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest relative z-10 flex items-center gap-2 ${isUnlocked ? 'text-stone-800' : 'text-stone-400'}`}>
+                  {isUnlocked && isCurrent ? <><Sparkles size={20} className="text-amber-500"/> Jogar Agora</> : t.name}
                 </span>
               </button>
 
@@ -213,14 +265,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 </div>
               )}
 
-              {/* NOVA TRILHA GAMIFICADA SINUOSA (SINE WAVE) COM DIORAMAS */}
+              {/* TRILHA GAMIFICADA SINUOSA (SINE WAVE) COM DIORAMAS */}
               <div aria-hidden="true" className="absolute top-[160px] md:top-[208px] left-1/2 -translate-x-1/2 h-[450px] md:h-[600px] w-full flex flex-col items-center justify-evenly py-10 md:py-16 z-0 pointer-events-none">
                 
-                {/* Pedrinhas (Stepping Stones) com Curva Matemática */}
                 {[...Array(isMobile ? 4 : 5)].map((_, i) => {
                   const totalStones = isMobile ? 4 : 5;
                   const progress = (i + 1) / (totalStones + 1);
-                  // Cria uma curva S Alternada usando seno
                   const offsetBase = isMobile ? 60 : 100;
                   const curveDirection = index % 2 === 0 ? 1 : -1;
                   const offsetX = Math.sin(progress * Math.PI) * offsetBase * curveDirection;
@@ -234,7 +284,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   );
                 })}
 
-                {/* Dioramas Laterais Avançados (Agrupando ícones para formar cenários) */}
                 <div className={`absolute top-[15%] ${index % 2 === 0 ? 'left-[-60px] md:left-[-160px]' : 'right-[-60px] md:right-[-160px]'} animate-float opacity-80 drop-shadow-lg flex items-end`}>
                   {index % 3 === 0 ? (
                     <>
@@ -281,9 +330,10 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap">Início</span>
         </button>
         
-        <button aria-label="Abrir Loja" onClick={() => setShowShop(true)} className="flex flex-col items-center justify-center text-emerald-500 active:scale-95 transition-all group w-20 md:w-32">
-          <div className="bg-emerald-100 p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 group-active:bg-emerald-200 transition-colors shadow-sm"><ShoppingCart className="w-7 h-7 md:w-10 md:h-10 text-emerald-600" strokeWidth={2.5} /></div>
-          <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap">Loja</span>
+        <button aria-label="Abrir Loja" onClick={() => setShowShop(true)} className="flex flex-col items-center justify-center text-emerald-500 active:scale-95 transition-all group w-20 md:w-32 relative overflow-hidden rounded-xl">
+          <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 z-0" style={{ animationDelay: '2s' }}></div>
+          <div className="bg-emerald-100 p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 group-active:bg-emerald-200 transition-colors shadow-sm relative z-10"><ShoppingCart className="w-7 h-7 md:w-10 md:h-10 text-emerald-600" strokeWidth={2.5} /></div>
+          <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap relative z-10">Loja</span>
         </button>
 
         <button aria-label="Abrir Conquistas" onClick={onOpenAchievements} className="flex flex-col items-center justify-center text-stone-400 hover:text-amber-500 active:scale-95 transition-all group w-20 md:w-32">
@@ -309,34 +359,40 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             </div>
             
             <div className="grid grid-cols-2 gap-3 md:gap-6 overflow-y-auto custom-scrollbar pb-4 pr-1 md:pr-2">
-              <button onClick={() => handleRegionSelect('all')} className="col-span-2 bg-gradient-to-r from-sky-400 to-sky-500 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 border-b-[8px] md:border-b-[10px] border-sky-600 shadow-lg active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-0 transition-all">
-                <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-md">🌍</span>
-                <span className="text-[20px] md:text-[32px] font-black text-white uppercase tracking-widest mt-1 md:mt-2 drop-shadow-sm">Mundo Todo</span>
+              <button onClick={() => handleRegionSelect('all')} className="col-span-2 bg-gradient-to-r from-sky-400 to-sky-500 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 border-b-[8px] md:border-b-[10px] border-sky-600 shadow-lg active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-0 transition-all relative overflow-hidden group">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 z-0"></div>
+                <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-md relative z-10">🌍</span>
+                <span className="text-[20px] md:text-[32px] font-black text-white uppercase tracking-widest mt-1 md:mt-2 drop-shadow-sm relative z-10">Mundo Todo</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Americas')} className="bg-emerald-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-emerald-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-emerald-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">🌎</span>
-                <span className="text-[14px] md:text-[20px] font-black text-emerald-800 uppercase tracking-widest">Américas</span>
+              <button onClick={() => handleRegionSelect('Americas')} className="bg-emerald-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-emerald-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-emerald-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all relative overflow-hidden group">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>
+                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🌎</span>
+                <span className="text-[14px] md:text-[20px] font-black text-emerald-800 uppercase tracking-widest relative z-10">Américas</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Europe')} className="bg-indigo-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-indigo-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-indigo-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">🏰</span>
-                <span className="text-[14px] md:text-[20px] font-black text-indigo-800 uppercase tracking-widest">Europa</span>
+              <button onClick={() => handleRegionSelect('Europe')} className="bg-indigo-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-indigo-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-indigo-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all relative overflow-hidden group">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>
+                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🏰</span>
+                <span className="text-[14px] md:text-[20px] font-black text-indigo-800 uppercase tracking-widest relative z-10">Europa</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Asia')} className="bg-rose-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-rose-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-rose-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">⛩️</span>
-                <span className="text-[14px] md:text-[20px] font-black text-rose-800 uppercase tracking-widest">Ásia</span>
+              <button onClick={() => handleRegionSelect('Asia')} className="bg-rose-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-rose-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-rose-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all relative overflow-hidden group">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>
+                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">⛩️</span>
+                <span className="text-[14px] md:text-[20px] font-black text-rose-800 uppercase tracking-widest relative z-10">Ásia</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Africa')} className="bg-amber-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-amber-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-amber-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all">
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm">🦁</span>
-                <span className="text-[14px] md:text-[20px] font-black text-amber-800 uppercase tracking-widest">África</span>
+              <button onClick={() => handleRegionSelect('Africa')} className="bg-amber-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-amber-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 shadow-sm hover:bg-amber-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all relative overflow-hidden group">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>
+                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🦁</span>
+                <span className="text-[14px] md:text-[20px] font-black text-amber-800 uppercase tracking-widest relative z-10">África</span>
               </button>
 
-              <button onClick={() => handleRegionSelect('Oceania')} className="col-span-2 bg-teal-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-teal-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 shadow-sm hover:bg-teal-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all mt-1 md:mt-2">
-                <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-sm">🦘</span>
-                <span className="text-[20px] md:text-[32px] font-black text-teal-800 uppercase tracking-widest mt-1 md:mt-2">Oceania</span>
+              <button onClick={() => handleRegionSelect('Oceania')} className="col-span-2 bg-teal-50 border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] border-teal-200 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 shadow-sm hover:bg-teal-100 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all mt-1 md:mt-2 relative overflow-hidden group">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>
+                <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-sm relative z-10">🦘</span>
+                <span className="text-[20px] md:text-[32px] font-black text-teal-800 uppercase tracking-widest mt-1 md:mt-2 relative z-10">Oceania</span>
               </button>
             </div>
             
