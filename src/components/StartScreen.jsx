@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles } from 'lucide-react';
+import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, MapPin, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
 
@@ -56,11 +56,30 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   return (
     <div className="absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
       
-      {/* BACKGROUND DECORATIVO */}
+      {/* BACKGROUND DECORATIVO BASE */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-80">
         <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow"></div>
         <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.4) 2px, transparent 2px), linear-gradient(90deg, rgba(255, 255, 255, 0.4) 2px, transparent 2px)', backgroundSize: '96px 96px' }}></div>
+      </div>
+
+      {/* NOVO: POEIRA ESTELAR / PARTICULAS FLUTUANTES (EFEITO PARALLAX MÁGICO) */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
+        {[...Array(30)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute bg-white rounded-full animate-float"
+            style={{
+              width: Math.random() * 8 + 3 + 'px',
+              height: Math.random() * 8 + 3 + 'px',
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              animationDuration: Math.random() * 15 + 10 + 's',
+              animationDelay: Math.random() * 5 + 's',
+              boxShadow: '0 0 10px rgba(255,255,255,0.8)'
+            }}
+          ></div>
+        ))}
       </div>
       
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-white/80 backdrop-blur-md border-b-2 border-white/50 shadow-sm">
@@ -80,7 +99,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
       {/* CARROSSEL DE MODOS DE JOGO */}
       <div className="relative z-10 pt-[calc(140px+env(safe-area-inset-top))] pb-8 animate-fade-in-up">
         <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
-          <h2 className="text-[20px] md:text-[32px] font-black uppercase tracking-widest text-sky-900">Modos de Jogo</h2>
+          <h2 className="text-[20px] md:text-[32px] font-black uppercase tracking-widest text-sky-900 flex items-center gap-2"><Map size={28} className="text-sky-500"/> Modos Extras</h2>
           <span className="text-sky-600 font-bold text-xs md:text-sm uppercase tracking-widest flex items-center gap-1">Deslize <ChevronRight size={16}/></span>
         </div>
         
@@ -141,7 +160,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           const isUnlocked = unlockedThemes.includes(t.id);
           const isCurrent = currentTheme.id === t.id;
           
-          // Lógica para acender a trilha apenas se o PRÓXIMO bioma estiver desbloqueado
           const nextTheme = themeNodes[index + 1];
           const isNextUnlocked = nextTheme ? unlockedThemes.includes(nextTheme.id) : false;
 
@@ -195,21 +213,49 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 </div>
               )}
 
-              {/* NOVA TRILHA GAMIFICADA (Scenery & Stepping Stones) */}
+              {/* NOVA TRILHA GAMIFICADA SINUOSA (SINE WAVE) COM DIORAMAS */}
               <div aria-hidden="true" className="absolute top-[160px] md:top-[208px] left-1/2 -translate-x-1/2 h-[450px] md:h-[600px] w-full flex flex-col items-center justify-evenly py-10 md:py-16 z-0 pointer-events-none">
                 
-                {/* Pedrinhas (Stepping Stones) */}
-                {[...Array(isMobile ? 4 : 5)].map((_, i) => (
-                  <div key={i} className={`w-4 h-4 md:w-6 md:h-6 rounded-full transition-colors duration-500 ${isNextUnlocked ? 'bg-amber-300 shadow-[inset_0_3px_6px_rgba(180,83,9,0.3)]' : 'bg-stone-200 shadow-inner'}`}></div>
-                ))}
+                {/* Pedrinhas (Stepping Stones) com Curva Matemática */}
+                {[...Array(isMobile ? 4 : 5)].map((_, i) => {
+                  const totalStones = isMobile ? 4 : 5;
+                  const progress = (i + 1) / (totalStones + 1);
+                  // Cria uma curva S Alternada usando seno
+                  const offsetBase = isMobile ? 60 : 100;
+                  const curveDirection = index % 2 === 0 ? 1 : -1;
+                  const offsetX = Math.sin(progress * Math.PI) * offsetBase * curveDirection;
 
-                {/* Elementos flutuantes de cenário (Nuvens, Árvores, Montanhas, Brilhos) */}
-                <div className={`absolute top-[20%] ${index % 2 === 0 ? 'left-[-40px] md:left-[-120px]' : 'right-[-40px] md:right-[-120px]'} animate-float opacity-70 drop-shadow-sm`}>
-                  {index % 3 === 0 ? <Cloud size={isMobile ? 80 : 130} className="text-sky-200 fill-sky-50" strokeWidth={2}/> : index % 3 === 1 ? <TreePine size={isMobile ? 80 : 130} className="text-emerald-200 fill-emerald-50" strokeWidth={2}/> : <Mountain size={isMobile ? 80 : 130} className="text-stone-300 fill-stone-100" strokeWidth={2}/>}
+                  return (
+                    <div 
+                      key={i} 
+                      className={`w-4 h-4 md:w-6 md:h-6 rounded-full transition-colors duration-500 relative ${isNextUnlocked ? 'bg-amber-300 shadow-[inset_0_3px_6px_rgba(180,83,9,0.3),0_4px_15px_rgba(251,191,36,0.6)]' : 'bg-stone-300 shadow-[inset_0_3px_6px_rgba(0,0,0,0.1)]'}`}
+                      style={{ transform: `translateX(${offsetX}px)` }}
+                    ></div>
+                  );
+                })}
+
+                {/* Dioramas Laterais Avançados (Agrupando ícones para formar cenários) */}
+                <div className={`absolute top-[15%] ${index % 2 === 0 ? 'left-[-60px] md:left-[-160px]' : 'right-[-60px] md:right-[-160px]'} animate-float opacity-80 drop-shadow-lg flex items-end`}>
+                  {index % 3 === 0 ? (
+                    <>
+                      <Cloud size={isMobile ? 90 : 140} className="text-sky-200 fill-sky-50 absolute -top-4 -left-4 z-0 opacity-70" strokeWidth={2}/>
+                      <Cloud size={isMobile ? 110 : 170} className="text-sky-300 fill-sky-100 z-10" strokeWidth={2}/>
+                    </>
+                  ) : index % 3 === 1 ? (
+                    <>
+                      <TreePine size={isMobile ? 80 : 120} className="text-emerald-300 fill-emerald-100 absolute -right-6 z-0 opacity-70" strokeWidth={2}/>
+                      <TreePine size={isMobile ? 110 : 160} className="text-emerald-400 fill-emerald-200 z-10" strokeWidth={2}/>
+                    </>
+                  ) : (
+                    <>
+                      <Mountain size={isMobile ? 100 : 150} className="text-stone-300 fill-stone-100 absolute -right-4 z-0 opacity-70" strokeWidth={2}/>
+                      <Mountain size={isMobile ? 120 : 180} className="text-stone-400 fill-stone-200 z-10" strokeWidth={2}/>
+                    </>
+                  )}
                 </div>
 
-                <div className={`absolute top-[65%] ${index % 2 === 0 ? 'right-[-50px] md:right-[-150px]' : 'left-[-50px] md:left-[-150px]'} animate-float opacity-60 drop-shadow-sm`} style={{ animationDelay: '1.5s' }}>
-                  {index % 2 === 0 ? <Cloud size={isMobile ? 60 : 100} className="text-sky-200 fill-sky-50" strokeWidth={2}/> : <Sparkles size={isMobile ? 50 : 80} className="text-amber-200 fill-amber-50" strokeWidth={2}/>}
+                <div className={`absolute top-[70%] ${index % 2 === 0 ? 'right-[-40px] md:right-[-120px]' : 'left-[-40px] md:left-[-120px]'} animate-float opacity-70 drop-shadow-md`} style={{ animationDelay: '2s' }}>
+                  {index % 2 === 0 ? <Cloud size={isMobile ? 70 : 110} className="text-sky-200 fill-sky-50" strokeWidth={2}/> : <Sparkles size={isMobile ? 60 : 90} className="text-amber-200 fill-amber-50" strokeWidth={2}/>}
                 </div>
 
               </div>
