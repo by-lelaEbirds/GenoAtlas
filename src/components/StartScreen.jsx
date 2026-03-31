@@ -76,59 +76,58 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         .animate-shadow-scale { animation: shadow-scale 2s infinite; }
 
         @keyframes twinkle {
-          0%, 100% { opacity: 0.2; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.2); }
+          0%, 100% { opacity: 0.3; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.1); }
         }
         .animate-twinkle { animation: twinkle 3s infinite ease-in-out; }
         
+        /* FÍSICA DE METEORO CORRIGIDA: Rotação exata e movimento reto pelo eixo */
         @keyframes shooting-star {
-          0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 1; }
-          100% { transform: translateX(-1500px) translateY(1500px) rotate(-45deg); opacity: 0; }
+          0% { transform: rotate(135deg) translateX(0); opacity: 1; }
+          100% { transform: rotate(135deg) translateX(150vw); opacity: 0; }
         }
-        .animate-shooting-star { animation: shooting-star 5s linear infinite; }
+        .animate-shooting-star { animation: shooting-star 4s linear infinite; }
       `}</style>
 
-      {/* FUNDO MÁGICO 100% FIXO: Resolve as estrelas sobrepondo e sumindo! */}
-      <div className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-1000 ${isDarkMode ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950 via-slate-900 to-black' : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-300 via-sky-100 to-white'}`}>
+      {/* FUNDO MÁGICO DE ALTA PERFORMANCE (SEM BLURS PESADOS) */}
+      <div className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-1000 ${isDarkMode ? 'bg-indigo-950' : 'bg-sky-200'}`}>
         
-        {/* NEBULOSAS E LUZES DE FUNDO */}
         <div aria-hidden="true" className="absolute inset-0 opacity-80">
           {isDarkMode ? (
             <>
-               <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-50 animate-pulse-slow"></div>
-               <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-700 rounded-full mix-blend-screen filter blur-[120px] opacity-40 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-               <div className="absolute top-[60%] left-[20%] w-[400px] h-[400px] bg-cyan-600 rounded-full mix-blend-screen filter blur-[100px] opacity-40 animate-pulse-slow" style={{animationDelay: '4s'}}></div>
-               {/* Estrelas Cadentes Rápidas */}
-               <div className="absolute top-10 right-[10%] w-1 h-32 bg-gradient-to-b from-white to-transparent animate-shooting-star opacity-100 blur-[1px]"></div>
-               <div className="absolute top-[30%] right-[30%] w-1 h-24 bg-gradient-to-b from-white to-transparent animate-shooting-star opacity-80 blur-[1px]" style={{animationDelay: '2.5s'}}></div>
+               <div className="absolute top-[-10%] left-[-20%] w-[100vw] h-[100vw] max-w-[600px] max-h-[600px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(79,70,229,0.35) 0%, transparent 70%)'}}></div>
+               <div className="absolute top-[30%] right-[-20%] w-[120vw] h-[120vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(162,28,175,0.25) 0%, transparent 70%)', animationDelay: '2s'}}></div>
+               <div className="absolute top-[60%] left-[10%] w-[100vw] h-[100vw] max-w-[500px] max-h-[500px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(8,145,178,0.25) 0%, transparent 70%)', animationDelay: '4s'}}></div>
+               
+               {/* Estrelas Cadentes Rápidas e Perfeitas */}
+               <div className="absolute top-[5%] right-[10%] w-[120px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
+               <div className="absolute top-[20%] right-[40%] w-[80px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-60" style={{animationDelay: '1.5s'}}></div>
             </>
           ) : (
             <>
-               <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse-slow"></div>
-               <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+               <div className="absolute top-[-10%] left-[-20%] w-[100vw] h-[100vw] max-w-[600px] max-h-[600px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, transparent 70%)'}}></div>
+               <div className="absolute top-[30%] right-[-20%] w-[120vw] h-[120vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%)', animationDelay: '2s'}}></div>
             </>
           )}
           {/* Grid Blueprint */}
-          <div className={`absolute inset-0 ${isDarkMode ? 'opacity-[0.05]' : 'opacity-100'}`} style={{ backgroundImage: `linear-gradient(${isDarkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.4)'} 2px, transparent 2px), linear-gradient(90deg, ${isDarkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.4)'} 2px, transparent 2px)`, backgroundSize: '96px 96px' }}></div>
+          <div className={`absolute inset-0 ${isDarkMode ? 'opacity-[0.05]' : 'opacity-40'}`} style={{ backgroundImage: `linear-gradient(${isDarkMode ? '#ffffff' : '#ffffff'} 2px, transparent 2px), linear-gradient(90deg, ${isDarkMode ? '#ffffff' : '#ffffff'} 2px, transparent 2px)`, backgroundSize: '96px 96px' }}></div>
         </div>
 
-        {/* PARTÍCULAS / POEIRA ESTELAR OTIMIZADA */}
+        {/* POEIRA ESTELAR OTIMIZADA PARA BATERIA (SEM BOX-SHADOW E BLUR NA VERSÃO MOBILE) */}
         <div aria-hidden="true" className="absolute inset-0 opacity-70">
-          {[...Array(isMobile ? 30 : 50)].map((_, i) => {
-            const colors = isDarkMode ? ['bg-white', 'bg-cyan-300', 'bg-fuchsia-300', 'bg-indigo-200'] : ['bg-white', 'bg-amber-100', 'bg-sky-100', 'bg-white'];
+          {[...Array(isMobile ? 25 : 45)].map((_, i) => {
+            const colors = isDarkMode ? ['bg-white', 'bg-cyan-200', 'bg-fuchsia-200', 'bg-indigo-100'] : ['bg-white', 'bg-amber-100', 'bg-white', 'bg-white'];
             const color = colors[Math.floor(Math.random() * colors.length)];
-            const isLarge = Math.random() > 0.8;
-            const size = Math.random() * (isLarge ? 10 : 5) + 3;
+            const size = Math.random() * 4 + 2;
             return (
               <div 
                 key={i}
-                className={`absolute rounded-full animate-float ${color} animate-twinkle ${isLarge ? 'blur-[2px]' : 'blur-[1px]'}`}
+                className={`absolute rounded-full animate-float ${color} animate-twinkle`}
                 style={{
                   width: `${size}px`, height: `${size}px`,
                   left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`,
                   animationDuration: `${Math.random() * 10 + 5}s`,
                   animationDelay: `${Math.random() * 5}s`,
-                  boxShadow: `0 0 ${isLarge ? 20 : 10}px currentColor`
                 }}
               ></div>
             );
@@ -136,15 +135,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
       </div>
       
-      {/* ==================================================================== */}
-      {/* CONTEÚDO ROLÁVEL (Sempre sobre o fundo fixo) */}
-      {/* ==================================================================== */}
+      {/* CONTEÚDO ROLÁVEL */}
       <div className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
 
-        {/* HEADER: Planetinha 3D e Botões Neon */}
+        {/* HEADER */}
         <header className={`fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-4 pt-[calc(1rem+env(safe-area-inset-top))] ${isDarkMode ? 'bg-slate-900/60 border-slate-700/50' : 'bg-white/70 border-white/50'} backdrop-blur-xl border-b-[2px] shadow-sm transition-colors`}>
           <div className="flex items-center gap-2 md:gap-4">
-            {/* O PLANETINHA 3D RADIante */}
             <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center border-[3px] md:border-[4px] relative overflow-hidden transition-all ${isDarkMode ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-400 via-purple-600 to-indigo-950 border-indigo-300 shadow-[0_0_25px_rgba(129,140,248,0.8)] ring-[2px] ring-indigo-500/50' : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-200 via-sky-400 to-blue-600 border-white shadow-[0_0_20px_rgba(56,189,248,0.6)] ring-[2px] ring-sky-200'}`}>
               <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 z-0"></div>
               <Globe className="w-8 h-8 md:w-11 md:h-11 text-white relative z-10 drop-shadow-md" strokeWidth={2.5} />
@@ -165,7 +161,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </header>
 
-        {/* CARROSSEL DE MODOS EXTRAS (COM STRINGS VANTAJOSAS) */}
+        {/* CARROSSEL DE MODOS EXTRAS */}
         <div className="relative z-10 pt-[calc(140px+env(safe-area-inset-top))] pb-8 animate-fade-in-up">
           <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
             <h2 className={`text-[22px] md:text-[36px] font-black uppercase tracking-widest flex items-center gap-2 ${isDarkMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]' : 'text-sky-900'}`}><Map size={28} className={isDarkMode ? 'text-indigo-400' : 'text-sky-500'}/> Modos Extras</h2>
@@ -174,9 +170,17 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           
           <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-8 snap-x custom-scrollbar">
             
+            {/* RESOLVIDO O BUG DE VAZAMENTO DO SWEEP AQUI */}
             <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center border-[6px] md:border-[8px] transition-all group relative overflow-visible ${dailyCompleted ? (isDarkMode ? 'bg-slate-800 border-slate-700 opacity-60' : 'bg-stone-300 border-stone-400 opacity-80 cursor-not-allowed') : (isDarkMode ? 'bg-rose-950/40 border-rose-900 hover:bg-rose-900/50 shadow-[0_0_20px_rgba(225,29,72,0.3)]' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 active:scale-95 shadow-lg')}`}>
               {!dailyCompleted && <div className="absolute -top-4 -right-4 bg-rose-500 text-white text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border-[3px] border-white animate-bounce-short shadow-[0_5px_15px_rgba(225,29,72,0.6)] z-20">💎 +500</div>}
-              {!dailyCompleted && <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 rounded-[2rem]"></div>}
+              
+              {/* O Sweep agora mora numa gaiola fechada! */}
+              {!dailyCompleted && (
+                <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+                </div>
+              )}
+              
               <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mb-4 border-[6px] shadow-inner relative z-10 ${dailyCompleted ? (isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-400' : 'bg-stone-400 border-stone-500 text-stone-200') : (isDarkMode ? 'bg-rose-600 border-rose-800 text-white group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(225,29,72,0.8)]' : 'bg-rose-500 border-rose-600 text-white group-hover:scale-110 transition-transform')}`}>
                 {dailyCompleted ? <CheckCircle size={40} strokeWidth={2.5}/> : <Calendar size={40} strokeWidth={2.5} />}
               </div>
@@ -186,7 +190,9 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
             <button aria-label="Modo de Jogo Futebol" onClick={onFootball} className={`snap-center shrink-0 w-[240px] md:w-[320px] border-[6px] md:border-[8px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg relative overflow-visible ${isDarkMode ? 'bg-sky-950/40 border-sky-900 hover:bg-sky-900/50 shadow-[0_0_20px_rgba(14,165,233,0.3)]' : 'bg-sky-50 border-sky-200 hover:bg-sky-100'}`}>
               <div className="absolute -top-4 -right-4 bg-sky-500 text-white text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border-[3px] border-white shadow-[0_5px_15px_rgba(14,165,233,0.6)] z-20">🔥 DESAFIO</div>
-              <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 rounded-[2rem]"></div>
+              <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+              </div>
               <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] border-[6px] text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10 ${isDarkMode ? 'bg-sky-600 border-sky-800 shadow-[0_0_20px_rgba(14,165,233,0.8)]' : 'bg-sky-500 border-sky-600'}`}>
                 <Shield size={40} strokeWidth={2.5} />
               </div>
@@ -196,7 +202,9 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
             <button aria-label="Modo de Estudo" onClick={onStudy} className={`snap-center shrink-0 w-[240px] md:w-[320px] border-[6px] md:border-[8px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg relative overflow-visible ${isDarkMode ? 'bg-emerald-950/40 border-emerald-900 hover:bg-emerald-900/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'}`}>
               <div className="absolute -top-4 -right-4 bg-emerald-500 text-white text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border-[3px] border-white shadow-[0_5px_15px_rgba(16,185,129,0.6)] z-20">🧘 ZEN</div>
-              <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 rounded-[2rem]"></div>
+              <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+              </div>
               <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] border-[6px] text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10 ${isDarkMode ? 'bg-emerald-600 border-emerald-800 shadow-[0_0_20px_rgba(16,185,129,0.8)]' : 'bg-emerald-400 border-emerald-500 text-emerald-900'}`}>
                 <GraduationCap size={40} strokeWidth={2.5} />
               </div>
@@ -206,7 +214,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
-        <div className="relative z-10 text-center mb-16 px-6 md:px-12 animate-fade-in-up mt-4">
+        <div className="relative z-10 text-center mb-10 px-6 md:px-12 animate-fade-in-up mt-4">
           <div className={`inline-flex items-center gap-3 md:gap-4 px-8 py-3 md:px-12 md:py-5 rounded-full text-white shadow-2xl border-b-[6px] md:border-b-[8px] relative overflow-hidden ${isDarkMode ? 'bg-indigo-600 border-indigo-800 shadow-[0_0_30px_rgba(79,70,229,0.6)]' : 'bg-sky-600 border-sky-800'}`}>
             <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"></div>
             <Compass className="w-8 h-8 md:w-12 md:h-12 relative z-10" strokeWidth={2.5} />
@@ -214,13 +222,13 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
-        <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-10">
+        {/* RECALCULO DE MARGENS: Avatar agora flutua perfeitamente no espaço correto */}
+        <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[120px] md:pt-[160px]">
           
-          {/* AVATAR DESLIZANTE COM SOMBRA DINÂMICA */}
           <div 
             aria-hidden="true"
             className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
-            style={{ transform: `translate(-50%, ${pinOffset}px)`, top: isMobile ? '-90px' : '-120px' }}
+            style={{ transform: `translate(-50%, ${pinOffset}px)`, top: '0px' }}
           >
             <div className={`bg-white w-[80px] h-[80px] md:w-[112px] md:h-[112px] rounded-[24px] md:rounded-[32px] border-[8px] md:border-[10px] border-amber-400 flex items-center justify-center animate-bounce-short relative z-10 ${isDarkMode ? 'shadow-[0_0_40px_rgba(251,191,36,0.8)]' : 'shadow-[0_15px_30px_rgba(0,0,0,0.3)]'}`}>
                {activeAvatar.type === 'emoji' ? (
@@ -230,7 +238,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                )}
             </div>
             <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short z-10"></div>
-            
             <div className={`w-[40px] md:w-[60px] h-[10px] md:h-[15px] rounded-full mt-2 md:mt-4 blur-[3px] animate-shadow-scale ${isDarkMode ? 'bg-black/80' : 'bg-stone-900/30'}`}></div>
           </div>
 
@@ -293,14 +300,13 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
                 {!isUnlocked && (
                   <div aria-hidden="true" className="absolute -bottom-[100px] md:-bottom-[140px] flex flex-col items-center animate-pulse-slow pointer-events-none z-30">
-                    <div className={`px-6 py-2 md:px-10 md:py-4 rounded-full border-2 shadow-xl flex items-center gap-2 md:gap-3 scale-100 md:scale-110 whitespace-nowrap min-w-max ${isDarkMode ? 'bg-amber-600 border-amber-800 shadow-[0_0_20px_rgba(217,119,6,0.6)]' : 'bg-amber-400 border-amber-500'}`}>
+                    <div className={`px-6 py-2 md:px-10 md:py-4 rounded-full border-2 shadow-xl flex items-center gap-2 md:gap-3 scale-100 md:scale-110 whitespace-nowrap min-w-max ${isDarkMode ? 'bg-amber-600 border-amber-800 shadow-[0_0_20px_rgba(217,119,6,0.4)]' : 'bg-amber-400 border-amber-500'}`}>
                       <Lock className={`w-5 h-5 md:w-7 md:h-7 ${isDarkMode ? 'text-amber-100' : 'text-amber-900'}`}/>
                       <span className={`text-[18px] md:text-[24px] font-black ${isDarkMode ? 'text-amber-100' : 'text-amber-900'}`}>Desbloquear: {t.price} 🪙</span>
                     </div>
                   </div>
                 )}
 
-                {/* TRILHA GAMIFICADA SINUOSA COM DIORAMAS */}
                 <div aria-hidden="true" className="absolute top-[160px] md:top-[208px] left-1/2 -translate-x-1/2 h-[450px] md:h-[600px] w-full flex flex-col items-center justify-evenly py-10 md:py-16 z-0 pointer-events-none">
                   {[...Array(isMobile ? 4 : 5)].map((_, i) => {
                     const totalStones = isMobile ? 4 : 5;
@@ -312,13 +318,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                     return (
                       <div 
                         key={i} 
-                        className={`w-4 h-4 md:w-6 md:h-6 rounded-full transition-colors duration-500 relative ${isNextUnlocked ? (isDarkMode ? 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8),inset_0_3px_6px_rgba(180,83,9,0.5)]' : 'bg-amber-300 shadow-[inset_0_3px_6px_rgba(180,83,9,0.3),0_4px_15px_rgba(251,191,36,0.6)]') : (isDarkMode ? 'bg-slate-700 shadow-[inset_0_3px_6px_rgba(0,0,0,0.8)]' : 'bg-stone-300 shadow-[inset_0_3px_6px_rgba(0,0,0,0.1)]')}`}
+                        className={`w-4 h-4 md:w-6 md:h-6 rounded-full transition-colors duration-500 relative ${isNextUnlocked ? (isDarkMode ? 'bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8),inset_0_3px_6px_rgba(180,83,9,0.5)]' : 'bg-amber-300 shadow-[inset_0_3px_6px_rgba(180,83,9,0.3),0_4px_15px_rgba(251,191,36,0.6)]') : (isDarkMode ? 'bg-slate-700 shadow-[inset_0_3px_6px_rgba(0,0,0,0.5)]' : 'bg-stone-300 shadow-[inset_0_3px_6px_rgba(0,0,0,0.1)]')}`}
                         style={{ transform: `translateX(${offsetX}px)` }}
                       ></div>
                     );
                   })}
 
-                  {/* DIORAMAS LATERAIS VIBRANTES */}
                   <div className={`absolute top-[15%] ${index % 2 === 0 ? 'left-[-60px] md:left-[-160px]' : 'right-[-60px] md:right-[-160px]'} animate-float opacity-90 drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)] flex items-end`}>
                     {index % 3 === 0 ? (
                       <>
@@ -361,9 +366,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
       </div>
 
-      {/* ==================================================================== */}
-      {/* NAVBAR INFERIOR (Fica por cima de tudo) */}
-      {/* ==================================================================== */}
       <nav aria-label="Navegação Principal" className={`fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 md:pt-6 border-t-[3px] rounded-t-[2.5rem] md:rounded-t-[4rem] transition-colors ${isDarkMode ? 'bg-slate-900/95 backdrop-blur-2xl border-slate-700 shadow-[0px_-40px_100px_rgba(0,0,0,0.8)]' : 'bg-white/95 backdrop-blur-xl border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.05)]'}`}>
         <button aria-label="Ir para Início" className={`flex flex-col items-center justify-center active:scale-95 transition-all group w-20 md:w-32 ${isDarkMode ? 'text-sky-300' : 'text-sky-500'}`}>
           <div className={`p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 transition-colors ${isDarkMode ? 'bg-sky-900 group-active:bg-sky-800 shadow-[0_0_15px_rgba(56,189,248,0.3)]' : 'bg-sky-100 group-active:bg-sky-200'}`}><Home className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
@@ -387,7 +389,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </button>
       </nav>
 
-      {/* MODAL DE REGIÕES */}
       {showRegionModal && (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center ${isDarkMode ? 'bg-black/90' : 'bg-stone-900/80'} backdrop-blur-md px-4 md:px-6 py-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div role="dialog" aria-label="Menu de Seleção de Região" className={`${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-[0_0_50px_rgba(14,165,233,0.3)]' : 'bg-white border-stone-200 shadow-2xl'} border-b-[12px] md:border-b-[16px] p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
@@ -406,7 +407,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 <span className="text-[20px] md:text-[32px] font-black text-white uppercase tracking-widest mt-1 md:mt-2 drop-shadow-sm relative z-10">Mundo Todo</span>
               </button>
               
-              <button onClick={() => handleRegionSelect('Americas')} className={`border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all relative overflow-hidden group ${isDarkMode ? 'bg-emerald-950 border-emerald-800 hover:bg-emerald-900 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 shadow-sm'}`}>
+              <button onClick={() => handleRegionSelect('Americas')} className={`border-[4px] border-b-[8px] md:border-[6px] md:border-b-[10px] rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-[4px] md:active:border-b-[6px] transition-all relative overflow-hidden group ${isDarkMode ? 'bg-emerald-950 border-emerald-800 hover:bg-emerald-900 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 shadow-sm'}`}>
                 <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 z-0"></div>
                 <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🌎</span>
                 <span className={`text-[14px] md:text-[20px] font-black uppercase tracking-widest relative z-10 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-800'}`}>Américas</span>
