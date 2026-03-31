@@ -6,7 +6,7 @@ import { FOOTBALL_CLUBS } from '../constants/football';
 import { CAPITALS_MAP } from '../constants/capitals';
 import { AVATARS } from '../constants/shop';
 import { PROMO_CODES } from '../constants/promoCodes';
-import { ACHIEVEMENTS_LIST } from '../constants/achievements'; // NOVA IMPORTAÇÃO DE CONQUISTAS
+import { ACHIEVEMENTS_LIST } from '../constants/achievements';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
@@ -55,7 +55,6 @@ export function useGeoGame(globeRef) {
   const [showShop, setShowShop] = useState(false);
   
   const [redeemedCodes, setRedeemedCodes] = useState([]);
-  
   const [activeRegion, setActiveRegion] = useState('all');
 
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
@@ -70,13 +69,14 @@ export function useGeoGame(globeRef) {
 
   const [isSmoothMode, setIsSmoothMode] = useState(true);
   const [showSettingsPrompt, setShowSettingsPrompt] = useState(false);
+  
+  // NOVO: ESTADO DO MODO ESCURO
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
-
-  // NOVO: Acompanhamento de vitórias diárias para Conquistas
   const [dailyWinsCount, setDailyWinsCount] = useState(0);
 
   const scoreRef = useRef(0);
@@ -117,6 +117,7 @@ export function useGeoGame(globeRef) {
         const savedActiveAvatar = await getNativeData('geoGuessActiveAvatar');
         const savedPowerUps = await getNativeData('geoGuessPowerUps');
         const savedRedeemedCodes = await getNativeData('geoGuessRedeemedCodes');
+        const savedDarkMode = await getNativeData('geoGuessDarkMode'); // NOVO
 
         if (savedScore) setBestScore(parseInt(savedScore, 10));
         if (savedCoins) setCoins(parseInt(savedCoins, 10));
@@ -141,6 +142,10 @@ export function useGeoGame(globeRef) {
 
         if (savedSmooth === null) setShowSettingsPrompt(true);
         else setIsSmoothMode(savedSmooth === 'true');
+
+        // Carrega a preferência de Modo Escuro
+        if (savedDarkMode !== null) setIsDarkMode(savedDarkMode === 'true');
+
       } catch(e) {
         console.warn("GenoAtlas - Erro recuperando salvamento:", e);
       }
@@ -150,18 +155,15 @@ export function useGeoGame(globeRef) {
       try {
         const module = await import('../constants/countries.json');
         const countriesData = module.default || module;
-        
         const translator = new Intl.DisplayNames(['pt-BR'], { type: 'region' });
         const valid = [];
         const translatedFeatures = countriesData.features.map(f => {
           let localName = f.properties.ADMIN;
           let isoCode = f.properties.ISO_A2;
-
           if (isoCode === '-99') {
             if (f.properties.ADMIN === 'France') isoCode = 'FR';
             else if (f.properties.ADMIN === 'Norway') isoCode = 'NO';
           }
-
           if (isoCode && isoCode !== '-99') {
             try { localName = translator.of(isoCode); } catch (e) {}
             const countryObj = { name: localName, iso: isoCode, continent: f.properties.CONTINENT, pop: f.properties.POP_EST };
@@ -172,9 +174,7 @@ export function useGeoGame(globeRef) {
         });
         setGeoData(translatedFeatures);
         setAllCountries(valid);
-      } catch (e) {
-        console.error("GenoAtlas - Falha ao carregar mapa", e);
-      }
+      } catch (e) {}
     };
 
     loadSavedData();
@@ -183,11 +183,8 @@ export function useGeoGame(globeRef) {
 
   useEffect(() => {
     const handleAppState = ({ isActive }) => {
-      if (!isActive && gameState === GAME_STATES.PLAYING && !studyCard) {
-        setIsTimerFrozen(true);
-      } else if (isActive && gameState === GAME_STATES.PLAYING && !studyCard) {
-        setIsTimerFrozen(false);
-      }
+      if (!isActive && gameState === GAME_STATES.PLAYING && !studyCard) setIsTimerFrozen(true);
+      else if (isActive && gameState === GAME_STATES.PLAYING && !studyCard) setIsTimerFrozen(false);
     };
     let appListener;
     try { appListener = CapApp.addListener('appStateChange', handleAppState); } catch(e){}
@@ -201,10 +198,7 @@ export function useGeoGame(globeRef) {
       rafId = requestAnimationFrame(() => setIsMobile(window.innerWidth < 768));
     };
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(rafId);
-    };
+    return () => { window.removeEventListener('resize', handleResize); cancelAnimationFrame(rafId); };
   }, []);
 
   const timeLeftRef = useRef(timeLeft);
@@ -242,10 +236,17 @@ export function useGeoGame(globeRef) {
     setShowSettingsPrompt(false);
   };
 
+  // Função para alternar o Modo Escuro
+  const toggleDarkMode = () => {
+    const nextMode = !isDarkMode;
+    setIsDarkMode(nextMode);
+    saveNativeData('geoGuessDarkMode', nextMode);
+    try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
+  };
+
   const unlockAchievement = useCallback((id) => {
     setUnlockedAchievements(prev => {
       if (prev.includes(id)) return prev;
-      
       const achievementData = ACHIEVEMENTS_LIST.find(a => a.id === id);
       if (!achievementData) return prev;
 
@@ -264,12 +265,10 @@ export function useGeoGame(globeRef) {
       try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
       playSound('coin', 0.7);
       setTimeout(() => setAchievementToast(null), 4000);
-      
       return newUnlocked;
     });
   }, []);
 
-  // VERIFICADOR CONSTANTE DE CONQUISTAS DE RIQUEZA
   useEffect(() => {
     if (coins >= 1000) unlockAchievement('wealthy_1');
     if (coins >= 5000) unlockAchievement('wealthy_2');
@@ -289,8 +288,6 @@ export function useGeoGame(globeRef) {
       setLastDailyDate(todayStr);
       if (reason === 'daily_win') {
         earnedCoins += 500;
-        
-        // NOVO: Adiciona a vitória e checa as conquistas do diário
         setDailyWinsCount(prev => {
           const newTotal = prev + 1;
           saveNativeData('geoGuessDailyWinsCount', newTotal);
@@ -312,7 +309,6 @@ export function useGeoGame(globeRef) {
       saveNativeData('geoGuessBestScore', scoreRef.current);
     }
     
-    // VERIFICAÇÃO DE CONQUISTAS DE PONTOS
     if (scoreRef.current >= 1000) unlockAchievement('score_1000');
     if (scoreRef.current >= 5000) unlockAchievement('score_5000');
     if (scoreRef.current >= 10000) unlockAchievement('score_10000');
@@ -344,12 +340,10 @@ export function useGeoGame(globeRef) {
   const redeemCode = (rawCode) => {
     const code = rawCode.trim().toUpperCase();
     if (!code) return { success: false, message: 'Digite um código válido!' };
-    
     if (redeemedCodes.includes(code)) {
       playSound('error', 0.6);
       return { success: false, message: 'Código já foi utilizado!' };
     }
-    
     const promo = PROMO_CODES[code];
     if (promo) {
       const newCodesList = [...redeemedCodes, code];
@@ -361,16 +355,12 @@ export function useGeoGame(globeRef) {
         setCoins(nextCoins);
         saveNativeData('geoGuessCoins', nextCoins);
       }
-      
-      unlockAchievement('promo_code'); // Aciona a conquista de Apoiador
-      
+      unlockAchievement('promo_code');
       try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
       playSound('success', 0.8);
       setTimeout(() => playSound('coin', 0.9), 500);
-      
       return { success: true, message: promo.message };
     }
-    
     playSound('error', 0.6);
     return { success: false, message: 'Código inválido ou expirado.' };
   };
@@ -389,30 +379,25 @@ export function useGeoGame(globeRef) {
       setRemainingCountries(pool.slice(1));
     } else {
       if (pool.length === 0) return endGame('win');
-      
       let availablePool = pool;
       if (currentStreak < 2) {
         const easyPool = pool.filter(c => c.pop > 30000000);
         if (easyPool.length > 0) availablePool = easyPool;
       }
-      
       selectedCountry = availablePool[Math.floor(Math.random() * availablePool.length)];
       setRemainingCountries(pool.filter(c => c.iso !== selectedCountry.iso));
     }
-    
     setTargetCountry(selectedCountry);
     if (!isFirst) setTargetStartTime(Date.now());
   }, [allCountries, endGame, gameMode, remainingClubs, streak]);
 
   const startGame = (mode = GAME_MODES.NORMAL, forcedRegion = null) => {
     if (allCountries.length === 0) return;
-    
     const finalRegion = forcedRegion || activeRegion;
     if (forcedRegion) setActiveRegion(forcedRegion);
 
     playTone(600, 'square', 0.1); 
     setScore(0); setStreak(0); setTimeLeft(60); 
-    
     const baseLives = mode === GAME_MODES.DAILY ? 1 : 3;
     setLives(baseLives + powerUps.extraLife);
 
@@ -512,7 +497,7 @@ export function useGeoGame(globeRef) {
       unlockAchievement('first_country');
       if (curStreak === 3) unlockAchievement('combo_3');
       if (curStreak === 5) unlockAchievement('combo_5');
-      if (curStreak === 10) unlockAchievement('combo_10'); // NOVA CONQUISTA ADICIONADA AQUI
+      if (curStreak === 10) unlockAchievement('combo_10'); 
 
       if (isCombo) setTimeLeft(t => t + 5);
       
@@ -596,14 +581,16 @@ export function useGeoGame(globeRef) {
       floatingPoints, todayStr, lastDailyDate, studyCard,
       unlockedAchievements, showTutorial, showAchievements, achievementToast,
       freezeTimeLeft, isSmoothMode, showSettingsPrompt,
-      unlockedAvatars, activeAvatar, powerUps, showShop, redeemedCodes
+      unlockedAvatars, activeAvatar, powerUps, showShop, redeemedCodes,
+      isDarkMode // Passando o Dark Mode
     },
     actions: {
       startGame, endGame, quitGame, resetGlobe, setCoins, setUnlockedThemes,
       setActiveTheme, setActiveRegion, handleCountryClick, dismissStudyCard,
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
       skipCountry, revive, freezeTime, applySettings, 
-      setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop, redeemCode
+      setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop, redeemCode,
+      toggleDarkMode // Função que a StartScreen vai usar
     }
   };
 }
