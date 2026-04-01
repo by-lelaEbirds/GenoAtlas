@@ -311,11 +311,11 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                     if (isUnlocked) { setTheme(t); setShowRegionModal(true); } 
                     else { handleThemeSelect(t); }
                   }}
-                  className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-30 whitespace-nowrap scale-100 md:scale-110 transition-all active:scale-95 overflow-hidden ${isUnlocked ? (isDarkMode ? 'bg-slate-800 border-slate-600 shadow-[0_0_20px_rgba(0,0,0,0.6)] hover:bg-slate-700' : 'bg-white border-stone-300 shadow-xl hover:bg-stone-50') : (isDarkMode ? 'bg-slate-900 border-slate-800 cursor-not-allowed' : 'bg-stone-100 border-stone-300 cursor-not-allowed')}`}
+                  className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-30 whitespace-nowrap scale-100 md:scale-110 transition-transform duration-300 active:scale-95 overflow-hidden ring-offset-2 ${isUnlocked ? (isCurrent ? 'bg-amber-500 border-amber-300 shadow-[0_0_30px_rgba(245,158,11,0.6)] ring-4 ring-amber-500/50 animate-glow-pulse cursor-pointer' : (isDarkMode ? 'bg-slate-800/80 backdrop-blur-sm border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.6)] cursor-pointer' : 'bg-white/90 backdrop-blur-sm border-stone-200/50 shadow-xl cursor-pointer')) : (isDarkMode ? 'bg-slate-900/50 backdrop-blur-sm border-slate-800 cursor-not-allowed' : 'bg-stone-100/50 backdrop-blur-sm border-stone-300 cursor-not-allowed')}`}
                 >
-                  {isUnlocked && isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 z-0" style={{ animationDelay: '0.5s' }}></div>}
-                  <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest relative z-10 flex items-center gap-2 ${isUnlocked ? (isDarkMode ? 'text-white' : 'text-stone-800') : (isDarkMode ? 'text-slate-600' : 'text-stone-400')}`}>
-                    {isUnlocked && isCurrent ? <><Sparkles size={20} className="text-amber-500"/> Jogar Agora</> : t.name}
+                  {isUnlocked && isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-shimmer bg-gradient-to-r from-transparent via-white/70 to-transparent skew-x-12 z-0"></div>}
+                  <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest relative z-10 flex items-center gap-2 ${isUnlocked ? (isCurrent ? 'text-amber-950' : (isDarkMode ? 'text-white' : 'text-stone-800')) : (isDarkMode ? 'text-slate-600' : 'text-stone-400')}`}>
+                    {isUnlocked && isCurrent ? <><Sparkles size={20} className="text-amber-950"/> <span className="drop-shadow-sm">Jogar Agora</span></> : t.name}
                   </span>
                 </button>
 
@@ -412,7 +412,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
       {showRegionModal && (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center ${isDarkMode ? 'bg-black/90' : 'bg-stone-900/80'} backdrop-blur-md px-4 md:px-6 py-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
-          <div role="dialog" aria-label="Menu de Seleção de Região" className={`${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-[0_0_50px_rgba(14,165,233,0.3)]' : 'bg-white border-stone-200 shadow-2xl'} border-b-[12px] md:border-b-[16px] p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+          <div role="dialog" aria-label="Menu de Seleção de Região" className={`${isDarkMode ? 'bg-slate-900/80 backdrop-blur-md border-white/10 shadow-[0_0_50px_rgba(14,165,233,0.3)] ring-1 ring-sky-500/20' : 'bg-white/90 backdrop-blur-md border-stone-200/50 shadow-2xl ring-1 ring-black/5'} border-b-[8px] md:border-b-[12px] p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
               <h2 className={`text-[32px] md:text-[48px] font-black uppercase tracking-tighter leading-none ${isDarkMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'text-sky-900'}`}>Onde Pousar?</h2>
@@ -422,8 +422,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             </div>
             
             <div className="grid grid-cols-2 gap-3 md:gap-6 overflow-y-auto custom-scrollbar pb-4 pr-1 md:pr-2">
-              <button onClick={() => handleRegionSelect('all')} className={`col-span-2 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 border-b-[8px] md:border-b-[10px] active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-0 transition-all relative overflow-hidden group ${isDarkMode ? 'bg-gradient-to-r from-sky-500 to-indigo-600 border-sky-800 shadow-[0_0_30px_rgba(14,165,233,0.5)]' : 'bg-gradient-to-r from-sky-400 to-sky-500 border-sky-600 shadow-lg'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 z-0"></div>
+              <button onClick={() => handleRegionSelect('all')} className={`col-span-2 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 border-b-[8px] md:border-b-[10px] active:translate-y-[6px] md:active:translate-y-[8px] active:border-b-0 transition-all relative overflow-hidden group ${isDarkMode ? 'bg-gradient-to-r from-sky-500/90 to-indigo-600/90 backdrop-blur-sm border-sky-400/50 shadow-[0_0_30px_rgba(14,165,233,0.6)] animate-glow-pulse' : 'bg-gradient-to-r from-sky-400 to-sky-500 border-sky-600 shadow-lg'}`}>
+                <div className="absolute inset-0 -translate-x-[150%] animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 z-0"></div>
                 <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-md relative z-10">🌍</span>
                 <span className="text-[20px] md:text-[32px] font-black text-white uppercase tracking-widest mt-1 md:mt-2 drop-shadow-sm relative z-10">Mundo Todo</span>
               </button>
