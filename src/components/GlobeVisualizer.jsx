@@ -108,7 +108,9 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
           backgroundImageUrl={theme.bgImageUrl}
           bumpImageUrl={isMobile ? null : theme.bump}
           backgroundColor="rgba(0,0,0,0)"
-          showAtmosphere={false} 
+          showAtmosphere={!isMobile}
+          atmosphereColor={theme.polyHover || '#38bdf8'}
+          atmosphereAltitude={0.15} 
           
           // PERFORMANCE: Polígonos de resolução menor em mobile
           polygonsData={geoData}
