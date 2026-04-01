@@ -127,7 +127,7 @@ export default function App() {
 
       {state.showSettingsPrompt && (
         <div className={`absolute inset-0 z-[200] flex items-center justify-center ${isDarkMode ? 'bg-black/80' : 'bg-stone-900/80'} backdrop-blur-md px-4 md:px-6 py-6 ${isClosingSettings ? 'animate-fade-out' : 'animate-fade-in'}`}>
-          <div role="dialog" aria-modal="true" aria-labelledby="settings-title" className={`${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-[0_0_30px_rgba(99,102,241,0.3)]' : 'bg-white border-stone-200 shadow-2xl'} border-b-[12px] md:border-b-[16px] p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative flex flex-col max-h-[85dvh] ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+          <div role="dialog" aria-modal="true" aria-labelledby="settings-title" className={`${isDarkMode ? 'bg-slate-900/80 backdrop-blur-md border-white/10 shadow-[0_0_40px_rgba(99,102,241,0.4)] ring-1 ring-white/10' : 'bg-white/90 backdrop-blur-md border-stone-200/50 shadow-[0_30px_60px_rgba(0,0,0,0.15)] ring-1 ring-black/5'} border-b-[8px] md:border-b-[12px] p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative flex flex-col max-h-[85dvh] ${isClosingSettings ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <button aria-label="Fechar Ajustes" onClick={() => handleCloseSettings(state.isSmoothMode)} className={`absolute top-6 right-6 md:top-8 md:right-8 p-3 md:p-4 rounded-full transition-colors shadow-sm active:scale-95 z-10 ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-rose-400' : 'bg-stone-100 text-stone-400 hover:bg-stone-200 hover:text-rose-500'}`}>
               <X size={28} className="md:w-9 md:h-9" strokeWidth={3} />
@@ -226,7 +226,7 @@ export default function App() {
       
       {state.studyCard && (
         <div className={`absolute inset-0 z-50 flex items-center justify-center ${isDarkMode ? 'bg-black/80' : 'bg-stone-900/80'} px-6 pointer-events-auto ${isClosingStudyCard ? 'animate-fade-out' : 'animate-fade-in'}`}>
-          <div role="dialog" aria-modal="true" aria-labelledby="study-title" className={`${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-[0_0_30px_rgba(16,185,129,0.2)]' : 'bg-white border-stone-200 shadow-2xl'} border-b-[16px] p-12 rounded-[4rem] max-w-2xl w-full relative pt-32 mt-16 ${isClosingStudyCard ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+          <div role="dialog" aria-modal="true" aria-labelledby="study-title" className={`${isDarkMode ? 'bg-slate-900/85 backdrop-blur-md border-white/10 shadow-[0_0_50px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500/20' : 'bg-white/95 backdrop-blur-md border-stone-200/50 shadow-2xl ring-1 ring-black/5'} border-b-[12px] p-8 md:p-12 rounded-[3.5rem] md:rounded-[4rem] max-w-2xl w-full relative pt-32 mt-16 ${isClosingStudyCard ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
             
             <div className="absolute -top-24 left-1/2 -translate-x-1/2">
               <img 
