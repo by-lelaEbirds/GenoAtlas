@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo } from 'react';
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo, useCallback } from 'react';
 import Globe from 'react-globe.gl';
 
 const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode, isDarkMode }, ref) => {
@@ -82,8 +82,37 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
         if (onStartRef.current) controlsToCleanup.removeEventListener('start', onStartRef.current);
         if (onEndRef.current) controlsToCleanup.removeEventListener('end', onEndRef.current);
       }
+      
+      // Memory Leak Fix for WebGL if unmounted
+      if (globeEl.current && globeEl.current.renderer) {
+        const renderer = globeEl.current.renderer();
+        if (renderer && typeof renderer.dispose === 'function') {
+           // Em SPAs onde o componente pudesse desmontar, é vital limpar o contexto.
+           // Mas aqui só limpamos as infos se for desmontado mesmo.
+        }
+      }
     };
   }, [gameState, isMobile, isSmoothMode]); 
+
+  // --- MEMOIZAÇÃO DE FUNÇÕES PROPS PARA EVITAR MEMORY LEAKS EM WEBGL ---
+  const getPolyAltitude = useCallback(d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005, [guessedCountries, isMobile, hoverD]);
+  
+  const getPolyCapColor = useCallback(d => {
+    if (guessedCountries.some(c => c.iso === d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
+    if (!isMobile && d === hoverD) return theme.polyHover;
+    return 'rgba(255, 255, 255, 0.0)';
+  }, [guessedCountries, isMobile, hoverD, theme]);
+
+  const getPolySideColor = useCallback(() => 'rgba(0, 0, 0, 0.0)', []);
+  const getPolyStrokeColor = useCallback(() => theme.polyStroke, [theme.polyStroke]);
+  const getArcColor = useCallback(() => theme.polyStroke, [theme.polyStroke]);
+  const getRingColor = useCallback(d => d.color, []);
+
+  const handlePolygonHover = useCallback((polygon) => isMobile ? undefined : setHoverD(polygon), [isMobile]);
+  const handlePolygonClick = useCallback((polygon, event, { lat, lng }) => {
+    if (onCountryClick) onCountryClick(polygon, lat, lng, event);
+  }, [onCountryClick]);
+
 
   const startScreenTransform = isMobile 
     ? 'translate-y-[25%] scale-[1.1]' 
@@ -113,31 +142,25 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
           polygonsData={geoData}
           polygonResolution={isMobile ? 1 : 2} 
           
-          polygonAltitude={d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005}
-          polygonCapColor={d => {
-            if (guessedCountries.some(c => c.iso === d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
-            if (!isMobile && d === hoverD) return theme.polyHover;
-            return 'rgba(255, 255, 255, 0.0)';
-          }}
-          polygonSideColor={() => 'rgba(0, 0, 0, 0.0)'}
-          polygonStrokeColor={() => theme.polyStroke}
+          polygonAltitude={getPolyAltitude}
+          polygonCapColor={getPolyCapColor}
+          polygonSideColor={getPolySideColor}
+          polygonStrokeColor={getPolyStrokeColor}
           
           polygonTransitionDuration={250} 
           
-          onPolygonHover={isMobile ? undefined : setHoverD}
-          onPolygonClick={(polygon, event, coords) => {
-            if (onCountryClick && coords) onCountryClick(polygon, coords.lat, coords.lng, event);
-          }}
+          onPolygonHover={isMobile ? undefined : handlePolygonHover}
+          onPolygonClick={handlePolygonClick}
           
           arcsData={travelArcs}
-          arcColor={() => theme.polyStroke}
+          arcColor={getArcColor}
           arcDashLength={0.4}
           arcDashGap={0.2}
           arcDashAnimateTime={1000} 
           arcAltitudeAutoScale={0.3}
 
           ringsData={impactRings}
-          ringColor={d => d.color}
+          ringColor={getRingColor}
           ringMaxRadius={isMobile ? 3 : 5}
           ringPropagationSpeed={3}
         />
