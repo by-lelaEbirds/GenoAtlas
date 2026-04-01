@@ -15,6 +15,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const bgNebulaRef = useRef(null);
+  const bgLayer3Ref = useRef(null); // NOVA REFERÊNCIA PARA O 3º PLANO DE FUNDO
   const bgStarsRef = useRef(null);
 
   useEffect(() => {
@@ -59,6 +60,9 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
     const scrollY = e.target.scrollTop;
     if (bgNebulaRef.current) {
       bgNebulaRef.current.style.transform = `translateY(${-scrollY * 0.10}px)`;
+    }
+    if (bgLayer3Ref.current) { // ANIMANDO O NOVO PLANO DE FUNDO
+      bgLayer3Ref.current.style.transform = `translateY(${-scrollY * 0.18}px)`;
     }
     if (bgStarsRef.current) {
       bgStarsRef.current.style.transform = `translateY(${-scrollY * 0.25}px)`;
@@ -106,9 +110,10 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         .animate-shooting-star { animation: shooting-star 4s linear infinite; }
       `}</style>
 
-      {/* COMPONENTE DE FUNDO EXTRAÍDO */}
+      {/* COMPONENTE DE FUNDO EXTRAÍDO E COM NOVA CAMADA */}
       <ParallaxBackground 
         bgNebulaRef={bgNebulaRef} 
+        bgLayer3Ref={bgLayer3Ref}
         bgStarsRef={bgStarsRef} 
         isDarkMode={isDarkMode} 
         isMobile={isMobile} 
@@ -120,8 +125,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
       >
 
         {/* HEADER GLASS PREMIUM - AGORA APENAS COM MOEDAS E DARK MODE NA DIREITA */}
-        {/* Adicionado pointer-events-none na barra para evitar bloqueio de touch no Android, 
-            e pointer-events-auto apenas nos botões. */}
         <header className={`fixed top-0 w-full z-50 flex justify-end items-center px-4 md:px-12 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] transition-all pointer-events-none`}>
           <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
             <button onClick={toggleDarkMode} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border transition-all active:scale-95 ${isDarkMode ? 'bg-black/40 backdrop-blur-md border-white/10 text-amber-300 hover:bg-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]' : 'bg-white/80 backdrop-blur-md border-sky-200 text-sky-600 hover:bg-sky-100 shadow-sm'}`}>
@@ -137,7 +140,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </header>
 
-        {/* HERO SECTION */}
+        {/* HERO SECTION - COM TEXTOS E ÍCONES AUMENTADOS */}
         <div className="relative z-10 pt-[calc(100px+env(safe-area-inset-top))] pb-6 animate-fade-in-up">
           <div className="relative w-full flex flex-col items-center justify-center py-8 md:py-14">
             <div aria-hidden="true" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -151,8 +154,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center px-6">
-              {/* ÍCONE OFICIAL DO JOGO NO CENTRO (Substituindo o antigo Globe) */}
-              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[2rem] flex items-center justify-center mb-4 md:mb-6 border-4 animate-float-cinematic overflow-hidden relative ${isDarkMode ? 'bg-indigo-900/40 border-indigo-400/40 neon-glow-fuchsia' : 'bg-white border-sky-300 shadow-[0_0_30px_rgba(56,189,248,0.4)]'}`}>
+              {/* ÍCONE OFICIAL DO JOGO AUMENTADO */}
+              <div className={`w-28 h-28 md:w-40 md:h-40 rounded-[2.5rem] flex items-center justify-center mb-4 md:mb-6 border-4 animate-float-cinematic overflow-hidden relative ${isDarkMode ? 'bg-indigo-900/40 border-indigo-400/40 neon-glow-fuchsia' : 'bg-white border-sky-300 shadow-[0_0_30px_rgba(56,189,248,0.4)]'}`}>
                 <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 z-20"></div>
                 <img 
                   src={`${import.meta.env.BASE_URL}assets/icon.png`} 
@@ -160,29 +163,34 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   className="w-full h-full object-cover relative z-10" 
                 />
               </div>
-              <h1 className={`text-[48px] md:text-[72px] font-black uppercase tracking-tighter leading-[0.85] mb-3 ${isDarkMode ? 'text-white animate-text-glow' : 'text-sky-900 animate-text-glow-light'}`}>
+              
+              {/* TÍTULO AUMENTADO */}
+              <h1 className={`text-[56px] md:text-[84px] font-black uppercase tracking-tighter leading-[0.85] mb-3 md:mb-4 ${isDarkMode ? 'text-white animate-text-glow' : 'text-sky-900 animate-text-glow-light'}`}>
                 Geno<span className={isDarkMode ? 'text-cyan-400' : 'text-sky-500'}>Atlas</span>
               </h1>
-              <p className={`text-[14px] md:text-[18px] font-bold uppercase tracking-[0.3em] ${isDarkMode ? 'text-indigo-300/80' : 'text-sky-600/80'}`}>
+              
+              {/* SUBTÍTULO AUMENTADO */}
+              <p className={`text-[16px] md:text-[22px] font-bold uppercase tracking-[0.3em] ${isDarkMode ? 'text-indigo-300/80' : 'text-sky-600/80'}`}>
                 Explore • Aprenda • Domine
               </p>
             </div>
 
-            <div className="flex gap-3 md:gap-5 mt-8 md:mt-12 w-full max-w-sm md:max-w-lg px-4">
-              <div className={`flex-1 rounded-[1.2rem] p-3 md:p-4 flex flex-col items-center border transition-all animate-slide-in-left ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-cyan' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.2s'}}>
-                <Globe className={`w-5 h-5 md:w-6 md:h-6 mb-1 ${isDarkMode ? 'text-cyan-400' : 'text-sky-500'}`} strokeWidth={2.5}/>
-                <span className={`text-[20px] md:text-[28px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>195</span>
-                <span className={`text-[9px] md:text-[11px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Países</span>
+            {/* CARTÕES AUMENTADOS TAMBÉM */}
+            <div className="flex gap-3 md:gap-5 mt-8 md:mt-12 w-full max-w-sm md:max-w-xl px-4">
+              <div className={`flex-1 rounded-[1.2rem] p-4 md:p-5 flex flex-col items-center border transition-all animate-slide-in-left ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-cyan' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.2s'}}>
+                <Globe className={`w-6 h-6 md:w-8 md:h-8 mb-1 ${isDarkMode ? 'text-cyan-400' : 'text-sky-500'}`} strokeWidth={2.5}/>
+                <span className={`text-[24px] md:text-[32px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>195</span>
+                <span className={`text-[10px] md:text-[13px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Países</span>
               </div>
-              <div className={`flex-1 rounded-[1.2rem] p-3 md:p-4 flex flex-col items-center border transition-all animate-fade-in-up ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-amber' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.4s'}}>
-                <Flame className={`w-5 h-5 md:w-6 md:h-6 mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-500'}`} strokeWidth={2.5}/>
-                <span className={`text-[20px] md:text-[28px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>3</span>
-                <span className={`text-[9px] md:text-[11px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Modos</span>
+              <div className={`flex-1 rounded-[1.2rem] p-4 md:p-5 flex flex-col items-center border transition-all animate-fade-in-up ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-amber' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.4s'}}>
+                <Flame className={`w-6 h-6 md:w-8 md:h-8 mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-500'}`} strokeWidth={2.5}/>
+                <span className={`text-[24px] md:text-[32px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>3</span>
+                <span className={`text-[10px] md:text-[13px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Modos</span>
               </div>
-              <div className={`flex-1 rounded-[1.2rem] p-3 md:p-4 flex flex-col items-center border transition-all animate-slide-in-right ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-emerald' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.6s'}}>
-                <TrendingUp className={`w-5 h-5 md:w-6 md:h-6 mb-1 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-500'}`} strokeWidth={2.5}/>
-                <span className={`text-[20px] md:text-[28px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>∞</span>
-                <span className={`text-[9px] md:text-[11px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Diversão</span>
+              <div className={`flex-1 rounded-[1.2rem] p-4 md:p-5 flex flex-col items-center border transition-all animate-slide-in-right ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-emerald' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.6s'}}>
+                <TrendingUp className={`w-6 h-6 md:w-8 md:h-8 mb-1 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-500'}`} strokeWidth={2.5}/>
+                <span className={`text-[24px] md:text-[32px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>∞</span>
+                <span className={`text-[10px] md:text-[13px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Diversão</span>
               </div>
             </div>
           </div>
@@ -390,7 +398,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
       </div>
 
-      {/* COMPONENTE DE NAVEGAÇÃO EXTRAÍDO */}
       <BottomNav 
         onOpenAchievements={onOpenAchievements}
         onOpenSettings={onOpenSettings}
@@ -398,7 +405,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         isDarkMode={isDarkMode}
       />
 
-      {/* COMPONENTE DE MODAL EXTRAÍDO */}
       <RegionModal 
         showRegionModal={showRegionModal}
         isClosingRegion={isClosingRegion}
