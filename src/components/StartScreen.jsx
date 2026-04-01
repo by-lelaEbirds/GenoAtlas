@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Globe, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap, Moon, Sun, Flame, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Trophy, Compass, Lock, Globe, ChevronRight, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap, Moon, Sun, Flame, TrendingUp } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
+
+// Importando os novos componentes divididos
+import ParallaxBackground from './StartScreenUI/ParallaxBackground';
+import BottomNav from './StartScreenUI/BottomNav';
+import RegionModal from './StartScreenUI/RegionModal';
 
 export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, activeAvatar, setShowShop, isDarkMode, toggleDarkMode }) {
   
@@ -9,10 +14,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   const [isClosingRegion, setIsClosingRegion] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // REFS PARA O EFEITO PARALLAX DE ALTA PERFORMANCE (3 CAMADAS)
   const bgNebulaRef = useRef(null);
   const bgStarsRef = useRef(null);
-  const bgAuroraRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -52,52 +55,15 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
     }, 200);
   };
 
-  // MOTOR PARALLAX (Direct DOM Manipulation para 60FPS) — 3 CAMADAS
   const handleScroll = (e) => {
     const scrollY = e.target.scrollTop;
-    
-    // LAYER 1: Nebulosas rolam beeem devagar (10% da velocidade)
     if (bgNebulaRef.current) {
       bgNebulaRef.current.style.transform = `translateY(${-scrollY * 0.10}px)`;
     }
-    // LAYER 2: Estrelas rolam um pouco mais rápido (25% da velocidade)
     if (bgStarsRef.current) {
       bgStarsRef.current.style.transform = `translateY(${-scrollY * 0.25}px)`;
     }
-    // LAYER 3: Aurora / Luzes Holográficas rolam mais rápido ainda (40%)
-    if (bgAuroraRef.current) {
-      bgAuroraRef.current.style.transform = `translateY(${-scrollY * 0.40}px)`;
-    }
   };
-
-  // STARS: Posições memoizadas para não re-randomizar a cada render (evita flickering no Android)
-  const starPositions = useMemo(() => {
-    const count = isMobile ? 50 : 80;
-    const darkColors = ['bg-white', 'bg-cyan-200', 'bg-fuchsia-200', 'bg-indigo-100', 'bg-amber-200'];
-    const lightColors = ['bg-white', 'bg-amber-100', 'bg-sky-200', 'bg-white'];
-    return [...Array(count)].map((_, i) => {
-      const colors = isDarkMode ? darkColors : lightColors;
-      return {
-        color: colors[i % colors.length],
-        size: (i % 5) * 0.8 + 1.5,
-        left: ((i * 17 + 31) % 100),
-        top: ((i * 23 + 7) % 100),
-        duration: (i % 8) + 6,
-        delay: (i % 5) * 1.2,
-      };
-    });
-  }, [isMobile, isDarkMode]);
-
-  // FLOATING PARTICLES memoizadas
-  const floatingParticles = useMemo(() => {
-    const count = isMobile ? 6 : 12;
-    return [...Array(count)].map((_, i) => ({
-      left: ((i * 19 + 13) % 90) + 5,
-      size: (i % 3) + 2,
-      delay: (i * 2.3) % 15,
-      speed: i % 2 === 0 ? 'animate-drift-up' : 'animate-drift-up-slow',
-    }));
-  }, [isMobile]);
 
   const themeNodes = Object.values(themes);
   const currentIndex = themeNodes.findIndex(t => t.id === currentTheme.id);
@@ -140,87 +106,14 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         .animate-shooting-star { animation: shooting-star 4s linear infinite; }
       `}</style>
 
-      {/* FUNDO MÁGICO COM PARALLAX — 3 CAMADAS + PARTÍCULAS */}
-      <div className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-1000 ${isDarkMode ? 'bg-indigo-950' : 'bg-sky-200'}`}>
-        
-        {/* LAYER 1: NEBULOSAS PROFUNDAS (Mais Lento — 10%) */}
-        <div ref={bgNebulaRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] opacity-80 will-change-transform">
-          {isDarkMode ? (
-            <>
-               <div className="absolute top-[-5%] left-[-10%] w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(79,70,229,0.40) 0%, rgba(49,46,129,0.15) 40%, transparent 70%)'}}></div>
-               <div className="absolute top-[25%] right-[-5%] w-[85vw] h-[85vw] max-w-[800px] max-h-[800px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(162,28,175,0.30) 0%, rgba(112,26,117,0.10) 45%, transparent 70%)', animationDelay: '2s'}}></div>
-               <div className="absolute top-[55%] left-[5%] w-[65vw] h-[65vw] max-w-[600px] max-h-[600px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(8,145,178,0.30) 0%, transparent 70%)', animationDelay: '4s'}}></div>
-               <div className="absolute top-[80%] right-[10%] w-[50vw] h-[50vw] max-w-[450px] max-h-[450px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)', animationDelay: '6s'}}></div>
-               
-               {/* Shooting stars */}
-               <div className="absolute top-[8%] right-[15%] w-[140px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
-               <div className="absolute top-[35%] right-[60%] w-[90px] h-[2px] bg-gradient-to-r from-cyan-200 to-transparent animate-shooting-star opacity-70" style={{animationDelay: '1.5s'}}></div>
-               <div className="absolute top-[65%] right-[30%] w-[70px] h-[1px] bg-gradient-to-r from-fuchsia-200 to-transparent animate-shooting-star opacity-50" style={{animationDelay: '3s'}}></div>
-            </>
-          ) : (
-            <>
-               <div className="absolute top-[-5%] left-[-10%] w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)'}}></div>
-               <div className="absolute top-[35%] right-[-5%] w-[80vw] h-[80vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(186,230,253,0.6) 0%, transparent 70%)', animationDelay: '2s'}}></div>
-               <div className="absolute top-[70%] left-[10%] w-[50vw] h-[50vw] max-w-[450px] max-h-[450px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(253,230,138,0.4) 0%, transparent 70%)', animationDelay: '4s'}}></div>
-            </>
-          )}
-          {/* Grid Blueprint */}
-          <div className={`absolute inset-0 ${isDarkMode ? 'opacity-[0.03]' : 'opacity-[0.15]'}`} style={{ backgroundImage: `linear-gradient(${isDarkMode ? 'rgba(129,140,248,0.6)' : 'rgba(56,189,248,0.4)'} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? 'rgba(129,140,248,0.6)' : 'rgba(56,189,248,0.4)'} 1px, transparent 1px)`, backgroundSize: '80px 80px' }}></div>
-        </div>
-
-        {/* LAYER 2: CAMPO DE ESTRELAS (Médio — 25%) */}
-        <div ref={bgStarsRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] will-change-transform">
-          {starPositions.map((star, i) => (
-            <div 
-              key={i}
-              className={`absolute rounded-full ${star.color} animate-twinkle`}
-              style={{
-                width: `${star.size}px`, height: `${star.size}px`,
-                left: `${star.left}%`, top: `${star.top}%`,
-                animationDuration: `${star.duration}s`,
-                animationDelay: `${star.delay}s`,
-                willChange: 'opacity, transform',
-                opacity: 0.7,
-              }}
-            ></div>
-          ))}
-        </div>
-
-        {/* LAYER 3: AURORA / FAIXAS HOLOGRÁFICAS (Rápido — 40%) */}
-        <div ref={bgAuroraRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] will-change-transform">
-          {isDarkMode ? (
-            <>
-              <div className="absolute top-[10%] left-[-10%] w-[120%] h-[200px] animate-aurora will-change-transform" style={{ background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.08), rgba(129,140,248,0.12), rgba(232,121,249,0.08), transparent)' }}></div>
-              <div className="absolute top-[45%] left-[-10%] w-[120%] h-[150px] animate-aurora will-change-transform" style={{ background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.06), rgba(34,211,238,0.10), transparent)', animationDelay: '4s' }}></div>
-              <div className="absolute top-[75%] left-[-10%] w-[120%] h-[180px] animate-aurora will-change-transform" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.06), rgba(244,63,94,0.08), transparent)', animationDelay: '8s' }}></div>
-            </>
-          ) : (
-            <>
-              <div className="absolute top-[15%] left-[-10%] w-[120%] h-[120px] animate-aurora will-change-transform" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.15), rgba(14,165,233,0.10), transparent)' }}></div>
-              <div className="absolute top-[50%] left-[-10%] w-[120%] h-[100px] animate-aurora will-change-transform" style={{ background: 'linear-gradient(90deg, transparent, rgba(253,230,138,0.12), rgba(251,191,36,0.08), transparent)', animationDelay: '5s' }}></div>
-            </>
-          )}
-        </div>
-
-        {/* FLOATING PARTICLES — subindo continuamente (GPU only) */}
-        <div aria-hidden="true" className="absolute inset-0">
-          {floatingParticles.map((p, i) => (
-            <div
-              key={i}
-              className={`absolute rounded-full ${p.speed} will-change-transform ${isDarkMode ? 'bg-cyan-400/60' : 'bg-sky-400/40'}`}
-              style={{
-                width: `${p.size}px`, height: `${p.size}px`,
-                left: `${p.left}%`,
-                animationDelay: `${p.delay}s`,
-              }}
-            ></div>
-          ))}
-        </div>
-      </div>
+      {/* COMPONENTE DE FUNDO EXTRAÍDO */}
+      <ParallaxBackground 
+        bgNebulaRef={bgNebulaRef} 
+        bgStarsRef={bgStarsRef} 
+        isDarkMode={isDarkMode} 
+        isMobile={isMobile} 
+      />
       
-      {/* ==================================================================== */}
-      {/* CONTEÚDO ROLÁVEL (Aqui detectamos o onScroll) */}
-      {/* ==================================================================== */}
       <div 
         className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]"
         onScroll={handleScroll}
@@ -253,12 +146,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </header>
 
-        {/* ============================================================ */}
-        {/* HERO SECTION — O VISUAL QUE PREENCHE A TELA E MARCA O JOGADOR */}
-        {/* ============================================================ */}
+        {/* HERO SECTION */}
         <div className="relative z-10 pt-[calc(100px+env(safe-area-inset-top))] pb-6 animate-fade-in-up">
-          
-          {/* ORBITAL RINGS — Anéis girando constantemente atrás do título */}
           <div className="relative w-full flex flex-col items-center justify-center py-8 md:py-14">
             <div aria-hidden="true" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
               <div className={`w-[280px] h-[280px] md:w-[420px] md:h-[420px] rounded-full border animate-orbit will-change-transform ${isDarkMode ? 'border-indigo-500/20' : 'border-sky-300/30'}`}>
@@ -270,7 +159,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               </div>
             </div>
 
-            {/* LOGO / TÍTULO CENTRAL */}
             <div className="relative z-10 flex flex-col items-center text-center px-6">
               <div className={`w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mb-4 md:mb-6 border-2 animate-float-cinematic ${isDarkMode ? 'bg-indigo-500/20 border-indigo-400/40 neon-glow-fuchsia' : 'bg-sky-100 border-sky-300 shadow-[0_0_30px_rgba(56,189,248,0.3)]'}`}>
                 <Globe className={`w-10 h-10 md:w-14 md:h-14 ${isDarkMode ? 'text-indigo-200 drop-shadow-[0_0_15px_rgba(129,140,248,0.8)]' : 'text-sky-500 drop-shadow-md'}`} strokeWidth={2} />
@@ -283,7 +171,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               </p>
             </div>
 
-            {/* STAT CARDS — Mini cartões estatísticos */}
             <div className="flex gap-3 md:gap-5 mt-8 md:mt-12 w-full max-w-sm md:max-w-lg px-4">
               <div className={`flex-1 rounded-[1.2rem] p-3 md:p-4 flex flex-col items-center border transition-all animate-slide-in-left ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-cyan' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.2s'}}>
                 <Globe className={`w-5 h-5 md:w-6 md:h-6 mb-1 ${isDarkMode ? 'text-cyan-400' : 'text-sky-500'}`} strokeWidth={2.5}/>
@@ -304,7 +191,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
-        {/* CARROSSEL DE MODOS EXTRAS */}
+        {/* CARROSSEL DE MODOS */}
         <div className="relative z-10 pb-8 animate-fade-in-up">
           <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
             <h2 className={`text-[20px] md:text-[32px] font-black uppercase tracking-widest flex items-center gap-2 ${isDarkMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'text-sky-900'}`}><Map size={24} className={isDarkMode ? 'text-cyan-400' : 'text-sky-500'}/> Modos de Jogo</h2>
@@ -312,8 +199,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
           
           <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-12 snap-x custom-scrollbar pt-10">
-            
-            {/* DIÁRIO */}
             <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2rem] flex flex-col items-center justify-center transition-all group relative overflow-visible ${dailyCompleted ? (isDarkMode ? 'glass-panel opacity-60 cursor-not-allowed' : 'bg-stone-300/80 border border-stone-400 opacity-80 cursor-not-allowed') : (isDarkMode ? 'glass-panel hover:neon-glow-rose hover:border-rose-500/50' : 'glass-panel-light border-rose-200 hover:shadow-[0_0_20px_rgba(225,29,72,0.3)] hover:border-rose-400 active:scale-95')}`}>
               {!dailyCompleted && <div className={`absolute -top-5 -right-4 text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border border-white/20 animate-bounce-short z-20 ${isDarkMode ? 'bg-rose-500/90 backdrop-blur-md text-white neon-glow-rose' : 'bg-rose-500 text-white shadow-lg'}`}>💎 +500</div>}
               <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
@@ -327,7 +212,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${dailyCompleted ? (isDarkMode ? 'text-slate-600' : 'text-stone-400') : (isDarkMode ? 'text-rose-300' : 'text-rose-500')}`}>{dailyCompleted ? 'Feito hoje!' : <><Star size={14} className="fill-current"/> Hoje</>}</span>
             </button>
 
-            {/* FUTEBOL */}
             <button aria-label="Modo de Jogo Futebol" onClick={onFootball} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2rem] flex flex-col items-center justify-center transition-all active:scale-95 group relative overflow-visible ${isDarkMode ? 'glass-panel hover:neon-glow-cyan hover:border-cyan-500/50' : 'glass-panel-light border-sky-200 hover:shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:border-sky-400'}`}>
               <div className={`absolute -top-5 -right-4 text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border border-white/20 z-20 ${isDarkMode ? 'bg-cyan-500/90 backdrop-blur-md text-white neon-glow-cyan' : 'bg-sky-500 text-white shadow-lg'}`}>🔥 DESAFIO</div>
               <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
@@ -341,7 +225,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${isDarkMode ? 'text-cyan-300' : 'text-sky-500'}`}><Zap size={14} className="fill-current"/> Teste sua mira</span>
             </button>
 
-            {/* ESTUDO */}
             <button aria-label="Modo de Estudo" onClick={onStudy} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2rem] flex flex-col items-center justify-center transition-all active:scale-95 group relative overflow-visible ${isDarkMode ? 'glass-panel hover:neon-glow-emerald hover:border-emerald-500/50' : 'glass-panel-light border-emerald-200 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:border-emerald-400'}`}>
               <div className={`absolute -top-5 -right-4 text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border border-white/20 z-20 ${isDarkMode ? 'bg-emerald-500/90 backdrop-blur-md text-white neon-glow-emerald' : 'bg-emerald-500 text-white shadow-lg'}`}>🧘 ZEN</div>
               <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
@@ -357,7 +240,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
-        {/* BANNER "SUA JORNADA" — Estilo Glass Premium */}
+        {/* MAPA DA JORNADA */}
         <div className="relative z-10 text-center mb-10 px-6 md:px-12 animate-fade-in-up mt-2">
           <div className={`inline-flex items-center gap-3 md:gap-4 px-8 py-3 md:px-12 md:py-5 rounded-full text-white relative overflow-hidden border ${isDarkMode ? 'glass-panel border-indigo-500/30 neon-glow-fuchsia' : 'glass-panel-light border-sky-300 text-sky-800 shadow-[0_0_20px_rgba(14,165,233,0.2)]'}`}>
             <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
@@ -366,10 +249,8 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
-        {/* MAPA DA JORNADA */}
         <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[120px] md:pt-[160px]">
           
-          {/* AVATAR DESLIZANTE */}
           <div 
             aria-hidden="true"
             className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
@@ -512,81 +393,23 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
       </div>
 
-      <nav aria-label="Navegação Principal" className={`fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 md:pt-5 border-t rounded-t-[2rem] md:rounded-t-[3rem] transition-all ${isDarkMode ? 'glass-panel border-white/5 shadow-[0px_-20px_60px_rgba(0,0,0,0.6)]' : 'glass-panel-light border-stone-200/50 shadow-[0px_-20px_40px_rgba(0,0,0,0.04)]'}`}>
-        <button aria-label="Ir para Início" className={`flex flex-col items-center justify-center active:scale-95 transition-all group w-20 md:w-32 ${isDarkMode ? 'text-cyan-300' : 'text-sky-500'}`}>
-          <div className={`p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 transition-all ${isDarkMode ? 'bg-cyan-500/20 group-hover:neon-glow-cyan' : 'bg-sky-100 group-active:bg-sky-200 shadow-sm'}`}><Home className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
-          <span className="text-[11px] md:text-[16px] font-black uppercase tracking-widest whitespace-nowrap">Início</span>
-        </button>
-        
-        <button aria-label="Abrir Loja" onClick={() => setShowShop(true)} className={`flex flex-col items-center justify-center active:scale-95 transition-all group w-20 md:w-32 relative overflow-visible rounded-xl ${isDarkMode ? 'text-emerald-300' : 'text-emerald-500'}`}>
-          <div className={`absolute -top-3 -right-2 text-[9px] font-black px-2 py-1 rounded-full border animate-pulse z-20 ${isDarkMode ? 'bg-amber-500/90 text-amber-950 border-amber-400/50 neon-glow-amber' : 'bg-amber-500 text-amber-950 border-amber-300 shadow-md'}`}>OFERTAS</div>
-          <div className={`p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 transition-all relative z-10 ${isDarkMode ? 'bg-emerald-500/20 group-hover:neon-glow-emerald' : 'bg-emerald-100 group-active:bg-emerald-200 shadow-sm'}`}><ShoppingCart className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
-          <span className="text-[11px] md:text-[16px] font-black uppercase tracking-widest whitespace-nowrap relative z-10">Loja</span>
-        </button>
+      {/* COMPONENTE DE NAVEGAÇÃO EXTRAÍDO */}
+      <BottomNav 
+        onOpenAchievements={onOpenAchievements}
+        onOpenSettings={onOpenSettings}
+        setShowShop={setShowShop}
+        isDarkMode={isDarkMode}
+      />
 
-        <button aria-label="Abrir Conquistas" onClick={onOpenAchievements} className={`flex flex-col items-center justify-center active:scale-95 transition-all group w-20 md:w-32 ${isDarkMode ? 'text-slate-400 hover:text-amber-300' : 'text-stone-400 hover:text-amber-500'}`}>
-          <div className={`p-2.5 md:p-4 mb-1.5 md:mb-3 rounded-[1.2rem] md:rounded-[1.8rem] transition-all ${isDarkMode ? 'group-hover:bg-white/5' : 'group-active:bg-stone-100'}`}><Trophy className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
-          <span className={`text-[11px] md:text-[16px] font-black uppercase tracking-widest whitespace-nowrap ${isDarkMode ? 'group-hover:text-amber-300' : 'group-hover:text-amber-500'}`}>Conquistas</span>
-        </button>
-        
-        <button aria-label="Abrir Configurações" onClick={onOpenSettings} className={`flex flex-col items-center justify-center active:scale-95 transition-all group w-20 md:w-32 ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-stone-400 hover:text-stone-700'}`}>
-          <div className={`p-2.5 md:p-4 mb-1.5 md:mb-3 rounded-[1.2rem] md:rounded-[1.8rem] transition-all ${isDarkMode ? 'group-hover:bg-white/5' : 'group-active:bg-stone-100'}`}><Settings className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
-          <span className={`text-[11px] md:text-[16px] font-black uppercase tracking-widest whitespace-nowrap ${isDarkMode ? 'group-hover:text-white' : 'group-hover:text-stone-700'}`}>Ajustes</span>
-        </button>
-      </nav>
-
-      {showRegionModal && (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center ${isDarkMode ? 'bg-black/80' : 'bg-stone-900/80'} backdrop-blur-md px-4 md:px-6 py-6 ${isClosingRegion ? 'animate-fade-out' : 'animate-fade-in'}`}>
-          <div role="dialog" aria-label="Menu de Seleção de Região" className={`${isDarkMode ? 'glass-panel neon-glow-cyan' : 'glass-panel-light shadow-2xl'} p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative flex flex-col max-h-[85dvh] md:max-h-[90dvh] ${isClosingRegion ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
-            
-            <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
-              <h2 className={`text-[32px] md:text-[48px] font-black uppercase tracking-tighter leading-none ${isDarkMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'text-sky-900'}`}>Onde Pousar?</h2>
-              <button aria-label="Fechar Modal de Região" onClick={closeRegionModal} className={`p-3 md:p-4 rounded-full transition-all active:scale-95 border-2 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-rose-400' : 'bg-stone-100 border-transparent text-stone-400 hover:bg-rose-100 hover:text-rose-500'}`}>
-                <X className="w-6 h-6 md:w-10 md:h-10" strokeWidth={3} />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 md:gap-6 overflow-y-auto custom-scrollbar pb-4 pr-1 md:pr-2">
-              <button onClick={() => handleRegionSelect('all')} className={`col-span-2 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 transition-all active:scale-95 relative overflow-hidden group border ${isDarkMode ? 'glass-panel border-cyan-500/30 neon-glow-cyan hover:bg-white/10' : 'bg-gradient-to-r from-sky-400 to-sky-500 border-sky-300 shadow-lg hover:shadow-xl'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 z-0"></div>
-                <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-md relative z-10">🌍</span>
-                <span className="text-[20px] md:text-[32px] font-black text-white uppercase tracking-widest mt-1 md:mt-2 drop-shadow-sm relative z-10">Mundo Todo</span>
-              </button>
-              
-              <button onClick={() => handleRegionSelect('Americas')} className={`rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 transition-all active:scale-95 relative overflow-hidden group border ${isDarkMode ? 'glass-panel border-emerald-500/20 hover:neon-glow-emerald hover:border-emerald-400/50' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 shadow-sm hover:shadow-md'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 z-0"></div>
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🌎</span>
-                <span className={`text-[14px] md:text-[20px] font-black uppercase tracking-widest relative z-10 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-800'}`}>Américas</span>
-              </button>
-
-              <button onClick={() => handleRegionSelect('Europe')} className={`rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 transition-all active:scale-95 relative overflow-hidden group border ${isDarkMode ? 'glass-panel border-indigo-500/20 hover:neon-glow-fuchsia hover:border-indigo-400/50' : 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100 shadow-sm hover:shadow-md'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 z-0"></div>
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🏰</span>
-                <span className={`text-[14px] md:text-[20px] font-black uppercase tracking-widest relative z-10 ${isDarkMode ? 'text-indigo-300' : 'text-indigo-800'}`}>Europa</span>
-              </button>
-              
-              <button onClick={() => handleRegionSelect('Asia')} className={`rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 transition-all active:scale-95 relative overflow-hidden group border ${isDarkMode ? 'glass-panel border-rose-500/20 hover:neon-glow-rose hover:border-rose-400/50' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 shadow-sm hover:shadow-md'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 z-0"></div>
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">⛩️</span>
-                <span className={`text-[14px] md:text-[20px] font-black uppercase tracking-widest relative z-10 ${isDarkMode ? 'text-rose-300' : 'text-rose-800'}`}>Ásia</span>
-              </button>
-
-              <button onClick={() => handleRegionSelect('Africa')} className={`rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 transition-all active:scale-95 relative overflow-hidden group border ${isDarkMode ? 'glass-panel border-amber-500/20 hover:neon-glow-amber hover:border-amber-400/50' : 'bg-amber-50 border-amber-200 hover:bg-amber-100 shadow-sm hover:shadow-md'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 z-0"></div>
-                <span aria-hidden="true" className="text-[36px] md:text-[56px] leading-none drop-shadow-sm relative z-10">🦁</span>
-                <span className={`text-[14px] md:text-[20px] font-black uppercase tracking-widest relative z-10 ${isDarkMode ? 'text-amber-300' : 'text-amber-800'}`}>África</span>
-              </button>
-
-              <button onClick={() => handleRegionSelect('Oceania')} className={`col-span-2 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex items-center justify-center gap-3 md:gap-6 transition-all active:scale-95 mt-1 md:mt-2 relative overflow-hidden group border ${isDarkMode ? 'glass-panel border-cyan-500/20 hover:neon-glow-cyan hover:border-cyan-400/50' : 'bg-teal-50 border-teal-200 hover:bg-teal-100 shadow-sm hover:shadow-md'}`}>
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 z-0"></div>
-                <span aria-hidden="true" className="text-[40px] md:text-[64px] leading-none drop-shadow-sm relative z-10">🦘</span>
-                <span className={`text-[20px] md:text-[32px] font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10 ${isDarkMode ? 'text-teal-300' : 'text-teal-800'}`}>Oceania</span>
-              </button>
-            </div>
-            
-          </div>
-        </div>
-      )}
+      {/* COMPONENTE DE MODAL EXTRAÍDO */}
+      <RegionModal 
+        showRegionModal={showRegionModal}
+        isClosingRegion={isClosingRegion}
+        closeRegionModal={closeRegionModal}
+        handleRegionSelect={handleRegionSelect}
+        isDarkMode={isDarkMode}
+      />
+      
     </div>
   );
 }
