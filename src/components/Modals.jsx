@@ -294,3 +294,67 @@ export function ShopModal({ onClose, coins, setCoins, unlockedAvatars, setUnlock
     </div>
   );
 }
+
+export function CreditsModal({ onClose, isDarkMode }) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 200);
+  };
+
+  const openLink = (url) => {
+    window.open(url, '_blank');
+  };
+
+  return (
+    <div className={`absolute inset-0 z-[250] flex items-center justify-center bg-stone-900/80 backdrop-blur-md px-4 md:px-6 py-6 overflow-y-auto custom-scrollbar ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div className={`p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] max-w-2xl w-full relative shadow-2xl my-auto ${isDarkMode ? 'bg-slate-900 border-[4px] border-slate-700 text-slate-200' : 'bg-white border-b-[12px] md:border-b-[16px] border-stone-200 text-stone-600'} ${isClosing ? 'animate-fade-out-down' : 'animate-fade-in-up'}`}>
+        
+        <button onClick={handleClose} className={`absolute top-6 right-6 md:top-8 md:right-8 p-3 md:p-4 rounded-full transition-colors shadow-sm active:scale-95 z-10 ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-rose-400 hover:bg-slate-700' : 'bg-stone-100 text-stone-400 hover:text-rose-500 hover:bg-stone-200'}`}>
+          <X size={28} className="md:w-9 md:h-9" strokeWidth={3} />
+        </button>
+
+        <h2 className={`text-[32px] md:text-[40px] font-black tracking-tighter uppercase mb-2 text-center leading-none ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>Créditos e Licenças</h2>
+        <p className={`text-center font-bold uppercase tracking-widest text-[12px] md:text-[14px] mb-8 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Agradecimentos à comunidade Open-Source</p>
+        
+        <div className="space-y-4 mb-8">
+          
+          <div className={`p-5 md:p-6 rounded-[2rem] border-[4px] shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-stone-50 border-stone-100'}`}>
+            <div className="flex-1">
+              <h4 className={`text-[20px] font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-indigo-400' : 'text-sky-600'}`}>React-Globe.gl & Three.js</h4>
+              <p className={`text-[14px] font-bold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Motor 3D e visualização do globo. (Licença MIT)</p>
+            </div>
+            <button onClick={() => openLink('https://github.com/vasturiano/react-globe.gl')} className={`px-4 py-2 font-black uppercase text-[12px] rounded-xl transition-colors ${isDarkMode ? 'bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800' : 'bg-sky-100 text-sky-700 hover:bg-sky-200'}`}>Visitar</button>
+          </div>
+
+          <div className={`p-5 md:p-6 rounded-[2rem] border-[4px] shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-stone-50 border-stone-100'}`}>
+            <div className="flex-1">
+              <h4 className={`text-[20px] font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>FlagCDN</h4>
+              <p className={`text-[14px] font-bold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Provedor de alta performance para imagens das bandeiras dos países.</p>
+            </div>
+          </div>
+
+          <div className={`p-5 md:p-6 rounded-[2rem] border-[4px] shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-stone-50 border-stone-100'}`}>
+            <div className="flex-1">
+              <h4 className={`text-[20px] font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>Natural Earth Data</h4>
+              <p className={`text-[14px] font-bold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Borda dos países (GeoJSON) proveniente de dados de domínio público.</p>
+            </div>
+          </div>
+
+          <div className={`p-5 md:p-6 rounded-[2rem] border-[4px] shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-stone-50 border-stone-100'}`}>
+            <div className="flex-1">
+              <h4 className={`text-[20px] font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>Lucide Icons & Fonts</h4>
+              <p className={`text-[14px] font-bold leading-tight ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Ícones da interface (MIT) e tipografia "Outfit" pelo Google Fonts (OFL).</p>
+            </div>
+          </div>
+
+        </div>
+
+        <button onClick={handleClose} className={`w-full py-5 md:py-6 rounded-[2rem] text-[20px] md:text-[24px] font-black uppercase tracking-widest transition-transform active:scale-95 ${isDarkMode ? 'bg-slate-800 border-2 border-slate-700 hover:bg-slate-700 text-white' : 'bg-stone-100 border-2 border-stone-200 hover:bg-stone-200 text-stone-800'}`}>
+          Fechar
+        </button>
+      </div>
+    </div>
+  );
+}
