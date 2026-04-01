@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 
-export default function ParallaxBackground({ bgNebulaRef, bgStarsRef, isDarkMode, isMobile }) {
-  // Posições memoizadas para evitar flickering
+export default function ParallaxBackground({ bgNebulaRef, bgLayer3Ref, bgStarsRef, isDarkMode, isMobile }) {
   const starPositions = useMemo(() => {
     const count = isMobile ? 50 : 80;
     const darkColors = ['bg-white', 'bg-cyan-200', 'bg-fuchsia-200', 'bg-indigo-100', 'bg-amber-200'];
@@ -32,7 +31,7 @@ export default function ParallaxBackground({ bgNebulaRef, bgStarsRef, isDarkMode
   return (
     <div className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-1000 ${isDarkMode ? 'bg-indigo-950' : 'bg-sky-200'}`}>
       
-      {/* LAYER 1: NEBULOSAS PROFUNDAS */}
+      {/* LAYER 1: NEBULOSAS PROFUNDAS (Mais Lento - 10%) */}
       <div ref={bgNebulaRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] opacity-80 will-change-transform">
         {isDarkMode ? (
           <>
@@ -40,9 +39,6 @@ export default function ParallaxBackground({ bgNebulaRef, bgStarsRef, isDarkMode
              <div className="absolute top-[25%] right-[-5%] w-[85vw] h-[85vw] max-w-[800px] max-h-[800px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(162,28,175,0.30) 0%, rgba(112,26,117,0.10) 45%, transparent 70%)', animationDelay: '2s'}}></div>
              <div className="absolute top-[55%] left-[5%] w-[65vw] h-[65vw] max-w-[600px] max-h-[600px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(8,145,178,0.30) 0%, transparent 70%)', animationDelay: '4s'}}></div>
              <div className="absolute top-[80%] right-[10%] w-[50vw] h-[50vw] max-w-[450px] max-h-[450px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)', animationDelay: '6s'}}></div>
-             <div className="absolute top-[8%] right-[15%] w-[140px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
-             <div className="absolute top-[35%] right-[60%] w-[90px] h-[2px] bg-gradient-to-r from-cyan-200 to-transparent animate-shooting-star opacity-70" style={{animationDelay: '1.5s'}}></div>
-             <div className="absolute top-[65%] right-[30%] w-[70px] h-[1px] bg-gradient-to-r from-fuchsia-200 to-transparent animate-shooting-star opacity-50" style={{animationDelay: '3s'}}></div>
           </>
         ) : (
           <>
@@ -54,7 +50,23 @@ export default function ParallaxBackground({ bgNebulaRef, bgStarsRef, isDarkMode
         <div className={`absolute inset-0 ${isDarkMode ? 'opacity-[0.03]' : 'opacity-[0.15]'}`} style={{ backgroundImage: `linear-gradient(${isDarkMode ? 'rgba(129,140,248,0.6)' : 'rgba(56,189,248,0.4)'} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? 'rgba(129,140,248,0.6)' : 'rgba(56,189,248,0.4)'} 1px, transparent 1px)`, backgroundSize: '80px 80px' }}></div>
       </div>
 
-      {/* LAYER 2: CAMPO DE ESTRELAS */}
+      {/* LAYER 1.5: POEIRA CÓSMICA / GALÁXIAS (NOVO PLANO DE FUNDO - Médio 18%) */}
+      <div ref={bgLayer3Ref} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] opacity-70 will-change-transform mix-blend-screen pointer-events-none">
+        {isDarkMode ? (
+          <>
+            {/* Esferas com altíssimo desfoque para criar volume sem bordas duras */}
+            <div className="absolute top-[15%] left-[20%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-fuchsia-600/30 blur-[80px] md:blur-[120px] animate-pulse-slow" style={{animationDelay: '1s'}}></div>
+            <div className="absolute top-[60%] right-[15%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-cyan-600/30 blur-[80px] md:blur-[120px] animate-pulse-slow" style={{animationDelay: '3s'}}></div>
+          </>
+        ) : (
+          <>
+            <div className="absolute top-[20%] left-[10%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-white/60 blur-[60px] md:blur-[100px] animate-pulse-slow"></div>
+            <div className="absolute top-[65%] right-[20%] w-[45vw] h-[45vw] max-w-[550px] max-h-[550px] rounded-full bg-sky-100/60 blur-[60px] md:blur-[100px] animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+          </>
+        )}
+      </div>
+
+      {/* LAYER 2: CAMPO DE ESTRELAS (Rápido - 25%) */}
       <div ref={bgStarsRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] will-change-transform">
         {starPositions.map((star, i) => (
           <div 
@@ -72,8 +84,15 @@ export default function ParallaxBackground({ bgNebulaRef, bgStarsRef, isDarkMode
         ))}
       </div>
 
-      {/* PARTÍCULAS */}
+      {/* PARTÍCULAS E ESTRELAS CADENTES */}
       <div aria-hidden="true" className="absolute inset-0">
+        {isDarkMode && (
+          <>
+             <div className="absolute top-[8%] right-[15%] w-[140px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
+             <div className="absolute top-[35%] right-[60%] w-[90px] h-[2px] bg-gradient-to-r from-cyan-200 to-transparent animate-shooting-star opacity-70" style={{animationDelay: '1.5s'}}></div>
+             <div className="absolute top-[65%] right-[30%] w-[70px] h-[1px] bg-gradient-to-r from-fuchsia-200 to-transparent animate-shooting-star opacity-50" style={{animationDelay: '3s'}}></div>
+          </>
+        )}
         {floatingParticles.map((p, i) => (
           <div
             key={i}
