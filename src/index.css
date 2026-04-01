@@ -125,21 +125,26 @@
     }
   }
 
-  /* Cyberpunk / Premium Glassmorphism */
+  /* Cyberpunk / Premium Glassmorphism - GPU Accelerated */
   .neon-glow-cyan {
     box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 10px rgba(34, 211, 238, 0.2);
+    transform: translate3d(0,0,0);
   }
   .neon-glow-emerald {
     box-shadow: 0 0 15px rgba(52, 211, 153, 0.4), inset 0 0 10px rgba(52, 211, 153, 0.2);
+    transform: translate3d(0,0,0);
   }
   .neon-glow-rose {
     box-shadow: 0 0 15px rgba(244, 63, 94, 0.4), inset 0 0 10px rgba(244, 63, 94, 0.2);
+    transform: translate3d(0,0,0);
   }
   .neon-glow-amber {
     box-shadow: 0 0 15px rgba(251, 191, 36, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
+    transform: translate3d(0,0,0);
   }
   .neon-glow-fuchsia {
     box-shadow: 0 0 15px rgba(232, 121, 249, 0.4), inset 0 0 10px rgba(232, 121, 249, 0.2);
+    transform: translate3d(0,0,0);
   }
   .glass-panel {
     background: rgba(15, 23, 42, 0.7);
@@ -157,10 +162,12 @@
   /* Animações Flutuantes Cinematicas */
   .animate-float-cinematic {
     animation: floatCinematic 6s ease-in-out infinite;
+    will-change: transform;
+    transform: translate3d(0,0,0);
   }
   @keyframes floatCinematic {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-10px) scale(1.02); }
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(0, -10px, 0) scale(1.02); }
   }
   
   .animate-pulse-glow {
