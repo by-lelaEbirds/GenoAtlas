@@ -3,7 +3,7 @@ import { Trophy, Compass, Lock, Globe, ChevronRight, Cloud, TreePine, Mountain, 
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
 
-// Importando os novos componentes divididos
+// Importando os componentes divididos
 import ParallaxBackground from './StartScreenUI/ParallaxBackground';
 import BottomNav from './StartScreenUI/BottomNav';
 import RegionModal from './StartScreenUI/RegionModal';
@@ -119,25 +119,16 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         onScroll={handleScroll}
       >
 
-        {/* HEADER GLASS PREMIUM */}
-        <header className={`fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] transition-all ${isDarkMode ? 'glass-panel border-b border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.5)]' : 'glass-panel-light border-b border-stone-200/50 shadow-[0_4px_30px_rgba(0,0,0,0.05)]'}`}>
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center border-2 relative overflow-hidden transition-all ${isDarkMode ? 'bg-indigo-500/20 border-indigo-400/50 neon-glow-fuchsia' : 'bg-sky-100 border-sky-300 shadow-md'}`}>
-              <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 z-0"></div>
-              <Globe className={`w-6 h-6 md:w-8 md:h-8 relative z-10 ${isDarkMode ? 'text-indigo-200 drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]' : 'text-sky-600 drop-shadow-sm'}`} strokeWidth={2.5} />
-            </div>
-            <div className="flex flex-col">
-              <span className={`text-[16px] md:text-[20px] font-black uppercase tracking-[0.15em] leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>GenoAtlas</span>
-              <span className={`text-[10px] md:text-[12px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-indigo-300' : 'text-sky-500'}`}>Explore o Mundo</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 md:gap-4">
-            <button onClick={toggleDarkMode} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border transition-all active:scale-95 ${isDarkMode ? 'bg-white/5 border-white/10 text-amber-300 hover:bg-white/10' : 'bg-sky-50 border-sky-200 text-sky-600 hover:bg-sky-100'}`}>
+        {/* HEADER GLASS PREMIUM - AGORA APENAS COM MOEDAS E DARK MODE NA DIREITA */}
+        {/* Adicionado pointer-events-none na barra para evitar bloqueio de touch no Android, 
+            e pointer-events-auto apenas nos botões. */}
+        <header className={`fixed top-0 w-full z-50 flex justify-end items-center px-4 md:px-12 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] transition-all pointer-events-none`}>
+          <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
+            <button onClick={toggleDarkMode} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border transition-all active:scale-95 ${isDarkMode ? 'bg-black/40 backdrop-blur-md border-white/10 text-amber-300 hover:bg-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]' : 'bg-white/80 backdrop-blur-md border-sky-200 text-sky-600 hover:bg-sky-100 shadow-sm'}`}>
               {isDarkMode ? <Moon size={20} className="md:w-6 md:h-6" fill="currentColor"/> : <Sun size={20} className="md:w-6 md:h-6" fill="currentColor" />}
             </button>
 
-            <div className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full relative overflow-hidden border transition-all ${isDarkMode ? 'bg-amber-500/20 border-amber-400/50 neon-glow-amber' : 'bg-amber-50 border-amber-200 shadow-md'}`} aria-label={`Você tem ${coins} moedas`}>
+            <div className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full relative overflow-hidden border transition-all ${isDarkMode ? 'bg-amber-500/20 backdrop-blur-md border-amber-400/50 neon-glow-amber shadow-[0_4px_30px_rgba(0,0,0,0.5)]' : 'bg-white/90 backdrop-blur-md border-amber-200 shadow-md'}`} aria-label={`Você tem ${coins} moedas`}>
               <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" style={{animationDelay: '1.5s'}}></div>
               <span className={`font-black text-[16px] md:text-[22px] tracking-wider flex items-center gap-1.5 md:gap-2 whitespace-nowrap relative z-10 ${isDarkMode ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' : 'text-amber-700'}`}>
                 {coins} <span aria-hidden="true" className="text-[18px] md:text-[24px]">🪙</span>
@@ -160,8 +151,14 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center px-6">
-              <div className={`w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mb-4 md:mb-6 border-2 animate-float-cinematic ${isDarkMode ? 'bg-indigo-500/20 border-indigo-400/40 neon-glow-fuchsia' : 'bg-sky-100 border-sky-300 shadow-[0_0_30px_rgba(56,189,248,0.3)]'}`}>
-                <Globe className={`w-10 h-10 md:w-14 md:h-14 ${isDarkMode ? 'text-indigo-200 drop-shadow-[0_0_15px_rgba(129,140,248,0.8)]' : 'text-sky-500 drop-shadow-md'}`} strokeWidth={2} />
+              {/* ÍCONE OFICIAL DO JOGO NO CENTRO (Substituindo o antigo Globe) */}
+              <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[2rem] flex items-center justify-center mb-4 md:mb-6 border-4 animate-float-cinematic overflow-hidden relative ${isDarkMode ? 'bg-indigo-900/40 border-indigo-400/40 neon-glow-fuchsia' : 'bg-white border-sky-300 shadow-[0_0_30px_rgba(56,189,248,0.4)]'}`}>
+                <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 z-20"></div>
+                <img 
+                  src={`${import.meta.env.BASE_URL}assets/icon.png`} 
+                  alt="GenoAtlas Logo Oficial" 
+                  className="w-full h-full object-cover relative z-10" 
+                />
               </div>
               <h1 className={`text-[48px] md:text-[72px] font-black uppercase tracking-tighter leading-[0.85] mb-3 ${isDarkMode ? 'text-white animate-text-glow' : 'text-sky-900 animate-text-glow-light'}`}>
                 Geno<span className={isDarkMode ? 'text-cyan-400' : 'text-sky-500'}>Atlas</span>
