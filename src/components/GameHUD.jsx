@@ -24,7 +24,7 @@ export default function GameHUD({ state, actions, isDarkMode }) {
       
       <div className="relative flex justify-center items-start w-full">
         <div className="absolute left-0 top-0 h-full flex items-start z-10 pt-1">
-          <button aria-label="Sair do Jogo e Voltar ao Menu" onClick={actions.quitGame} className={`pointer-events-auto p-2.5 md:p-3 rounded-full shrink-0 transition-all border ${isDarkMode ? 'glass-panel hover:text-rose-400' : 'glass-panel-light hover:text-rose-500'}`}>
+          <button aria-label="Sair do Jogo e Voltar ao Menu" onClick={actions.quitGame} className={`pointer-events-auto p-3 md:p-4 rounded-full shrink-0 transition-all border min-w-[44px] min-h-[44px] flex items-center justify-center ${isDarkMode ? 'glass-panel hover:text-rose-400' : 'glass-panel-light hover:text-rose-500'}`}>
             <X size={20} className={isDarkMode ? 'text-white' : 'text-stone-800'} strokeWidth={3} />
           </button>
         </div>
@@ -80,7 +80,7 @@ export default function GameHUD({ state, actions, isDarkMode }) {
                     aria-pressed={state.freezeTimeLeft > 0}
                     onClick={actions.freezeTime} 
                     disabled={state.coins < 75 || state.freezeTimeLeft > 0} 
-                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-[1rem] text-[10px] sm:text-xs uppercase font-black tracking-widest transition-all z-10 whitespace-nowrap border border-transparent ${state.freezeTimeLeft > 0 ? (isDarkMode ? 'text-cyan-300 bg-cyan-950/50 border-cyan-800' : 'text-cyan-600 bg-cyan-50 border-cyan-200') : (isDarkMode ? 'text-slate-300 glass-panel hover:bg-white/10 hover:border-cyan-500/30 hover:neon-glow-cyan disabled:opacity-50' : 'text-stone-600 glass-panel-light hover:bg-slate-100 disabled:opacity-50')}`}
+                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-3 sm:py-3.5 rounded-[1rem] text-[10px] sm:text-xs uppercase font-black tracking-widest transition-all z-10 whitespace-nowrap border border-transparent min-h-[44px] ${state.freezeTimeLeft > 0 ? (isDarkMode ? 'text-cyan-300 bg-cyan-950/50 border-cyan-800' : 'text-cyan-600 bg-cyan-50 border-cyan-200') : (isDarkMode ? 'text-slate-300 glass-panel hover:bg-white/10 hover:border-cyan-500/30 hover:neon-glow-cyan disabled:opacity-50' : 'text-stone-600 glass-panel-light hover:bg-slate-100 disabled:opacity-50')}`}
                   >
                     <Snowflake size={14} className="sm:w-3.5 sm:h-3.5 shrink-0"/> {state.freezeTimeLeft > 0 ? 'CONGELADO' : 'CONGELAR'} <span className="text-amber-500 flex items-center ml-1">75 <Coins size={12} className="ml-0.5 shrink-0"/></span>
                   </button>
@@ -89,7 +89,7 @@ export default function GameHUD({ state, actions, isDarkMode }) {
                     aria-label={`Pular país. Custo: ${skipCost} moedas.`}
                     onClick={actions.skipCountry} 
                     disabled={state.coins < skipCost} 
-                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-[1rem] text-[10px] sm:text-xs uppercase font-black tracking-widest disabled:opacity-50 transition-all z-10 whitespace-nowrap border border-transparent ${isDarkMode ? 'text-slate-300 glass-panel hover:bg-white/10 hover:border-slate-500/30' : 'text-stone-600 glass-panel-light hover:bg-slate-100'}`}
+                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-3 sm:py-3.5 rounded-[1rem] text-[10px] sm:text-xs uppercase font-black tracking-widest disabled:opacity-50 transition-all z-10 whitespace-nowrap border border-transparent min-h-[44px] ${isDarkMode ? 'text-slate-300 glass-panel hover:bg-white/10 hover:border-slate-500/30' : 'text-stone-600 glass-panel-light hover:bg-slate-100'}`}
                   >
                     <SkipForward size={14} className="sm:w-3.5 sm:h-3.5 shrink-0"/> PULAR <span className="text-amber-500 flex items-center ml-1">{skipCost} <Coins size={12} className="ml-0.5 shrink-0"/></span>
                   </button>
