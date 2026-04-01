@@ -23,24 +23,24 @@ export default function GameHUD({ state, actions, isDarkMode }) {
     <div className={`absolute inset-0 pointer-events-none flex flex-col justify-between p-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-8 md:p-8 md:pt-[calc(1.5rem+env(safe-area-inset-top))] z-20 ${state.isShaking ? 'animate-shake' : ''}`}>
       
       <div className="relative flex justify-center items-start w-full">
-        <div className="absolute left-0 top-0 h-full flex items-start z-10">
-          <button aria-label="Sair do Jogo e Voltar ao Menu" onClick={actions.quitGame} className={`pointer-events-auto border-b-4 p-2.5 md:p-3 rounded-full shrink-0 active:translate-y-1 active:border-b-0 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-rose-400' : 'bg-white border-stone-200 text-stone-400 hover:text-rose-500'}`}>
-            <X size={20} strokeWidth={3} />
+        <div className="absolute left-0 top-0 h-full flex items-start z-10 pt-1">
+          <button aria-label="Sair do Jogo e Voltar ao Menu" onClick={actions.quitGame} className={`pointer-events-auto p-2.5 md:p-3 rounded-full shrink-0 transition-all border ${isDarkMode ? 'glass-panel hover:text-rose-400' : 'glass-panel-light hover:text-rose-500'}`}>
+            <X size={20} className={isDarkMode ? 'text-white' : 'text-stone-800'} strokeWidth={3} />
           </button>
         </div>
         
         <div className="flex flex-col items-center w-full px-12 md:px-16" role="status" aria-live="polite">
-          <div className={`border-b-4 px-3 md:px-6 py-2 md:py-3 rounded-full flex items-center justify-center gap-2 md:gap-8 pointer-events-auto transition-all duration-300 w-full max-w-fit ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-[0_0_15px_rgba(0,0,0,0.5)]' : 'bg-white border-stone-200 shadow-lg'} ${state.timeLeft <= 10 && state.gameMode !== 'study' ? (isDarkMode ? 'border-rose-900 bg-rose-950 scale-105' : 'border-rose-300 bg-rose-50 scale-105') : ''}`}>
+          <div className={`px-4 md:px-8 py-2 md:py-3 rounded-[2rem] flex items-center justify-center gap-4 md:gap-8 pointer-events-auto transition-all duration-300 w-full max-w-fit shadow-2xl ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-stone-200'} ${state.timeLeft <= 10 && state.gameMode !== 'study' ? (isDarkMode ? 'neon-glow-rose ring-2 ring-rose-500/50 scale-105' : 'ring-2 ring-rose-400 bg-rose-50 scale-105') : ''}`}>
             
-            <div aria-label={`${state.lives} Vidas Restantes`} className="flex gap-1 md:gap-1.5 shrink-0">
+            <div aria-label={`${state.lives} Vidas Restantes`} className="flex gap-1 md:gap-2 shrink-0">
               {[...Array(totalMaxLives)].map((_, i) => (
-                <div key={i} className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-500 ${i < state.lives ? (isDarkMode ? 'bg-rose-500 shadow-[0_0_10px_rgba(225,29,72,0.8)]' : 'bg-rose-500 shadow-inner') : (isDarkMode ? 'bg-slate-700' : 'bg-stone-200')}`} />
+                <div key={i} className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-full transition-all duration-500 shadow-inner ${i < state.lives ? (isDarkMode ? 'bg-rose-500 shadow-[0_0_15px_rgba(225,29,72,0.8)]' : 'bg-rose-500 shadow-md') : (isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-stone-200 border border-stone-300')}`} />
               ))}
             </div>
             
             {state.gameMode !== 'study' && (
-              <div className={`flex items-center gap-1 md:gap-2 font-mono border-l border-r px-2 md:px-6 relative shrink-0 ${isDarkMode ? 'border-slate-700' : 'border-stone-200'}`}>
-                <span aria-label={`Tempo restante: ${state.timeLeft} segundos`} className={`text-xl md:text-3xl font-black tracking-tighter ${state.freezeTimeLeft > 0 ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' : state.timeLeft <= 10 ? 'text-rose-500 animate-pulse' : (isDarkMode ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'text-amber-500')}`}>
+              <div className={`flex items-center gap-1 md:gap-2 font-mono border-l border-r px-4 md:px-8 relative shrink-0 ${isDarkMode ? 'border-white/10' : 'border-stone-200'}`}>
+                <span aria-label={`Tempo restante: ${state.timeLeft} segundos`} className={`text-2xl md:text-3xl font-black tracking-tighter ${state.freezeTimeLeft > 0 ? 'text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]' : state.timeLeft <= 10 ? 'text-rose-500 animate-pulse drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]' : (isDarkMode ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'text-amber-500 drop-shadow-sm')}`}>
                   {formatTime(state.timeLeft)}
                 </span>
               </div>
@@ -52,19 +52,19 @@ export default function GameHUD({ state, actions, isDarkMode }) {
           </div>
           
           {state.freezeTimeLeft > 0 && (
-             <div aria-label="Tempo Congelado Ativo" className={`mt-2 px-3 py-1 rounded-full border-b-2 flex items-center gap-2 animate-fade-in-up pointer-events-auto shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-stone-200'}`}>
+             <div aria-label="Tempo Congelado Ativo" className={`mt-3 px-4 py-1.5 rounded-full flex items-center gap-2 animate-fade-in-up pointer-events-auto ${isDarkMode ? 'glass-panel border-cyan-500/30 neon-glow-cyan' : 'glass-panel-light border-cyan-200 shadow-lg'}`}>
                 <Snowflake size={14} className="text-cyan-400 animate-spin-slow drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]"/>
-                <div className={`w-20 h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-stone-100'}`}>
-                  <div className="h-full bg-cyan-400 transition-all duration-1000 ease-linear shadow-[0_0_5px_#22d3ee]" style={{ width: `${(state.freezeTimeLeft / (10 + (powerUps.freezeTime || 0) * 2)) * 100}%` }}></div>
+                <div className={`w-24 h-1.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-stone-200'}`}>
+                  <div className="h-full bg-cyan-400 transition-all duration-1000 ease-linear shadow-[0_0_8px_#22d3ee]" style={{ width: `${(state.freezeTimeLeft / (10 + (powerUps.freezeTime || 0) * 2)) * 100}%` }}></div>
                 </div>
-                <span className="text-cyan-400 font-black text-[10px]">{state.freezeTimeLeft}s</span>
+                <span className={`font-black text-[11px] ${isDarkMode ? 'text-cyan-300' : 'text-cyan-600'}`}>{state.freezeTimeLeft}s</span>
              </div>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto pointer-events-none relative pt-10">
-        <div className={`w-full px-4 py-4 md:px-6 md:py-6 rounded-3xl flex flex-col items-center transform transition-all relative overflow-hidden group pointer-events-auto border-b-[6px] shadow-lg ${state.streak > 2 ? (isDarkMode ? 'bg-amber-950/60 border-amber-900 scale-[1.02] shadow-[0_0_20px_rgba(245,158,11,0.2)]' : 'bg-amber-50 border-amber-300 scale-[1.02]') : (isDarkMode ? 'bg-slate-900/90 backdrop-blur-md border-slate-800' : 'bg-white border-stone-200')}`}>
+      <div className="flex flex-col items-center gap-4 w-full max-w-lg mx-auto pointer-events-none relative pt-10">
+        <div className={`w-full px-5 py-5 md:px-8 md:py-8 rounded-[2.5rem] flex flex-col items-center transform transition-all relative overflow-hidden group pointer-events-auto ${state.streak > 2 ? (isDarkMode ? 'glass-panel neon-glow-amber scale-[1.02] border border-amber-500/40' : 'glass-panel-light ring-4 ring-amber-300 scale-[1.02]') : (isDarkMode ? 'glass-panel' : 'glass-panel-light shadow-2xl')}`}>
           
           <div className="w-full flex flex-col sm:flex-row justify-between items-center sm:items-end mb-2 gap-3 sm:gap-1">
             <span aria-live="assertive" className={`text-[10px] sm:text-xs uppercase tracking-[0.2em] font-black flex items-center gap-1.5 text-center w-full sm:w-auto justify-center ${state.streak > 2 ? (isDarkMode ? 'text-amber-400' : 'text-amber-600') : (isDarkMode ? 'text-slate-400' : 'text-stone-400')}`}>
@@ -80,18 +80,18 @@ export default function GameHUD({ state, actions, isDarkMode }) {
                     aria-pressed={state.freezeTimeLeft > 0}
                     onClick={actions.freezeTime} 
                     disabled={state.coins < 75 || state.freezeTimeLeft > 0} 
-                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1 border-b-2 px-2.5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-xs uppercase font-black tracking-widest active:translate-y-1 active:border-b-0 transition-all z-10 whitespace-nowrap ${state.freezeTimeLeft > 0 ? (isDarkMode ? 'text-cyan-300 bg-cyan-950 border-cyan-900' : 'text-cyan-600 bg-cyan-50 border-cyan-200') : (isDarkMode ? 'text-slate-300 bg-slate-800 border-slate-700 hover:bg-slate-700 disabled:opacity-50' : 'text-stone-500 bg-stone-100 hover:bg-stone-200 border-stone-300 disabled:opacity-50')}`}
+                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-[1rem] text-[10px] sm:text-xs uppercase font-black tracking-widest transition-all z-10 whitespace-nowrap border border-transparent ${state.freezeTimeLeft > 0 ? (isDarkMode ? 'text-cyan-300 bg-cyan-950/50 border-cyan-800' : 'text-cyan-600 bg-cyan-50 border-cyan-200') : (isDarkMode ? 'text-slate-300 glass-panel hover:bg-white/10 hover:border-cyan-500/30 hover:neon-glow-cyan disabled:opacity-50' : 'text-stone-600 glass-panel-light hover:bg-slate-100 disabled:opacity-50')}`}
                   >
-                    <Snowflake size={14} className="sm:w-3 sm:h-3 shrink-0"/> {state.freezeTimeLeft > 0 ? 'CONGELADO' : 'CONGELAR'} <span className="text-amber-400 flex items-center ml-1">75 <Coins size={12} className="ml-0.5 shrink-0"/></span>
+                    <Snowflake size={14} className="sm:w-3.5 sm:h-3.5 shrink-0"/> {state.freezeTimeLeft > 0 ? 'CONGELADO' : 'CONGELAR'} <span className="text-amber-500 flex items-center ml-1">75 <Coins size={12} className="ml-0.5 shrink-0"/></span>
                   </button>
 
                   <button 
                     aria-label={`Pular país. Custo: ${skipCost} moedas.`}
                     onClick={actions.skipCountry} 
                     disabled={state.coins < skipCost} 
-                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1 border-b-2 px-2.5 py-2.5 sm:py-2 rounded-xl text-[10px] sm:text-xs uppercase font-black tracking-widest active:translate-y-1 active:border-b-0 disabled:opacity-50 transition-all z-10 whitespace-nowrap ${isDarkMode ? 'text-slate-300 bg-slate-800 border-slate-700 hover:bg-slate-700' : 'text-stone-500 bg-stone-100 border-stone-300 hover:bg-stone-200'}`}
+                    className={`flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-[1rem] text-[10px] sm:text-xs uppercase font-black tracking-widest disabled:opacity-50 transition-all z-10 whitespace-nowrap border border-transparent ${isDarkMode ? 'text-slate-300 glass-panel hover:bg-white/10 hover:border-slate-500/30' : 'text-stone-600 glass-panel-light hover:bg-slate-100'}`}
                   >
-                    <SkipForward size={14} className="sm:w-3 sm:h-3 shrink-0"/> PULAR <span className="text-amber-400 flex items-center ml-1">{skipCost} <Coins size={12} className="ml-0.5 shrink-0"/></span>
+                    <SkipForward size={14} className="sm:w-3.5 sm:h-3.5 shrink-0"/> PULAR <span className="text-amber-500 flex items-center ml-1">{skipCost} <Coins size={12} className="ml-0.5 shrink-0"/></span>
                   </button>
                 </>
               )}
