@@ -18,7 +18,7 @@ export default defineConfig({
               cacheName: 'flag-cache',
               expiration: {
                 maxEntries: 250,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // Cache de 30 dias
+                maxAgeSeconds: 60 * 60 * 24 * 30 
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -47,4 +47,14 @@ export default defineConfig({
     })
   ],
   base: './', 
+  build: {
+    // PERFORMANCE: Minificação agressiva para produção
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
+  }
 });
