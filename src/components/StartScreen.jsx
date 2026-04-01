@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap, Moon, Sun, Flame, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Compass, Lock, Home, Settings, Globe, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap, Moon, Sun, Flame, TrendingUp } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
 
-export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenTutorial, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, activeAvatar, setShowShop, isDarkMode, toggleDarkMode }) {
+export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, activeAvatar, setShowShop, isDarkMode, toggleDarkMode }) {
   
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
