@@ -70,8 +70,9 @@ export function useGeoGame(globeRef) {
   const [isSmoothMode, setIsSmoothMode] = useState(true);
   const [showSettingsPrompt, setShowSettingsPrompt] = useState(false);
   
-  // NOVO: ESTADO DO MODO ESCURO
+  // NOVO: ESTADO DO MODO ESCURO E VIBRAÇÃO
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
 
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -100,7 +101,7 @@ export function useGeoGame(globeRef) {
   const [studyCard, setStudyCard] = useState(null);
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const [lastDailyDate, setLastDailyDate] = useState('');
+  const [playedDailyDates, setPlayedDailyDates] = useState([]);
 
   useEffect(() => {
     const loadSavedData = async () => {
@@ -118,6 +119,7 @@ export function useGeoGame(globeRef) {
         const savedPowerUps = await getNativeData('geoGuessPowerUps');
         const savedRedeemedCodes = await getNativeData('geoGuessRedeemedCodes');
         const savedDarkMode = await getNativeData('geoGuessDarkMode'); // NOVO
+        const savedVibration = await getNativeData('geoGuessVibration');
 
         if (savedScore) setBestScore(parseInt(savedScore, 10));
         if (savedCoins) setCoins(parseInt(savedCoins, 10));
@@ -138,13 +140,14 @@ export function useGeoGame(globeRef) {
         if (savedRedeemedCodes) setRedeemedCodes(JSON.parse(savedRedeemedCodes));
         if (savedAchievements) setUnlockedAchievements(JSON.parse(savedAchievements));
         if (!hasSeenTuto) setShowTutorial(true);
-        if (savedDaily) setLastDailyDate(savedDaily);
+        if (savedDaily) setPlayedDailyDates(JSON.parse(savedDaily));
 
         if (savedSmooth === null) setShowSettingsPrompt(true);
         else setIsSmoothMode(savedSmooth === 'true');
 
-        // Carrega a preferência de Modo Escuro
+        // Carrega a preferência de Modo Escuro e Vibração
         if (savedDarkMode !== null) setIsDarkMode(savedDarkMode === 'true');
+        if (savedVibration !== null) setIsVibrationEnabled(savedVibration === 'true');
 
       } catch(e) {
         console.warn("GenoAtlas - Erro recuperando salvamento:", e);
@@ -236,12 +239,28 @@ export function useGeoGame(globeRef) {
     setShowSettingsPrompt(false);
   };
 
+  const triggerHaptic = useCallback((style = ImpactStyle.Light) => {
+    if (isVibrationEnabled) {
+      try { Haptics.impact({ style }); } catch(e) {}
+    }
+  }, [isVibrationEnabled]);
+
   // Função para alternar o Modo Escuro
   const toggleDarkMode = () => {
     const nextMode = !isDarkMode;
     setIsDarkMode(nextMode);
     saveNativeData('geoGuessDarkMode', nextMode);
-    try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
+    triggerHaptic(ImpactStyle.Light);
+  };
+
+  // Função para alternar a Vibração
+  const toggleVibration = () => {
+    const nextMode = !isVibrationEnabled;
+    setIsVibrationEnabled(nextMode);
+    saveNativeData('geoGuessVibration', nextMode);
+    if (nextMode) {
+      try { Haptics.impact({ style: ImpactStyle.Medium }); } catch(e) {}
+    }
   };
 
   const unlockAchievement = useCallback((id) => {
@@ -262,7 +281,7 @@ export function useGeoGame(globeRef) {
       }
       
       setAchievementToast(achievementData);
-      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+      triggerHaptic(ImpactStyle.Heavy);
       playSound('coin', 0.7);
       setTimeout(() => setAchievementToast(null), 4000);
       return newUnlocked;
@@ -284,8 +303,10 @@ export function useGeoGame(globeRef) {
 
     let earnedCoins = Math.floor(scoreRef.current / 10);
     if (gameMode === GAME_MODES.DAILY) {
-      saveNativeData('geoGuessDaily', todayStr);
-      setLastDailyDate(todayStr);
+      const newPlayed = [...new Set([...playedDailyDates, todayStr])];
+      setPlayedDailyDates(newPlayed);
+      saveNativeData('geoGuessDaily', JSON.stringify(newPlayed));
+      
       if (reason === 'daily_win') {
         earnedCoins += 500;
         setDailyWinsCount(prev => {
@@ -356,7 +377,7 @@ export function useGeoGame(globeRef) {
         saveNativeData('geoGuessCoins', nextCoins);
       }
       unlockAchievement('promo_code');
-      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+      triggerHaptic(ImpactStyle.Heavy);
       playSound('success', 0.8);
       setTimeout(() => playSound('coin', 0.9), 500);
       return { success: true, message: promo.message };
@@ -391,7 +412,7 @@ export function useGeoGame(globeRef) {
     if (!isFirst) setTargetStartTime(Date.now());
   }, [allCountries, endGame, gameMode, remainingClubs, streak]);
 
-  const startGame = (mode = GAME_MODES.NORMAL, forcedRegion = null) => {
+  const startGame = useCallback((mode = GAME_MODES.NORMAL, forcedRegion = null) => {
     if (allCountries.length === 0) return;
     const finalRegion = forcedRegion || activeRegion;
     if (forcedRegion) setActiveRegion(forcedRegion);
@@ -431,7 +452,7 @@ export function useGeoGame(globeRef) {
       setIsGameActive(true);
       setTargetStartTime(Date.now());
     }, 500);
-  };
+  }, [activeRegion, allCountries, globeRef, pickNextCountry, powerUps.extraLife]);
 
   const skipCountry = () => {
     const cost = 50 - (powerUps.discount * 5); 
@@ -501,7 +522,7 @@ export function useGeoGame(globeRef) {
 
       if (isCombo) setTimeLeft(t => t + 5);
       
-      try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e){}
+      triggerHaptic(ImpactStyle.Light);
       
       if (gameMode === GAME_MODES.FOOTBALL) playSound('stadium', 0.8);
       else playSound('success', isCombo ? 0.9 : 0.6);
@@ -537,7 +558,7 @@ export function useGeoGame(globeRef) {
       const newLives = lives - 1;
       setLives(newLives);
 
-      try { Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){}
+      triggerHaptic(ImpactStyle.Heavy);
       
       playSound('error', 0.6);
       setScreenFlash('error');
@@ -578,11 +599,11 @@ export function useGeoGame(globeRef) {
       gameState, gameMode, endReason, coins, lastCoinsEarned, unlockedThemes,
       activeTheme, activeRegion, timeLeft, score, streak,
       bestScore, lives, targetCountry, targetClub, screenFlash, isShaking,
-      floatingPoints, todayStr, lastDailyDate, studyCard,
+      floatingPoints, todayStr, playedDailyDates, studyCard,
       unlockedAchievements, showTutorial, showAchievements, achievementToast,
       freezeTimeLeft, isSmoothMode, showSettingsPrompt,
       unlockedAvatars, activeAvatar, powerUps, showShop, redeemedCodes,
-      isDarkMode // Passando o Dark Mode
+      isDarkMode, isVibrationEnabled
     },
     actions: {
       startGame, endGame, quitGame, resetGlobe, setCoins, setUnlockedThemes,
@@ -590,7 +611,7 @@ export function useGeoGame(globeRef) {
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
       skipCountry, revive, freezeTime, applySettings, 
       setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop, redeemCode,
-      toggleDarkMode // Função que a StartScreen vai usar
+      toggleDarkMode, toggleVibration, triggerHaptic
     }
   };
 }
