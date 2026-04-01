@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode }, ref) => {
+const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode, isDarkMode }, ref) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
   const interactionTimeoutRef = useRef(null);
@@ -33,7 +33,6 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
       if (!globeEl.current) return;
       const renderer = globeEl.current.renderer();
       
-      // PROTEÇÃO DE PERFORMANCE ANDROID: Limita o pixelRatio a no máximo 2 para evitar OOM (Out Of Memory)
       if (renderer) {
         renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1);
       }
@@ -79,7 +78,6 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
     return () => {
       clearTimeout(safetyTimeout);
       if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
-      
       if (controlsToCleanup) {
         if (onStartRef.current) controlsToCleanup.removeEventListener('start', onStartRef.current);
         if (onEndRef.current) controlsToCleanup.removeEventListener('end', onEndRef.current);
@@ -92,7 +90,6 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
     : 'translate-x-[15%] scale-100'; 
 
   return (
-    // A11Y: role="application" avisa leitores de tela que este é o elemento interativo principal
     <div 
       role="application" 
       aria-label="Globo terrestre interativo 3D"
@@ -101,18 +98,18 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
       <div className={`w-full h-full transition-all duration-300`}>
         <Globe
           ref={globeEl}
-          // PERFORMANCE: antialias desativado em mobile reduz gargalos severos de GPU Mali
           rendererConfig={{ antialias: !isMobile, powerPreference: 'high-performance' }}
           
           globeImageUrl={theme.globeUrl}
           backgroundImageUrl={theme.bgImageUrl}
           bumpImageUrl={isMobile ? null : theme.bump}
           backgroundColor="rgba(0,0,0,0)"
-          showAtmosphere={!isMobile}
-          atmosphereColor={theme.polyHover || '#38bdf8'}
-          atmosphereAltitude={0.15} 
           
-          // PERFORMANCE: Polígonos de resolução menor em mobile
+          // EFEITO DE ATMOSFERA (GLOW 3D) ATIVADO!
+          showAtmosphere={true}
+          atmosphereColor={isDarkMode ? '#6366f1' : '#38bdf8'}
+          atmosphereAltitude={0.15}
+          
           polygonsData={geoData}
           polygonResolution={isMobile ? 1 : 2} 
           
