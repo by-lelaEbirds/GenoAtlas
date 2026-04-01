@@ -192,43 +192,47 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             <span className={`font-bold text-xs md:text-sm uppercase tracking-widest flex items-center gap-1 ${isDarkMode ? 'text-indigo-300' : 'text-sky-600'}`}>Deslize <ChevronRight size={16}/></span>
           </div>
           
-          <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-8 snap-x custom-scrollbar">
+          <div className="flex gap-4 md:gap-8 overflow-x-auto px-4 md:px-12 pb-12 snap-x custom-scrollbar pt-10">
             
-            <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center border-[6px] md:border-[8px] transition-all group relative overflow-visible ${dailyCompleted ? (isDarkMode ? 'bg-slate-800 border-slate-700 opacity-60' : 'bg-stone-300 border-stone-400 opacity-80 cursor-not-allowed') : (isDarkMode ? 'bg-rose-950/40 border-rose-900 hover:bg-rose-900/50 shadow-[0_0_20px_rgba(225,29,72,0.3)]' : 'bg-rose-50 border-rose-200 hover:bg-rose-100 active:scale-95 shadow-lg')}`}>
-              {!dailyCompleted && <div className="absolute -top-4 -right-4 bg-rose-500 text-white text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border-[3px] border-white animate-bounce-short shadow-[0_5px_15px_rgba(225,29,72,0.6)] z-20">💎 +500</div>}
-              {!dailyCompleted && (
-                <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
-                  <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
-                </div>
-              )}
-              <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mb-4 border-[6px] shadow-inner relative z-10 ${dailyCompleted ? (isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-400' : 'bg-stone-400 border-stone-500 text-stone-200') : (isDarkMode ? 'bg-rose-600 border-rose-800 text-white group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(225,29,72,0.8)]' : 'bg-rose-500 border-rose-600 text-white group-hover:scale-110 transition-transform')}`}>
-                {dailyCompleted ? <CheckCircle size={40} strokeWidth={2.5}/> : <Calendar size={40} strokeWidth={2.5} />}
+            {/* DIÁRIO */}
+            <button aria-label="Modo de Jogo Diário" onClick={dailyCompleted ? null : onDaily} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2rem] flex flex-col items-center justify-center transition-all group relative overflow-visible ${dailyCompleted ? (isDarkMode ? 'glass-panel opacity-60 cursor-not-allowed' : 'bg-stone-300/80 border border-stone-400 opacity-80 cursor-not-allowed') : (isDarkMode ? 'glass-panel hover:neon-glow-rose hover:border-rose-500/50' : 'glass-panel-light border-rose-200 hover:shadow-[0_0_20px_rgba(225,29,72,0.3)] hover:border-rose-400 active:scale-95')}`}>
+              {!dailyCompleted && <div className={`absolute -top-5 -right-4 text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border border-white/20 animate-bounce-short z-20 ${isDarkMode ? 'bg-rose-500/90 backdrop-blur-md text-white neon-glow-rose' : 'bg-rose-500 text-white shadow-lg'}`}>💎 +500</div>}
+              <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
+                {!dailyCompleted && <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>}
               </div>
-              <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 ${dailyCompleted ? (isDarkMode ? 'text-slate-500' : 'text-stone-500') : (isDarkMode ? 'text-rose-100' : 'text-rose-800')}`}>Diário</span>
+              <div className="relative text-rose-300 animate-float-cinematic will-change-transform z-10 w-[140px] h-[140px] md:w-[180px] md:h-[180px] flex items-center justify-center -mt-16 mb-2">
+                 <div className={`absolute inset-0 rounded-full blur-[30px] opacity-40 z-0 ${dailyCompleted ? 'bg-slate-500' : 'bg-rose-500'}`}></div>
+                 <img src={`${import.meta.env.BASE_URL}assets/icons/Diar.png`} alt="Diário" className={`relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 ${dailyCompleted ? 'grayscale opacity-70' : ''}`} />
+              </div>
+              <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 mt-2 ${dailyCompleted ? (isDarkMode ? 'text-slate-500' : 'text-stone-500') : (isDarkMode ? 'text-rose-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-rose-800')}`}>Diário</span>
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${dailyCompleted ? (isDarkMode ? 'text-slate-600' : 'text-stone-400') : (isDarkMode ? 'text-rose-300' : 'text-rose-500')}`}>{dailyCompleted ? 'Feito hoje!' : <><Star size={14} className="fill-current"/> Hoje</>}</span>
             </button>
 
-            <button aria-label="Modo de Jogo Futebol" onClick={onFootball} className={`snap-center shrink-0 w-[240px] md:w-[320px] border-[6px] md:border-[8px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg relative overflow-visible ${isDarkMode ? 'bg-sky-950/40 border-sky-900 hover:bg-sky-900/50 shadow-[0_0_20px_rgba(14,165,233,0.3)]' : 'bg-sky-50 border-sky-200 hover:bg-sky-100'}`}>
-              <div className="absolute -top-4 -right-4 bg-sky-500 text-white text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border-[3px] border-white shadow-[0_5px_15px_rgba(14,165,233,0.6)] z-20">🔥 DESAFIO</div>
+            {/* FUTEBOL */}
+            <button aria-label="Modo de Jogo Futebol" onClick={onFootball} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2rem] flex flex-col items-center justify-center transition-all active:scale-95 group relative overflow-visible ${isDarkMode ? 'glass-panel hover:neon-glow-cyan hover:border-cyan-500/50' : 'glass-panel-light border-sky-200 hover:shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:border-sky-400'}`}>
+              <div className={`absolute -top-5 -right-4 text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border border-white/20 z-20 ${isDarkMode ? 'bg-cyan-500/90 backdrop-blur-md text-white neon-glow-cyan' : 'bg-sky-500 text-white shadow-lg'}`}>🔥 DESAFIO</div>
               <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
               </div>
-              <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] border-[6px] text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10 ${isDarkMode ? 'bg-sky-600 border-sky-800 shadow-[0_0_20px_rgba(14,165,233,0.8)]' : 'bg-sky-500 border-sky-600'}`}>
-                <Shield size={40} strokeWidth={2.5} />
+              <div className="relative text-cyan-300 animate-float-cinematic will-change-transform z-10 w-[140px] h-[140px] md:w-[180px] md:h-[180px] flex items-center justify-center -mt-16 mb-2" style={{ animationDelay: '0.5s' }}>
+                 <div className="absolute inset-0 bg-cyan-500 rounded-full blur-[30px] opacity-40 z-0"></div>
+                 <img src={`${import.meta.env.BASE_URL}assets/icons/Futb.png`} alt="Futebol" className="relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" />
               </div>
-              <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 ${isDarkMode ? 'text-sky-100' : 'text-sky-800'}`}>Futebol</span>
-              <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${isDarkMode ? 'text-sky-300' : 'text-sky-500'}`}><Zap size={14} className="fill-current"/> Teste sua mira</span>
+              <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 mt-2 ${isDarkMode ? 'text-cyan-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-sky-800'}`}>Futebol</span>
+              <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${isDarkMode ? 'text-cyan-300' : 'text-sky-500'}`}><Zap size={14} className="fill-current"/> Teste sua mira</span>
             </button>
 
-            <button aria-label="Modo de Estudo" onClick={onStudy} className={`snap-center shrink-0 w-[240px] md:w-[320px] border-[6px] md:border-[8px] p-6 rounded-[2.5rem] flex flex-col items-center justify-center transition-all active:scale-95 group shadow-lg relative overflow-visible ${isDarkMode ? 'bg-emerald-950/40 border-emerald-900 hover:bg-emerald-900/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'}`}>
-              <div className="absolute -top-4 -right-4 bg-emerald-500 text-white text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border-[3px] border-white shadow-[0_5px_15px_rgba(16,185,129,0.6)] z-20">🧘 ZEN</div>
+            {/* ESTUDO */}
+            <button aria-label="Modo de Estudo" onClick={onStudy} className={`snap-center shrink-0 w-[240px] md:w-[320px] p-6 rounded-[2rem] flex flex-col items-center justify-center transition-all active:scale-95 group relative overflow-visible ${isDarkMode ? 'glass-panel hover:neon-glow-emerald hover:border-emerald-500/50' : 'glass-panel-light border-emerald-200 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:border-emerald-400'}`}>
+              <div className={`absolute -top-5 -right-4 text-[12px] md:text-[14px] font-black px-4 py-1.5 rounded-full border border-white/20 z-20 ${isDarkMode ? 'bg-emerald-500/90 backdrop-blur-md text-white neon-glow-emerald' : 'bg-emerald-500 text-white shadow-lg'}`}>🧘 ZEN</div>
               <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
-                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"></div>
+                <div className="absolute inset-0 -translate-x-[150%] group-hover:animate-sweep bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
               </div>
-              <div className={`w-20 h-20 md:w-28 md:h-28 rounded-[1.5rem] md:rounded-[2rem] border-[6px] text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10 ${isDarkMode ? 'bg-emerald-600 border-emerald-800 shadow-[0_0_20px_rgba(16,185,129,0.8)]' : 'bg-emerald-400 border-emerald-500 text-emerald-900'}`}>
-                <GraduationCap size={40} strokeWidth={2.5} />
+              <div className="relative text-emerald-300 animate-float-cinematic will-change-transform z-10 w-[140px] h-[140px] md:w-[180px] md:h-[180px] flex items-center justify-center -mt-16 mb-2" style={{ animationDelay: '1s' }}>
+                 <div className="absolute inset-0 bg-emerald-500 rounded-full blur-[30px] opacity-40 z-0"></div>
+                 <img src={`${import.meta.env.BASE_URL}assets/icons/Estud.png`} alt="Estudo" className="relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3" />
               </div>
-              <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 ${isDarkMode ? 'text-emerald-100' : 'text-emerald-800'}`}>Estudo</span>
+              <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 mt-2 ${isDarkMode ? 'text-emerald-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-emerald-800'}`}>Estudo</span>
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-500'}`}><Compass size={14} className="fill-current"/> Sem pressa</span>
             </button>
           </div>
@@ -287,12 +291,12 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                     } 
                     else { handleThemeSelect(t); }
                   }}
-                  className={`w-[160px] h-[160px] md:w-[208px] md:h-[208px] rounded-full flex items-center justify-center border-[10px] md:border-[12px] relative transition-all group z-20 overflow-hidden ${
+                  className={`w-[160px] h-[160px] md:w-[208px] md:h-[208px] rounded-full flex items-center justify-center border-[6px] md:border-[8px] relative transition-all group z-20 overflow-hidden ${
                     isUnlocked 
                       ? isCurrent 
-                        ? `bg-amber-400 border-white shadow-[0_16px_0_#b45309,0_0_50px_rgba(251,191,36,0.8)] md:shadow-[0_24px_0_#b45309,0_0_80px_rgba(251,191,36,0.8)] active:translate-y-[12px] md:active:translate-y-[16px] active:shadow-[0_6px_0_#b45309]` 
-                        : (isDarkMode ? 'bg-slate-800 border-slate-600 shadow-[0_8px_0_#334155,0_0_20px_rgba(255,255,255,0.1)] active:translate-y-[8px] hover:scale-105 active:shadow-none' : 'bg-white border-stone-300 shadow-[0_8px_0_#a8a29e] active:translate-y-[8px] active:shadow-none hover:scale-105')
-                      : (isDarkMode ? 'bg-slate-900 border-slate-800 shadow-[0_14px_0_#0f172a] active:translate-y-[8px] active:shadow-none opacity-80' : 'bg-stone-300 border-stone-400 shadow-[0_14px_0_#78716c] active:translate-y-[8px] active:shadow-none opacity-90')
+                        ? `bg-amber-500 border-white neon-glow-amber hover:scale-105 z-30` 
+                        : (isDarkMode ? 'glass-panel border-white/20 hover:neon-glow-cyan hover:border-cyan-400/50 hover:scale-105' : 'glass-panel-light border-stone-200 hover:shadow-xl hover:scale-105')
+                      : (isDarkMode ? 'bg-slate-900 border-slate-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] opacity-60' : 'bg-stone-300 border-stone-400 shadow-[inset_0_0_15px_rgba(0,0,0,0.1)] opacity-70')
                   }`}
                 >
                   {isUnlocked && isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12 z-0"></div>}
@@ -311,7 +315,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                     if (isUnlocked) { setTheme(t); setShowRegionModal(true); } 
                     else { handleThemeSelect(t); }
                   }}
-                  className={`absolute -bottom-[40px] md:-bottom-[60px] px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-30 whitespace-nowrap scale-100 md:scale-110 transition-transform duration-300 active:scale-95 overflow-hidden ring-offset-2 ${isUnlocked ? (isCurrent ? 'bg-amber-500 border-amber-300 shadow-[0_0_30px_rgba(245,158,11,0.6)] ring-4 ring-amber-500/50 animate-glow-pulse cursor-pointer' : (isDarkMode ? 'bg-slate-800/80 backdrop-blur-sm border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.6)] cursor-pointer' : 'bg-white/90 backdrop-blur-sm border-stone-200/50 shadow-xl cursor-pointer')) : (isDarkMode ? 'bg-slate-900/50 backdrop-blur-sm border-slate-800 cursor-not-allowed' : 'bg-stone-100/50 backdrop-blur-sm border-stone-300 cursor-not-allowed')}`}
+                  className={`absolute -bottom-[30px] md:-bottom-[45px] px-8 py-3 md:px-12 md:py-5 rounded-full border z-30 whitespace-nowrap scale-100 md:scale-110 transition-transform duration-300 active:scale-95 overflow-hidden ${isUnlocked ? (isCurrent ? 'bg-amber-500/90 border-amber-300 neon-glow-amber cursor-pointer animate-pulse-glow backdrop-blur-md' : (isDarkMode ? 'glass-panel border-white/20 hover:bg-white/10 cursor-pointer shadow-lg' : 'glass-panel-light border-stone-200 hover:bg-white cursor-pointer shadow-xl')) : (isDarkMode ? 'glass-panel opacity-50 cursor-not-allowed' : 'glass-panel-light opacity-50 cursor-not-allowed')}`}
                 >
                   {isUnlocked && isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-shimmer bg-gradient-to-r from-transparent via-white/70 to-transparent skew-x-12 z-0"></div>}
                   <span className={`text-[18px] md:text-[24px] font-black uppercase tracking-widest relative z-10 flex items-center gap-2 ${isUnlocked ? (isCurrent ? 'text-amber-950' : (isDarkMode ? 'text-white' : 'text-stone-800')) : (isDarkMode ? 'text-slate-600' : 'text-stone-400')}`}>
@@ -374,10 +378,11 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           })}
 
           <div aria-hidden="true" className="relative flex flex-col items-center opacity-90 mt-10 mb-40">
-            <div className={`w-[180px] h-[180px] md:w-[248px] md:h-[248px] rounded-full flex items-center justify-center border-[12px] md:border-[16px] z-10 relative cursor-not-allowed ${isDarkMode ? 'bg-gradient-to-b from-rose-700 to-rose-950 border-rose-600 shadow-[0_20px_0_#4c0519,0_0_60px_rgba(225,29,72,0.4)]' : 'bg-gradient-to-b from-rose-500 to-rose-700 border-rose-300 shadow-[0_20px_0_#881337,0_0_60px_rgba(225,29,72,0.8)]'}`}>
-              <Trophy className={`w-20 h-20 md:w-32 md:h-32 ${isDarkMode ? 'text-rose-300' : 'text-white'}`} strokeWidth={2.5} />
+            <div className={`w-[180px] h-[180px] md:w-[248px] md:h-[248px] rounded-full flex items-center justify-center border-[6px] md:border-[8px] z-10 relative cursor-not-allowed overflow-hidden ${isDarkMode ? 'glass-panel border-rose-500/50 neon-glow-rose' : 'glass-panel-light border-rose-300 ring-4 ring-rose-200'}`}>
+              <div className="absolute inset-0 bg-rose-500/20 rounded-full"></div>
+              <Trophy className={`w-20 h-20 md:w-32 md:h-32 mb-4 relative z-10 ${isDarkMode ? 'text-rose-400 drop-shadow-[0_0_15px_rgba(225,29,72,0.8)]' : 'text-rose-500 drop-shadow-md'}`} strokeWidth={2.5} />
             </div>
-            <div className={`absolute -bottom-10 md:-bottom-16 px-8 py-3 md:px-12 md:py-5 rounded-full border-[3px] md:border-[4px] z-20 shadow-2xl scale-100 md:scale-110 whitespace-nowrap ${isDarkMode ? 'bg-black border-rose-700' : 'bg-rose-900 border-rose-400'}`}>
+            <div className={`absolute -bottom-8 md:-bottom-12 px-8 py-3 md:px-12 md:py-5 rounded-full border z-20 shadow-2xl scale-100 md:scale-110 whitespace-nowrap ${isDarkMode ? 'bg-black/80 backdrop-blur-md border border-rose-500/50 neon-glow-rose' : 'bg-rose-900 border border-rose-400 shadow-[0_15px_30px_rgba(225,29,72,0.4)]'}`}>
               <span className="text-[16px] md:text-[24px] font-black text-rose-100 uppercase tracking-widest">A Lenda (Em Breve)</span>
             </div>
           </div>
