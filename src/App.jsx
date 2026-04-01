@@ -3,9 +3,8 @@ import GlobeVisualizer from './components/GlobeVisualizer';
 import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
-import { TutorialModal, AchievementsModal, ShopModal } from './components/Modals';
-// CORREÇÃO AQUI: O ícone 'Coins' voltou para a lista de importações para não crashar o Card de Reviver!
-import { Trophy, Coins, Rocket, Film, X, Gift, Compass } from 'lucide-react';
+import { TutorialModal, AchievementsModal, ShopModal, CreditsModal } from './components/Modals';
+import { Trophy, Coins, Rocket, Film, X, Gift, Compass, Vibrate, VibrateOff, Info } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
@@ -22,8 +21,10 @@ export default function App() {
   
   const [promoInput, setPromoInput] = useState('');
   const [promoFeedback, setPromoFeedback] = useState(null);
+  
+  const [showCredits, setShowCredits] = useState(false);
 
-  const { isDarkMode } = state;
+  const { isDarkMode, isVibrationEnabled } = state;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 150);
@@ -181,10 +182,22 @@ export default function App() {
                 )}
               </div>
 
+              <div className={`mt-2 border-t-[4px] pt-4 md:pt-6 flex flex-col sm:flex-row gap-4 ${isDarkMode ? 'border-slate-700' : 'border-stone-100'}`}>
+                  <button onClick={() => { actions.toggleVibration(); actions.triggerHaptic(); }} className={`flex-1 p-4 rounded-[1.5rem] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all group ${isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50'}`}>
+                    {isVibrationEnabled ? <Vibrate size={20} className="text-emerald-500" /> : <VibrateOff size={20} className="text-rose-500" />}
+                    <span className={isDarkMode ? 'text-slate-300' : 'text-stone-600'}>Vibração: {isVibrationEnabled ? 'ON' : 'OFF'}</span>
+                  </button>
+                  <button onClick={() => { actions.triggerHaptic(); setShowCredits(true); }} className={`flex-1 p-4 rounded-[1.5rem] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${isDarkMode ? 'glass-panel text-indigo-300 hover:bg-indigo-900/30 hover:border-indigo-500/50' : 'glass-panel-light text-indigo-700 hover:bg-indigo-50 border-indigo-200'}`}>
+                    <Info size={20} /> Créditos
+                  </button>
+              </div>
+
             </div>
           </div>
         </div>
       )}
+
+      {showCredits && <CreditsModal onClose={() => { actions.triggerHaptic(); setShowCredits(false); }} isDarkMode={isDarkMode} />}
 
       {state.gameState === GAME_STATES.START && (
         <StartScreen 
@@ -202,7 +215,7 @@ export default function App() {
           themes={MAP_THEMES}
           unlockedThemes={state.unlockedThemes}
           setUnlockedThemes={actions.setUnlockedThemes}
-          dailyCompleted={state.lastDailyDate === state.todayStr} 
+          dailyCompleted={state.playedDailyDates.includes(state.todayStr)} 
           
           activeAvatar={state.activeAvatar}
           setShowShop={actions.setShowShop}
