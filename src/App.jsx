@@ -4,7 +4,8 @@ import StartScreen from './components/StartScreen';
 import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
 import { TutorialModal, AchievementsModal, ShopModal } from './components/Modals';
-import { Trophy, Rocket, Film, X, Gift, Compass } from 'lucide-react';
+// CORREÇÃO AQUI: O ícone 'Coins' voltou para a lista de importações para não crashar o Card de Reviver!
+import { Trophy, Coins, Rocket, Film, X, Gift, Compass } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
@@ -89,8 +90,9 @@ export default function App() {
         </div>
       )}
 
+      {/* OPTIMIZATION: will-change-transform garante 60FPS nas animações flutuantes */}
       {state.floatingPoints.map(point => (
-        <div aria-hidden="true" key={point.id} className={`absolute z-50 pointer-events-none animate-float-point text-[32px] font-black drop-shadow-md ${point.colorClass}`} style={{ left: point.x - 30, top: point.y - 60 }}>{point.text}</div>
+        <div aria-hidden="true" key={point.id} className={`absolute z-50 pointer-events-none animate-float-point text-[32px] font-black drop-shadow-md ${point.colorClass}`} style={{ left: point.x - 30, top: point.y - 60, willChange: 'transform, opacity' }}>{point.text}</div>
       ))}
 
       <div aria-hidden={!isChangingTheme} className={`absolute inset-0 z-[150] ${isDarkMode ? 'bg-indigo-950' : 'bg-stone-900'} flex flex-col items-center justify-center transition-opacity duration-300 pointer-events-none ${isChangingTheme ? 'opacity-100' : 'opacity-0'}`}>
