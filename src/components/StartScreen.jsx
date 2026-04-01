@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, Compass, Lock, Home, Settings, Shield, GraduationCap, Calendar, CheckCircle, Globe, X, ChevronRight, ShoppingCart, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap, Moon, Sun } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
@@ -8,6 +8,10 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // REFS PARA O EFEITO PARALLAX DE ALTA PERFORMANCE
+  const bgNebulaRef = useRef(null);
+  const bgStarsRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -45,6 +49,20 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
       setShowRegionModal(false);
       setIsClosingRegion(false);
     }, 200);
+  };
+
+  // MOTOR PARALLAX (Direct DOM Manipulation para 60FPS)
+  const handleScroll = (e) => {
+    const scrollY = e.target.scrollTop;
+    
+    // As Nebulosas rolam beeem devagar (15% da velocidade)
+    if (bgNebulaRef.current) {
+      bgNebulaRef.current.style.transform = `translateY(${-scrollY * 0.15}px)`;
+    }
+    // As Estrelas rolam mais rápido que as nebulosas (35% da velocidade)
+    if (bgStarsRef.current) {
+      bgStarsRef.current.style.transform = `translateY(${-scrollY * 0.35}px)`;
+    }
   };
 
   const themeNodes = Object.values(themes);
@@ -88,32 +106,34 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         .animate-shooting-star { animation: shooting-star 4s linear infinite; }
       `}</style>
 
-      {/* FUNDO MÁGICO OTIMIZADO PARA BATERIA */}
+      {/* FUNDO MÁGICO COM PARALLAX (Tamanho aumentado para 140% para não mostrar as bordas ao rolar) */}
       <div className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-1000 ${isDarkMode ? 'bg-indigo-950' : 'bg-sky-200'}`}>
         
-        <div aria-hidden="true" className="absolute inset-0 opacity-80">
+        {/* LAYER 1: NEBULOSAS E LUZES DE FUNDO (Mais Lento) */}
+        <div ref={bgNebulaRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] opacity-80 will-change-transform">
           {isDarkMode ? (
             <>
-               {/* As nebulosas não ficam mais "pulsando", elas são estáticas para salvar a GPU */}
-               <div className="absolute top-[-10%] left-[-20%] w-[100vw] h-[100vw] max-w-[600px] max-h-[600px] rounded-full" style={{background: 'radial-gradient(circle, rgba(79,70,229,0.35) 0%, transparent 70%)'}}></div>
-               <div className="absolute top-[30%] right-[-20%] w-[120vw] h-[120vw] max-w-[700px] max-h-[700px] rounded-full" style={{background: 'radial-gradient(circle, rgba(162,28,175,0.25) 0%, transparent 70%)'}}></div>
-               <div className="absolute top-[60%] left-[10%] w-[100vw] h-[100vw] max-w-[500px] max-h-[500px] rounded-full" style={{background: 'radial-gradient(circle, rgba(8,145,178,0.25) 0%, transparent 70%)'}}></div>
+               <div className="absolute top-[0%] left-[0%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(79,70,229,0.35) 0%, transparent 70%)'}}></div>
+               <div className="absolute top-[30%] right-[0%] w-[80vw] h-[80vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(162,28,175,0.25) 0%, transparent 70%)', animationDelay: '2s'}}></div>
+               <div className="absolute top-[70%] left-[10%] w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(8,145,178,0.25) 0%, transparent 70%)', animationDelay: '4s'}}></div>
                
-               <div className="absolute top-[5%] right-[10%] w-[120px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
-               <div className="absolute top-[20%] right-[40%] w-[80px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-60" style={{animationDelay: '1.5s'}}></div>
+               <div className="absolute top-[10%] right-[20%] w-[120px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
+               <div className="absolute top-[40%] right-[50%] w-[80px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-60" style={{animationDelay: '1.5s'}}></div>
             </>
           ) : (
             <>
-               <div className="absolute top-[-10%] left-[-20%] w-[100vw] h-[100vw] max-w-[600px] max-h-[600px] rounded-full" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, transparent 70%)'}}></div>
-               <div className="absolute top-[30%] right-[-20%] w-[120vw] h-[120vw] max-w-[700px] max-h-[700px] rounded-full" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%)'}}></div>
+               <div className="absolute top-[0%] left-[0%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, transparent 70%)'}}></div>
+               <div className="absolute top-[40%] right-[0%] w-[80vw] h-[80vw] max-w-[700px] max-h-[700px] rounded-full animate-pulse-slow" style={{background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%)', animationDelay: '2s'}}></div>
             </>
           )}
+          {/* Grid Blueprint */}
           <div className={`absolute inset-0 ${isDarkMode ? 'opacity-[0.05]' : 'opacity-40'}`} style={{ backgroundImage: `linear-gradient(${isDarkMode ? '#ffffff' : '#ffffff'} 2px, transparent 2px), linear-gradient(90deg, ${isDarkMode ? '#ffffff' : '#ffffff'} 2px, transparent 2px)`, backgroundSize: '96px 96px' }}></div>
         </div>
 
-        {/* Estrelas Otimizadas com will-change-transform para o iPhone não travar */}
-        <div aria-hidden="true" className="absolute inset-0 opacity-70">
-          {[...Array(isMobile ? 25 : 45)].map((_, i) => {
+        {/* LAYER 2: ESTRELAS E PARTÍCULAS (Mais Rápido, dá efeito de profundidade) */}
+        <div ref={bgStarsRef} aria-hidden="true" className="absolute inset-[-20%] w-[140%] h-[140%] opacity-70 will-change-transform">
+          {/* Aumentei a quantidade de estrelas pra compensar os 140% da tela */}
+          {[...Array(isMobile ? 40 : 70)].map((_, i) => {
             const colors = isDarkMode ? ['bg-white', 'bg-cyan-200', 'bg-fuchsia-200', 'bg-indigo-100'] : ['bg-white', 'bg-amber-100', 'bg-white', 'bg-white'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             const size = Math.random() * 4 + 2;
@@ -134,10 +154,15 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         </div>
       </div>
       
-      {/* CONTEÚDO ROLÁVEL */}
-      <div className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]">
+      {/* ==================================================================== */}
+      {/* CONTEÚDO ROLÁVEL (Aqui detectamos o onScroll) */}
+      {/* ==================================================================== */}
+      <div 
+        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]"
+        onScroll={handleScroll}
+      >
 
-        {/* HEADER OTIMIZADO: Removido backdrop-blur-xl e trocado por cor sólida com leve opacidade */}
+        {/* HEADER OTIMIZADO */}
         <header className={`fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-12 py-4 pt-[calc(1rem+env(safe-area-inset-top))] ${isDarkMode ? 'bg-slate-900/98 border-slate-700/50' : 'bg-white/98 border-stone-200'} border-b-[2px] shadow-sm transition-colors`}>
           <div className="flex items-center gap-2 md:gap-4">
             <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center border-[3px] md:border-[4px] relative overflow-hidden transition-all ${isDarkMode ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-400 via-purple-600 to-indigo-950 border-indigo-300 shadow-[0_0_25px_rgba(129,140,248,0.8)] ring-[2px] ring-indigo-500/50' : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-200 via-sky-400 to-blue-600 border-white shadow-[0_0_20px_rgba(56,189,248,0.6)] ring-[2px] ring-sky-200'}`}>
@@ -160,6 +185,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </header>
 
+        {/* CARROSSEL DE MODOS EXTRAS */}
         <div className="relative z-10 pt-[calc(140px+env(safe-area-inset-top))] pb-8 animate-fade-in-up">
           <div className="px-4 md:px-12 mb-4 flex justify-between items-end">
             <h2 className={`text-[22px] md:text-[36px] font-black uppercase tracking-widest flex items-center gap-2 ${isDarkMode ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]' : 'text-sky-900'}`}><Map size={28} className={isDarkMode ? 'text-indigo-400' : 'text-sky-500'}/> Modos Extras</h2>
@@ -216,9 +242,10 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
+        {/* MAPA DA JORNADA */}
         <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[120px] md:pt-[160px]">
           
-          {/* AVATAR DESLIZANTE COM SOMBRA DINÂMICA */}
+          {/* AVATAR DESLIZANTE */}
           <div 
             aria-hidden="true"
             className="absolute z-30 left-1/2 -translate-x-1/2 transition-all duration-[1200ms] ease-in-out flex flex-col items-center"
@@ -301,7 +328,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                   </div>
                 )}
 
-                {/* TRILHA GAMIFICADA SINUOSA COM DIORAMAS */}
                 <div aria-hidden="true" className="absolute top-[160px] md:top-[208px] left-1/2 -translate-x-1/2 h-[450px] md:h-[600px] w-full flex flex-col items-center justify-evenly py-10 md:py-16 z-0 pointer-events-none">
                   {[...Array(isMobile ? 4 : 5)].map((_, i) => {
                     const totalStones = isMobile ? 4 : 5;
@@ -319,7 +345,6 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                     );
                   })}
 
-                  {/* DIORAMAS LATERAIS VIBRANTES */}
                   <div className={`absolute top-[15%] ${index % 2 === 0 ? 'left-[-60px] md:left-[-160px]' : 'right-[-60px] md:right-[-160px]'} animate-float opacity-90 drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)] flex items-end`}>
                     {index % 3 === 0 ? (
                       <>
@@ -362,8 +387,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
 
       </div>
 
-      {/* NAVBAR INFERIOR OTIMIZADA: Removido backdrop-blur que destruía a bateria */}
-      <nav aria-label="Navegação Principal" className={`fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 md:pt-6 border-t-[3px] rounded-t-[2.5rem] md:rounded-t-[4rem] transition-colors ${isDarkMode ? 'bg-slate-900/98 border-slate-700 shadow-[0px_-40px_100px_rgba(0,0,0,0.8)]' : 'bg-white/98 border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.05)]'}`}>
+      <nav aria-label="Navegação Principal" className={`fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 md:px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 md:pt-6 border-t-[3px] rounded-t-[2.5rem] md:rounded-t-[4rem] transition-colors ${isDarkMode ? 'bg-slate-900/95 backdrop-blur-2xl border-slate-700 shadow-[0px_-40px_100px_rgba(0,0,0,0.8)]' : 'bg-white/95 backdrop-blur-xl border-stone-200 shadow-[0px_-40px_80px_rgba(0,0,0,0.05)]'}`}>
         <button aria-label="Ir para Início" className={`flex flex-col items-center justify-center active:scale-95 transition-all group w-20 md:w-32 ${isDarkMode ? 'text-sky-300' : 'text-sky-500'}`}>
           <div className={`p-2.5 md:p-4 rounded-[1.2rem] md:rounded-[1.8rem] mb-1.5 md:mb-3 transition-colors ${isDarkMode ? 'bg-sky-900 group-active:bg-sky-800 shadow-[0_0_15px_rgba(56,189,248,0.3)]' : 'bg-sky-100 group-active:bg-sky-200'}`}><Home className="w-7 h-7 md:w-10 md:h-10" strokeWidth={2.5} /></div>
           <span className="text-[12px] md:text-[18px] font-black uppercase tracking-widest whitespace-nowrap">Início</span>
