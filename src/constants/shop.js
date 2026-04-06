@@ -40,8 +40,8 @@ export const POWER_UPS = [
 export const ROUTE_UPGRADES = [
   {
     id: 'atlasPass',
-    name: 'Passe do Cartografo',
-    desc: '+8% XP de temporada por nivel.',
+    name: 'Radar de Missoes',
+    desc: '+8% moedas das operacoes semanais por nivel.',
     icon: '\u{1F9ED}',
     maxLevel: 5,
     basePrice: 2200,

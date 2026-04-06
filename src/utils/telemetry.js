@@ -94,7 +94,7 @@ export function getTelemetryInsight(telemetry) {
   if (recentRun?.maxStreak >= 6 || accuracy >= 0.8) {
     return {
       title: 'Motor aquecido',
-      description: 'Seu ritmo esta forte. Priorize missoes de combo e rotas continentais para maximizar XP e moedas.',
+      description: 'Seu ritmo esta forte. Priorize missoes de combo e rotas continentais para maximizar moedas e progresso semanal.',
       tone: 'emerald',
       accuracy,
       winRate,
@@ -103,7 +103,7 @@ export function getTelemetryInsight(telemetry) {
 
   return {
     title: 'Ritmo consistente',
-    description: 'Voce esta evoluindo bem. Misture futebol e diario para diversificar missoes e acelerar a temporada.',
+    description: 'Voce esta evoluindo bem. Misture futebol e diario para diversificar missoes e aproveitar melhor cada semana.',
     tone: 'amber',
     accuracy,
     winRate,

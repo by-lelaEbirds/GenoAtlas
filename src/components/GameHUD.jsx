@@ -17,6 +17,7 @@ export default function GameHUD({ state, actions, isDarkMode }) {
   const totalTargets = state.sessionTargetCount || 0;
   const completedTargets = state.guessedCountries?.length || 0;
   const progressPct = totalTargets > 0 ? Math.min((completedTargets / totalTargets) * 100, 100) : 0;
+  const weeklyMissionCount = state.metaProgress?.weeklyMissions?.length || 0;
   const completedMissionCount = state.metaProgress?.weeklyMissions?.filter((mission) => mission.completed).length || 0;
   
   const baseMaxLives = state.gameMode === 'daily' ? 1 : 3;
@@ -79,10 +80,10 @@ export default function GameHUD({ state, actions, isDarkMode }) {
               {state.activeEvent && (
                 <div className={`px-4 py-2 rounded-full flex items-center gap-3 pointer-events-auto ${isDarkMode ? 'glass-panel border-cyan-500/20' : 'glass-panel-light border-sky-200 shadow-lg'}`}>
                   <span className={`text-[11px] font-black uppercase tracking-widest ${isDarkMode ? 'text-cyan-200' : 'text-sky-700'}`}>
-                    Evento: {state.activeEvent.title}
+                    Operacao: {state.activeEvent.title}
                   </span>
                   <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
-                    Missoes {completedMissionCount}/3
+                    Missoes {completedMissionCount}/{weeklyMissionCount || 0}
                   </span>
                 </div>
               )}

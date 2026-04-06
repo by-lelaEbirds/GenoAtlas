@@ -3,7 +3,6 @@ import { Coins, Flame, Globe, Moon, Sun, TrendingUp } from 'lucide-react';
 
 import { saveNativeData } from '../utils/storage';
 import BottomNav from './StartScreenUI/BottomNav';
-import CommandCenter from './StartScreenUI/CommandCenter';
 import JourneyMap from './StartScreenUI/JourneyMap';
 import ModeCarousel from './StartScreenUI/ModeCarousel';
 import ParallaxBackground from './StartScreenUI/ParallaxBackground';
@@ -15,6 +14,7 @@ export default function StartScreen({
   onFootball,
   onDaily,
   onOpenAchievements,
+  onOpenWeeklyOps,
   onOpenTutorial,
   onOpenSettings,
   coins,
@@ -28,18 +28,10 @@ export default function StartScreen({
   countryCount,
   activeAvatar,
   setShowShop,
+  weeklyMissionStatus,
   isBatterySaverMode,
   isDarkMode,
   toggleDarkMode,
-  seasonProgress,
-  seasonXp,
-  activeEvent,
-  weeklyMissions,
-  masteryEntries,
-  dailyWinStreak,
-  weeklyVoyageStreak,
-  routeUpgrades,
-  coachTip,
 }) {
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
@@ -284,20 +276,6 @@ export default function StartScreen({
             isDarkMode={isDarkMode}
           />
 
-          <CommandCenter
-            seasonProgress={seasonProgress}
-            seasonXp={seasonXp}
-            activeEvent={activeEvent}
-            coachTip={coachTip}
-            weeklyMissions={weeklyMissions}
-            masteryEntries={masteryEntries}
-            dailyWinStreak={dailyWinStreak}
-            weeklyVoyageStreak={weeklyVoyageStreak}
-            routeUpgrades={routeUpgrades}
-            isDarkMode={isDarkMode}
-            onOpenShop={() => setShowShop(true)}
-          />
-
           <section className="relative z-10 px-5 pb-10 pt-6 md:px-8 md:pb-14 md:pt-10">
             <div className="mb-8 text-center md:mb-10">
               <div className={`inline-flex items-center gap-3 rounded-full border px-7 py-3 md:px-10 md:py-4 ${isDarkMode ? 'glass-panel border-fuchsia-500/25' : 'glass-panel-light border-white text-sky-800'}`}>
@@ -321,8 +299,10 @@ export default function StartScreen({
 
       <BottomNav
         onOpenAchievements={onOpenAchievements}
+        onOpenWeeklyOps={onOpenWeeklyOps}
         onOpenSettings={onOpenSettings}
         setShowShop={setShowShop}
+        weeklyMissionStatus={weeklyMissionStatus}
         isDarkMode={isDarkMode}
       />
 

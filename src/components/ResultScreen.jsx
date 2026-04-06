@@ -139,30 +139,28 @@ export default function ResultScreen({
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
                   <span className={`block text-[12px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>
-                    Progressao
+                    Resumo semanal
                   </span>
                   <span className={`mt-2 block text-[24px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>
-                    +{sessionRewardSummary.seasonXpEarned} XP
+                    +{(sessionRewardSummary.missionCoinsBonus || 0) + (sessionRewardSummary.milestoneCoinsBonus || 0)} moedas extras
                   </span>
                 </div>
-                {sessionRewardSummary.leveledUp && (
-                  <div className="rounded-full border border-amber-300 bg-amber-400 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-amber-950 shadow-[0_0_16px_rgba(251,191,36,0.45)]">
-                    Nivel {sessionRewardSummary.currentLevel}
-                  </div>
-                )}
+                <div className="rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-cyan-700 shadow-[0_0_16px_rgba(34,211,238,0.16)]">
+                  {sessionRewardSummary.completedMissions?.length || 0} missões
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className={`rounded-[1.35rem] border p-3 ${isDarkMode ? 'bg-slate-900/70 border-white/10' : 'bg-white/80 border-stone-100'}`}>
                   <span className={`block text-[11px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
-                    Evento ativo
+                    Operacao da semana
                   </span>
                   <span className={`mt-1 block text-[15px] font-black leading-snug ${isDarkMode ? 'text-cyan-300' : 'text-sky-700'}`}>
                     {sessionRewardSummary.activeEvent?.title || 'Rota estavel'}
                   </span>
                   <span className={`mt-1 block text-[12px] font-bold leading-snug ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
                     {sessionRewardSummary.eventCoinBonus > 0
-                      ? `+${sessionRewardSummary.eventCoinBonus} moedas de evento`
+                      ? `+${sessionRewardSummary.eventCoinBonus} moedas da operacao`
                       : sessionRewardSummary.activeEvent?.rewardLabel || 'Sem bonus rotativo nesta sessao.'}
                   </span>
                 </div>

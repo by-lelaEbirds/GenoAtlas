@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
 
-import { playTone, playSound, setAudioEnabled, warmupAudio, playThemeCue, playModeCue, playComboStinger, playMissionCompleteCue, playLevelUpCue } from '../utils/audio';
+import { playTone, playSound, setAudioEnabled, warmupAudio, playThemeCue, playModeCue, playComboStinger, playMissionCompleteCue } from '../utils/audio';
 import { saveNativeData, getNativeData } from '../utils/storage';
 import { GAME_STATES, GAME_MODES, MAP_THEMES } from '../constants';
 import { FOOTBALL_CLUBS } from '../constants/football';
@@ -23,9 +23,8 @@ import {
   ensureMetaProgress,
   getActiveEvent,
   getCoachTip,
-  getContinentMasteryEntries,
-  getSeasonProgress,
   getStartTimeBonus,
+  getWeeklyRotationPreview,
   getUpgradeAdjustedCoins,
   normalizeContinent,
 } from '../utils/metaProgression';
@@ -143,9 +142,8 @@ export function useGeoGame(globeRef) {
   const routeUpgradesRef = useRef(routeUpgrades);
   const endGameRef = useRef(null);
 
-  const activeEvent = useMemo(() => getActiveEvent(todayStr), [todayStr]);
-  const seasonProgress = useMemo(() => getSeasonProgress(metaProgress.seasonXp), [metaProgress.seasonXp]);
-  const masteryEntries = useMemo(() => getContinentMasteryEntries(metaProgress.continentMastery), [metaProgress.continentMastery]);
+  const activeEvent = useMemo(() => metaProgress.weeklyRotation || getActiveEvent(todayStr), [metaProgress.weeklyRotation, todayStr]);
+  const weeklyRotationPreview = useMemo(() => getWeeklyRotationPreview(todayStr, 8), [todayStr]);
   const telemetryInsight = useMemo(() => getTelemetryInsight(telemetry), [telemetry]);
   const coachTip = useMemo(
     () => getCoachTip({ telemetryInsight, metaProgress, activeEvent }),
@@ -832,7 +830,6 @@ export function useGeoGame(globeRef) {
     });
 
     if (metaResult.rewardSummary.completedMissions.length > 0) playMissionCompleteCue();
-    if (metaResult.rewardSummary.leveledUp) playLevelUpCue();
 
     if (scoreRef.current > bestScore && (gameMode === GAME_MODES.NORMAL || gameMode === GAME_MODES.FOOTBALL)) {
       setBestScore(scoreRef.current);
@@ -1192,9 +1189,8 @@ export function useGeoGame(globeRef) {
       canClaimRewardedCoins:
         gameState === GAME_STATES.RESULT && !rewardedCoinsClaimed && lastCoinsEarned > 0,
       metaProgress,
-      seasonProgress,
-      masteryEntries,
       activeEvent,
+      weeklyRotationPreview,
       telemetry,
       telemetryInsight,
       coachTip,
