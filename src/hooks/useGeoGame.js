@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { playTone, playSound } from '../utils/audio';
+import { playTone, playSound, setAudioEnabled, warmupAudio } from '../utils/audio';
 import { saveNativeData, getNativeData } from '../utils/storage';
 import { GAME_STATES, GAME_MODES, MAP_THEMES } from '../constants';
 import { FOOTBALL_CLUBS } from '../constants/football';
@@ -7,30 +7,16 @@ import { CAPITALS_MAP } from '../constants/capitals';
 import { AVATARS } from '../constants/shop';
 import { PROMO_CODES } from '../constants/promoCodes';
 import { ACHIEVEMENTS_LIST } from '../constants/achievements';
+import { MAX_IMPACT_RINGS, MAX_TRAVEL_ARCS, appendWithLimit, getDailyCountries, getLocalDateKey } from '../utils/gameplay';
+import { isAndroidRuntime, isNativeRuntime } from '../utils/platform';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { App as CapApp } from '@capacitor/app';
 
-const getDailyCountries = (pool) => {
-  const today = new Date();
-  let seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  const random = () => {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-
-  const filtered = pool.filter(c => c.pop > 10000000);
-  const shuffled = [...filtered];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, 5);
-};
-
 export function useGeoGame(globeRef) {
+  const nativePlatform = isNativeRuntime();
+  const androidPlatform = isAndroidRuntime();
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
   const [geoData, setGeoData] = useState([]);
@@ -73,10 +59,13 @@ export function useGeoGame(globeRef) {
   // NOVO: ESTADO DO MODO ESCURO E VIBRAÇÃO
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isBatterySaverMode, setIsBatterySaverMode] = useState(nativePlatform || prefersReducedMotion || window.innerWidth < 768);
 
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [previousBestScore, setPreviousBestScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [dailyWinsCount, setDailyWinsCount] = useState(0);
 
@@ -99,9 +88,11 @@ export function useGeoGame(globeRef) {
   const [isShaking, setIsShaking] = useState(false);
   const [floatingPoints, setFloatingPoints] = useState([]);
   const [studyCard, setStudyCard] = useState(null);
+  const [sessionTargetCount, setSessionTargetCount] = useState(0);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateKey();
   const [playedDailyDates, setPlayedDailyDates] = useState([]);
+  const floatingPointIdRef = useRef(0);
 
   useEffect(() => {
     const loadSavedData = async () => {
@@ -118,12 +109,15 @@ export function useGeoGame(globeRef) {
         const savedActiveAvatar = await getNativeData('geoGuessActiveAvatar');
         const savedPowerUps = await getNativeData('geoGuessPowerUps');
         const savedRedeemedCodes = await getNativeData('geoGuessRedeemedCodes');
+        const savedActiveTheme = await getNativeData('geoGuessActiveTheme');
         const savedDarkMode = await getNativeData('geoGuessDarkMode'); // NOVO
         const savedVibration = await getNativeData('geoGuessVibration');
+        const savedSound = await getNativeData('geoGuessSound');
+        const savedBatterySaver = await getNativeData('geoGuessBatterySaver');
 
-        if (savedScore) setBestScore(parseInt(savedScore, 10));
-        if (savedCoins) setCoins(parseInt(savedCoins, 10));
-        if (savedDailyWins) setDailyWinsCount(parseInt(savedDailyWins, 10));
+        if (savedScore !== null) setBestScore(parseInt(savedScore, 10) || 0);
+        if (savedCoins !== null) setCoins(parseInt(savedCoins, 10) || 0);
+        if (savedDailyWins !== null) setDailyWinsCount(parseInt(savedDailyWins, 10) || 0);
         
         if (savedThemes) {
           const savedIds = JSON.parse(savedThemes);
@@ -135,6 +129,9 @@ export function useGeoGame(globeRef) {
         if (savedActiveAvatar) {
           const found = AVATARS.find(a => a.id === savedActiveAvatar);
           if (found) setActiveAvatar(found);
+        }
+        if (savedActiveTheme && MAP_THEMES[savedActiveTheme]) {
+          setActiveTheme(MAP_THEMES[savedActiveTheme]);
         }
         if (savedPowerUps) setPowerUps(JSON.parse(savedPowerUps));
         if (savedRedeemedCodes) setRedeemedCodes(JSON.parse(savedRedeemedCodes));
@@ -148,6 +145,8 @@ export function useGeoGame(globeRef) {
         // Carrega a preferência de Modo Escuro e Vibração
         if (savedDarkMode !== null) setIsDarkMode(savedDarkMode === 'true');
         if (savedVibration !== null) setIsVibrationEnabled(savedVibration === 'true');
+        if (savedSound !== null) setIsSoundEnabled(savedSound === 'true');
+        if (savedBatterySaver !== null) setIsBatterySaverMode(savedBatterySaver === 'true');
 
       } catch(e) {
         console.warn("GenoAtlas - Erro recuperando salvamento:", e);
@@ -177,7 +176,9 @@ export function useGeoGame(globeRef) {
         });
         setGeoData(translatedFeatures);
         setAllCountries(valid);
-      } catch (e) {}
+      } catch (e) {
+        console.warn('GenoAtlas - Erro carregando mapa:', e);
+      }
     };
 
     loadSavedData();
@@ -189,9 +190,20 @@ export function useGeoGame(globeRef) {
       if (!isActive && gameState === GAME_STATES.PLAYING && !studyCard) setIsTimerFrozen(true);
       else if (isActive && gameState === GAME_STATES.PLAYING && !studyCard) setIsTimerFrozen(false);
     };
+
     let appListener;
-    try { appListener = CapApp.addListener('appStateChange', handleAppState); } catch(e){}
-    return () => { if(appListener) appListener.remove(); }
+
+    const bindListener = async () => {
+      try {
+        appListener = await CapApp.addListener('appStateChange', handleAppState);
+      } catch (e) {}
+    };
+
+    bindListener();
+
+    return () => {
+      appListener?.remove?.();
+    }
   }, [gameState, studyCard]);
 
   useEffect(() => {
@@ -203,6 +215,13 @@ export function useGeoGame(globeRef) {
     window.addEventListener('resize', handleResize);
     return () => { window.removeEventListener('resize', handleResize); cancelAnimationFrame(rafId); };
   }, []);
+
+  useEffect(() => {
+    setAudioEnabled(isSoundEnabled);
+    if (isSoundEnabled) {
+      warmupAudio();
+    }
+  }, [isSoundEnabled]);
 
   const timeLeftRef = useRef(timeLeft);
   const freezeTimeLeftRef = useRef(freezeTimeLeft);
@@ -216,17 +235,21 @@ export function useGeoGame(globeRef) {
     if (gameState === GAME_STATES.PLAYING && isGameActive && !isTimerFrozen) {
       timer = setInterval(() => {
         if (freezeTimeLeftRef.current > 0) {
-          setFreezeTimeLeft(prev => prev - 1);
+          setFreezeTimeLeft(prev => Math.max(prev - 1, 0));
         } else if (gameMode !== GAME_MODES.STUDY) {
-          if (timeLeftRef.current > 0) {
-            setTimeLeft(prev => {
-              const nextTime = prev - 1;
-              if (nextTime <= 6 && nextTime > 0) playTone(800, 'sine', 0.1, 0.05);
-              return nextTime;
-            });
-          } else if (timeLeftRef.current <= 0) {
+          if (timeLeftRef.current <= 0) {
             if (endGameRef.current) endGameRef.current('time');
+            return;
           }
+
+          setTimeLeft(prev => {
+            const nextTime = Math.max(prev - 1, 0);
+            if (nextTime <= 6 && nextTime > 0) playTone(800, 'sine', 0.1, 0.05);
+            if (nextTime === 0) {
+              window.setTimeout(() => endGameRef.current?.('time'), 0);
+            }
+            return nextTime;
+          });
         }
       }, 1000);
     }
@@ -245,6 +268,11 @@ export function useGeoGame(globeRef) {
     }
   }, [isVibrationEnabled]);
 
+  const selectTheme = useCallback((theme) => {
+    setActiveTheme(theme);
+    saveNativeData('geoGuessActiveTheme', theme.id);
+  }, []);
+
   // Função para alternar o Modo Escuro
   const toggleDarkMode = () => {
     const nextMode = !isDarkMode;
@@ -261,6 +289,23 @@ export function useGeoGame(globeRef) {
     if (nextMode) {
       try { Haptics.impact({ style: ImpactStyle.Medium }); } catch(e) {}
     }
+  };
+
+  const toggleSound = () => {
+    const nextMode = !isSoundEnabled;
+    setIsSoundEnabled(nextMode);
+    setAudioEnabled(nextMode);
+    saveNativeData('geoGuessSound', nextMode);
+    if (nextMode) {
+      warmupAudio();
+      playTone(660, 'sine', 0.08, 0.04);
+    }
+  };
+
+  const toggleBatterySaver = () => {
+    const nextMode = !isBatterySaverMode;
+    setIsBatterySaverMode(nextMode);
+    saveNativeData('geoGuessBatterySaver', nextMode);
   };
 
   const unlockAchievement = useCallback((id) => {
@@ -286,7 +331,7 @@ export function useGeoGame(globeRef) {
       setTimeout(() => setAchievementToast(null), 4000);
       return newUnlocked;
     });
-  }, []);
+  }, [triggerHaptic]);
 
   useEffect(() => {
     if (coins >= 1000) unlockAchievement('wealthy_1');
@@ -300,12 +345,15 @@ export function useGeoGame(globeRef) {
     setEndReason(reason);
     setStudyCard(null); 
     setFreezeTimeLeft(0);
+    setPreviousBestScore(bestScore);
 
     let earnedCoins = Math.floor(scoreRef.current / 10);
     if (gameMode === GAME_MODES.DAILY) {
-      const newPlayed = [...new Set([...playedDailyDates, todayStr])];
-      setPlayedDailyDates(newPlayed);
-      saveNativeData('geoGuessDaily', JSON.stringify(newPlayed));
+      setPlayedDailyDates(prev => {
+        const newPlayed = [...new Set([...prev, todayStr])];
+        saveNativeData('geoGuessDaily', JSON.stringify(newPlayed));
+        return newPlayed;
+      });
       
       if (reason === 'daily_win') {
         earnedCoins += 500;
@@ -336,9 +384,9 @@ export function useGeoGame(globeRef) {
 
     if (reason === 'daily_loss' || reason === 'time') playSound('error', 0.6);
     else if (reason === 'daily_win' || reason === 'win') playSound('success', 0.8);
-    
+
     if (earnedCoins > 0) setTimeout(() => playSound('coin', 0.8), 800);
-  }, [gameMode, todayStr, bestScore, unlockAchievement]);
+  }, [bestScore, gameMode, todayStr, unlockAchievement]);
 
   useEffect(() => { endGameRef.current = endGame; }, [endGame]);
 
@@ -352,6 +400,9 @@ export function useGeoGame(globeRef) {
     setIsGameActive(false);
     setStudyCard(null);
     setFreezeTimeLeft(0);
+    setTargetCountry(null);
+    setTargetClub(null);
+    setSessionTargetCount(0);
   };
 
   const resetGlobe = useCallback(() => {
@@ -395,10 +446,12 @@ export function useGeoGame(globeRef) {
       setRemainingClubs(clubPool.slice(1)); 
       selectedCountry = allCountries.find(c => c.iso === club.iso) || allCountries[0];
     } else if (currentMode === GAME_MODES.DAILY) {
+      setTargetClub(null);
       if (pool.length === 0) return endGame('daily_win');
       selectedCountry = pool[0];
       setRemainingCountries(pool.slice(1));
     } else {
+      setTargetClub(null);
       if (pool.length === 0) return endGame('win');
       let availablePool = pool;
       if (currentStreak < 2) {
@@ -426,6 +479,10 @@ export function useGeoGame(globeRef) {
     setIsTimerFrozen(false);
     setFreezeTimeLeft(0);
     setStudyCard(null);
+    setTargetCountry(null);
+    setTargetClub(null);
+    setEndReason('');
+    setLastCoinsEarned(0);
     setGameMode(mode);
 
     if (globeRef.current) globeRef.current.resetPosition();
@@ -444,6 +501,8 @@ export function useGeoGame(globeRef) {
     }
 
     setRemainingCountries([...pool]);
+    setSessionTargetCount(mode === GAME_MODES.FOOTBALL ? initialClubPool.length : pool.length);
+    if (mode !== GAME_MODES.FOOTBALL) setRemainingClubs([]);
     setGameState(GAME_STATES.PLAYING);
 
     setTimeout(() => {
@@ -489,7 +548,8 @@ export function useGeoGame(globeRef) {
   };
 
   const spawnFloatingPoint = (text, x, y, colorClass) => {
-    const id = Date.now();
+    const id = floatingPointIdRef.current + 1;
+    floatingPointIdRef.current = id;
     setFloatingPoints(prev => [...prev, { id, text, x, y, colorClass }]);
     setTimeout(() => setFloatingPoints(prev => prev.filter(p => p.id !== id)), 800);
   };
@@ -506,7 +566,7 @@ export function useGeoGame(globeRef) {
     const clickX = event?.clientX || window.innerWidth / 2;
     const clickY = event?.clientY || window.innerHeight / 2;
 
-    setImpactRings(prev => [...prev, { lat, lng, color: clicked.iso === targetCountry.iso ? '#34d399' : '#f43f5e' }]);
+    setImpactRings(prev => appendWithLimit(prev, { lat, lng, color: clicked.iso === targetCountry.iso ? '#34d399' : '#f43f5e' }, MAX_IMPACT_RINGS));
 
     if (clicked.iso === targetCountry.iso) {
       const curStreak = streak + 1;
@@ -532,7 +592,7 @@ export function useGeoGame(globeRef) {
       
       if (prevGuessed.length > 0) {
         const last = prevGuessed[prevGuessed.length - 1];
-        setTravelArcs(arcs => [...arcs, { startLat: last.lat, startLng: last.lng, endLat: lat, endLng: lng }]);
+        setTravelArcs(arcs => appendWithLimit(arcs, { startLat: last.lat, startLng: last.lng, endLat: lat, endLng: lng }, MAX_TRAVEL_ARCS));
       }
       setGuessedCountries(g => [...g, newGuess]);
 
@@ -598,20 +658,22 @@ export function useGeoGame(globeRef) {
       isMobile, geoData, guessedCountries, travelArcs, impactRings,
       gameState, gameMode, endReason, coins, lastCoinsEarned, unlockedThemes,
       activeTheme, activeRegion, timeLeft, score, streak,
-      bestScore, lives, targetCountry, targetClub, screenFlash, isShaking,
+      bestScore, previousBestScore, lives, targetCountry, targetClub, screenFlash, isShaking,
       floatingPoints, todayStr, playedDailyDates, studyCard,
       unlockedAchievements, showTutorial, showAchievements, achievementToast,
       freezeTimeLeft, isSmoothMode, showSettingsPrompt,
       unlockedAvatars, activeAvatar, powerUps, showShop, redeemedCodes,
-      isDarkMode, isVibrationEnabled
+      isDarkMode, isVibrationEnabled, isSoundEnabled, isBatterySaverMode,
+      isNativePlatform: nativePlatform, isAndroidPlatform: androidPlatform,
+      sessionTargetCount, countryCount: allCountries.length
     },
     actions: {
       startGame, endGame, quitGame, resetGlobe, setCoins, setUnlockedThemes,
-      setActiveTheme, setActiveRegion, handleCountryClick, dismissStudyCard,
+      setActiveTheme: selectTheme, setActiveRegion, handleCountryClick, dismissStudyCard,
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
       skipCountry, revive, freezeTime, applySettings, 
       setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop, redeemCode,
-      toggleDarkMode, toggleVibration, triggerHaptic
+      toggleDarkMode, toggleVibration, toggleSound, toggleBatterySaver, triggerHaptic
     }
   };
 }

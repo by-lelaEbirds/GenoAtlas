@@ -1,13 +1,14 @@
-import React, { useRef, useState, useEffect } from 'react';
-import GlobeVisualizer from './components/GlobeVisualizer';
+import React, { Suspense, lazy, useRef, useState, useEffect } from 'react';
 import StartScreen from './components/StartScreen';
-import ResultScreen from './components/ResultScreen';
 import GameHUD from './components/GameHUD';
 import { TutorialModal, AchievementsModal, ShopModal, CreditsModal } from './components/Modals';
-import { Trophy, Coins, Rocket, Film, X, Gift, Compass, Vibrate, VibrateOff, Info } from 'lucide-react';
+import { Trophy, Coins, Rocket, Film, X, Gift, Compass, Vibrate, VibrateOff, Info, Volume2, VolumeX, BatteryCharging, Smartphone } from 'lucide-react';
 
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_STATES, MAP_THEMES, GAME_MODES } from './constants';
+
+const GlobeVisualizer = lazy(() => import('./components/GlobeVisualizer'));
+const ResultScreen = lazy(() => import('./components/ResultScreen'));
 
 export default function App() {
   const globeRef = useRef();
@@ -24,7 +25,7 @@ export default function App() {
   
   const [showCredits, setShowCredits] = useState(false);
 
-  const { isDarkMode, isVibrationEnabled } = state;
+  const { isDarkMode, isVibrationEnabled, isSoundEnabled, isBatterySaverMode } = state;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 150);
@@ -37,6 +38,17 @@ export default function App() {
     const themeTimer = setTimeout(() => setIsChangingTheme(false), 800);
     return () => clearTimeout(themeTimer);
   }, [state.activeTheme.id, isLoaded]);
+
+  useEffect(() => {
+    document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
+    document.body.classList.toggle('native-shell', state.isNativePlatform);
+    document.body.classList.toggle('android-shell', state.isAndroidPlatform);
+
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) {
+      themeMeta.setAttribute('content', isDarkMode ? '#0f172a' : '#38bdf8');
+    }
+  }, [isDarkMode, state.isAndroidPlatform, state.isNativePlatform]);
 
   const handleCloseSettings = (isSmooth) => {
     setIsClosingSettings(true);
@@ -101,12 +113,16 @@ export default function App() {
          <p className="text-white font-black uppercase tracking-widest text-[18px]">Sincronizando Bioma...</p>
       </div>
 
-      <GlobeVisualizer 
-        ref={globeRef} geoData={state.geoData} onCountryClick={actions.handleCountryClick} 
-        theme={state.activeTheme} gameState={state.gameState} guessedCountries={state.guessedCountries} 
-        travelArcs={state.travelArcs} impactRings={state.impactRings} isMobile={state.isMobile} 
-        isSmoothMode={state.isSmoothMode} 
-      />
+      <Suspense fallback={<div aria-hidden="true" className="absolute inset-0 z-0" />}>
+        <GlobeVisualizer 
+          ref={globeRef} geoData={state.geoData} onCountryClick={actions.handleCountryClick} 
+          theme={state.activeTheme} gameState={state.gameState} guessedCountries={state.guessedCountries} 
+          travelArcs={state.travelArcs} impactRings={state.impactRings} isMobile={state.isMobile} 
+          isSmoothMode={state.isSmoothMode}
+          isBatterySaverMode={state.isBatterySaverMode}
+          isDarkMode={isDarkMode}
+        />
+      </Suspense>
       
       {state.showTutorial && <TutorialModal onClose={actions.closeTutorial} isDarkMode={isDarkMode} />}
       {state.showAchievements && <AchievementsModal onClose={() => actions.setShowAchievements(false)} unlockedIds={state.unlockedAchievements} isDarkMode={isDarkMode} />}
@@ -154,6 +170,43 @@ export default function App() {
                   <div className={`text-[12px] md:text-[14px] font-bold leading-tight ${state.isSmoothMode ? (isDarkMode ? 'text-emerald-200' : 'text-emerald-900') : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>Desliza suavemente. Foco visual.</div>
                 </div>
               </button>
+
+              <div className={`rounded-[2rem] border p-5 md:p-6 ${isDarkMode ? 'glass-panel border-slate-700' : 'glass-panel-light border-slate-200'}`}>
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <Smartphone className={isDarkMode ? 'text-cyan-300' : 'text-sky-500'} size={24} />
+                    <div>
+                      <h4 className={`text-[20px] md:text-[24px] font-black uppercase tracking-tight leading-none ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>Android & Energia</h4>
+                      <p className={`text-[12px] md:text-[14px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Pronto para WebView, toque e economia de bateria.</p>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-[10px] md:text-[12px] font-black uppercase tracking-widest border ${
+                    state.isAndroidPlatform
+                      ? isDarkMode ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                      : state.isNativePlatform
+                        ? isDarkMode ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-sky-100 text-sky-700 border-sky-300'
+                        : isDarkMode ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-stone-100 text-stone-600 border-stone-200'
+                  }`}>
+                    {state.isAndroidPlatform ? 'Android Nativo' : state.isNativePlatform ? 'App Nativo' : 'Web First'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button onClick={() => { actions.toggleBatterySaver(); actions.triggerHaptic(); }} className={`p-4 rounded-[1.5rem] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
+                    isBatterySaverMode
+                      ? isDarkMode ? 'bg-amber-500/20 border border-amber-400 text-amber-200' : 'bg-amber-100 border border-amber-300 text-amber-800'
+                      : isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50 border border-slate-200'
+                  }`}>
+                    <BatteryCharging size={20} className={isBatterySaverMode ? 'text-amber-400' : isDarkMode ? 'text-slate-300' : 'text-stone-500'} />
+                    Economia: {isBatterySaverMode ? 'ON' : 'OFF'}
+                  </button>
+
+                  <button onClick={() => { actions.toggleSound(); actions.triggerHaptic(); }} className={`p-4 rounded-[1.5rem] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50 border border-slate-200'}`}>
+                    {isSoundEnabled ? <Volume2 size={20} className="text-emerald-500" /> : <VolumeX size={20} className="text-rose-500" />}
+                    <span className={isDarkMode ? 'text-slate-300' : 'text-stone-600'}>Som: {isSoundEnabled ? 'ON' : 'OFF'}</span>
+                  </button>
+                </div>
+              </div>
 
               <div className={`mt-2 border-t-[4px] pt-6 ${isDarkMode ? 'border-slate-700' : 'border-stone-100'}`}>
                 <div className="flex items-center gap-3 mb-4 justify-center">
@@ -216,23 +269,28 @@ export default function App() {
           unlockedThemes={state.unlockedThemes}
           setUnlockedThemes={actions.setUnlockedThemes}
           dailyCompleted={state.playedDailyDates.includes(state.todayStr)} 
+          countryCount={state.countryCount}
           
           activeAvatar={state.activeAvatar}
           setShowShop={actions.setShowShop}
+          isBatterySaverMode={state.isBatterySaverMode}
+          isNativePlatform={state.isNativePlatform}
           isDarkMode={isDarkMode}
           toggleDarkMode={actions.toggleDarkMode}
         />
       )}
       
       {state.gameState === GAME_STATES.RESULT && (
-        <ResultScreen 
-          score={state.score} reason={state.endReason} bestScore={state.bestScore} 
-          guessedCount={state.guessedCountries.length} 
-          coinsEarned={state.lastCoinsEarned} 
-          gameMode={state.gameMode} onRestart={() => actions.startGame(state.gameMode)} 
-          onHome={() => { actions.quitGame(); actions.resetGlobe(); }} 
-          isDarkMode={isDarkMode}
-        />
+        <Suspense fallback={null}>
+          <ResultScreen 
+            score={state.score} reason={state.endReason} previousBestScore={state.previousBestScore}
+            guessedCount={state.guessedCountries.length} 
+            coinsEarned={state.lastCoinsEarned} 
+            gameMode={state.gameMode} onRestart={() => actions.startGame(state.gameMode)} 
+            onHome={() => { actions.quitGame(); actions.resetGlobe(); }} 
+            isDarkMode={isDarkMode}
+          />
+        </Suspense>
       )}
 
       <GameHUD state={state} actions={actions} isDarkMode={isDarkMode} />

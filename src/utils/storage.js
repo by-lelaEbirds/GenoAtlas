@@ -1,19 +1,34 @@
 import { Preferences } from '@capacitor/preferences';
 
-export const saveNativeData = async (key, val) => {
+const getLocalStorage = () => {
   try {
-    await Preferences.set({ key, value: val.toString() });
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
+
+export const saveNativeData = async (key, val) => {
+  const nextValue = val.toString();
+
+  try {
+    await Preferences.set({ key, value: nextValue });
   } catch (e) {
     console.warn('GenoAtlas - Erro ao salvar dados nativos:', e);
   }
+
+  getLocalStorage()?.setItem(key, nextValue);
 };
 
 export const getNativeData = async (key) => {
   try {
     const { value } = await Preferences.get({ key });
-    return value;
+    if (value !== null && value !== undefined) {
+      return value;
+    }
   } catch (e) {
     console.warn('GenoAtlas - Erro ao buscar dados nativos:', e);
-    return null;
   }
+
+  return getLocalStorage()?.getItem(key) ?? null;
 };

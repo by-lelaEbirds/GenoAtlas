@@ -3,6 +3,7 @@
   "appName": "GenoAtlas",
   "webDir": "dist",
   "bundledWebRuntime": false,
+  "backgroundColor": "#0f172a",
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2500,

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { RefreshCw, Home, Trophy, Coins, Clock, MapPin, Share2, Check, Sparkles } from 'lucide-react';
 import AdBanner from './AdBanner';
 
-export default function ResultScreen({ score, bestScore, guessedCount, reason, onRestart, onHome, coinsEarned, gameMode, isDarkMode }) {
+export default function ResultScreen({ score, previousBestScore, guessedCount, reason, onRestart, onHome, coinsEarned, gameMode, isDarkMode }) {
   const [copied, setCopied] = useState(false);
-  const isNewRecord = score > bestScore && score > 0 && (gameMode === 'normal' || gameMode === 'football');
+  const isNewRecord = score > previousBestScore && score > 0 && (gameMode === 'normal' || gameMode === 'football');
 
   const getReasonText = () => {
     switch (reason) {
@@ -21,8 +21,11 @@ export default function ResultScreen({ score, bestScore, guessedCount, reason, o
     switch (reason) {
       case 'lives': return <MapPin className={isDarkMode ? 'text-rose-400' : 'text-rose-500'} size={48} strokeWidth={2.5} />;
       case 'time': return <Clock className={isDarkMode ? 'text-sky-400' : 'text-sky-500'} size={48} strokeWidth={2.5} />;
-      case 'win': case 'daily_win': return <Trophy className={isDarkMode ? 'text-amber-400' : 'text-amber-500'} size={48} strokeWidth={2.5} />;
-      default: return <MapPin className={isDarkMode ? 'text-slate-400' : 'text-stone-500'} size={48} strokeWidth={2.5} />;
+      case 'win':
+      case 'daily_win':
+        return <Trophy className={isDarkMode ? 'text-amber-400' : 'text-amber-500'} size={48} strokeWidth={2.5} />;
+      default:
+        return <MapPin className={isDarkMode ? 'text-slate-400' : 'text-stone-500'} size={48} strokeWidth={2.5} />;
     }
   };
 
@@ -35,19 +38,19 @@ export default function ResultScreen({ score, bestScore, guessedCount, reason, o
   const handleShare = async () => {
     const modeText = gameMode === 'football' ? 'clubes de futebol' : 'países';
     const shareText = `🌍 Fiz ${score} pontos e encontrei ${guessedCount} ${modeText} no GenoAtlas!\n\nConsegue bater o meu recorde? 🏆 jogue agora:`;
-    const shareUrl = 'https://by-lelaebirds.github.io/GenoAtlas/';
+    const shareUrl = new URL(import.meta.env.BASE_URL, window.location.origin).href;
     const fullText = `${shareText} ${shareUrl}`;
 
     if (navigator.share) {
-      try { 
-        await navigator.share({ title: 'Meu Recorde', text: shareText, url: shareUrl }); 
+      try {
+        await navigator.share({ title: 'Meu Recorde', text: shareText, url: shareUrl });
         return;
-      } catch (err) { 
-        if (err.name !== 'AbortError') console.log('API de Compartilhamento falhou, tentando Clipboard...', err);
+      } catch (err) {
+        if (err.name !== 'AbortError') console.log('API de compartilhamento falhou, tentando clipboard...', err);
         else return;
       }
-    } 
-    
+    }
+
     try {
       await navigator.clipboard.writeText(fullText);
       setCopied(true);
@@ -60,7 +63,7 @@ export default function ResultScreen({ score, bestScore, guessedCount, reason, o
   return (
     <div className={`absolute inset-0 z-50 flex items-center justify-center ${isDarkMode ? 'bg-black/80' : 'bg-stone-900/80'} px-4 md:px-6 animate-fade-in-up overflow-y-auto custom-scrollbar py-10`}>
       <section role="dialog" aria-modal="true" aria-labelledby="result-title" className={`${isDarkMode ? 'glass-panel shadow-[0_30px_60px_rgba(0,0,0,0.8)]' : 'glass-panel-light shadow-2xl'} p-6 md:p-10 rounded-[3rem] md:rounded-[4rem] max-w-md w-full relative text-center my-auto flex flex-col`}>
-        
+
         {isNewRecord && (
           <div role="status" className="absolute -top-6 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 px-6 py-2 rounded-full text-sm md:text-base font-black tracking-widest uppercase border-[4px] border-white shadow-[0_0_20px_rgba(251,191,36,0.6)] whitespace-nowrap z-10 animate-bounce-short flex items-center gap-2">
             <Sparkles size={18} /> Novo Recorde! <Sparkles size={18} />
@@ -88,7 +91,7 @@ export default function ResultScreen({ score, bestScore, guessedCount, reason, o
             <div className={`rounded-[2rem] p-4 flex flex-col items-center justify-center transition-all ${isDarkMode ? 'glass-panel border-white/5' : 'glass-panel-light border-stone-200 shadow-sm'}`}>
               <span className={`text-[12px] md:text-[14px] font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Moedas</span>
               <div className="flex items-center gap-2">
-                <Coins aria-hidden="true" size={24} md:size={28} className="text-amber-400 drop-shadow-md" />
+                <Coins aria-hidden="true" size={24} className="text-amber-400 drop-shadow-md md:h-7 md:w-7" />
                 <span aria-label={`Ganhou ${coinsEarned} moedas`} className="text-[28px] md:text-[36px] leading-none font-bold text-amber-500 drop-shadow-sm">+{coinsEarned}</span>
               </div>
             </div>
@@ -111,7 +114,7 @@ export default function ResultScreen({ score, bestScore, guessedCount, reason, o
                 <RefreshCw aria-hidden="true" size={24} /> Rejogar
               </button>
             )}
-            
+
             <button onClick={onHome} className={`flex-1 py-5 rounded-[2rem] font-black uppercase tracking-widest text-[16px] md:text-[20px] flex flex-col items-center justify-center gap-1 transition-all border ${isDarkMode ? 'glass-panel text-slate-300 hover:text-white hover:bg-white/10' : 'glass-panel-light text-stone-600 hover:bg-stone-100'}`}>
               <Home aria-hidden="true" size={24} /> Menu
             </button>

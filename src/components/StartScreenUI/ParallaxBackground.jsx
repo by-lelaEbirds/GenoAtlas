@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 
-export default function ParallaxBackground({ bgNebulaRef, bgLayer3Ref, bgStarsRef, isDarkMode, isMobile }) {
+export default function ParallaxBackground({ bgNebulaRef, bgLayer3Ref, bgStarsRef, isDarkMode, isMobile, isBatterySaverMode }) {
   const starPositions = useMemo(() => {
-    const count = isMobile ? 50 : 80;
+    const count = isBatterySaverMode ? 16 : isMobile ? 28 : 80;
     const darkColors = ['bg-white', 'bg-cyan-200', 'bg-fuchsia-200', 'bg-indigo-100', 'bg-amber-200'];
     const lightColors = ['bg-white', 'bg-amber-100', 'bg-sky-200', 'bg-white'];
     return [...Array(count)].map((_, i) => {
@@ -16,17 +16,17 @@ export default function ParallaxBackground({ bgNebulaRef, bgLayer3Ref, bgStarsRe
         delay: (i % 5) * 1.2,
       };
     });
-  }, [isMobile, isDarkMode]);
+  }, [isBatterySaverMode, isMobile, isDarkMode]);
 
   const floatingParticles = useMemo(() => {
-    const count = isMobile ? 6 : 12;
+    const count = isBatterySaverMode ? 0 : isMobile ? 4 : 12;
     return [...Array(count)].map((_, i) => ({
       left: ((i * 19 + 13) % 90) + 5,
       size: (i % 3) + 2,
       delay: (i * 2.3) % 15,
       speed: i % 2 === 0 ? 'animate-drift-up' : 'animate-drift-up-slow',
     }));
-  }, [isMobile]);
+  }, [isBatterySaverMode, isMobile]);
 
   return (
     <div className={`fixed inset-0 pointer-events-none z-0 transition-colors duration-1000 ${isDarkMode ? 'bg-indigo-950' : 'bg-sky-200'}`}>
@@ -86,7 +86,7 @@ export default function ParallaxBackground({ bgNebulaRef, bgLayer3Ref, bgStarsRe
 
       {/* PARTÍCULAS E ESTRELAS CADENTES */}
       <div aria-hidden="true" className="absolute inset-0">
-        {isDarkMode && (
+        {isDarkMode && !isMobile && !isBatterySaverMode && (
           <>
              <div className="absolute top-[8%] right-[15%] w-[140px] h-[2px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-90"></div>
              <div className="absolute top-[35%] right-[60%] w-[90px] h-[2px] bg-gradient-to-r from-cyan-200 to-transparent animate-shooting-star opacity-70" style={{animationDelay: '1.5s'}}></div>

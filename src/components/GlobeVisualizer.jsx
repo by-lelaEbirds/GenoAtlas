@@ -1,13 +1,14 @@
-import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo, useCallback, useMemo } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode, isDarkMode }, ref) => {
+const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode, isBatterySaverMode, isDarkMode }, ref) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
   const interactionTimeoutRef = useRef(null);
 
   const onStartRef = useRef(null);
   const onEndRef = useRef(null);
+  const guessedIsoSet = useMemo(() => new Set(guessedCountries.map((country) => country.iso)), [guessedCountries]);
 
   const getIdealAltitude = () => isMobile ? 2.4 : 1.8;
 
@@ -34,7 +35,7 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
       const renderer = globeEl.current.renderer();
       
       if (renderer) {
-        renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1);
+        renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, isBatterySaverMode ? 1 : isMobile ? 1.5 : 2) : 1);
       }
 
       const controls = globeEl.current.controls?.();
@@ -42,11 +43,11 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
       
       controlsToCleanup = controls; 
 
-      controls.enableDamping = isSmoothMode; 
-      controls.dampingFactor = 0.05;
-      controls.rotateSpeed = isMobile ? 0.6 : 0.8; 
+      controls.enableDamping = isSmoothMode && !isBatterySaverMode; 
+      controls.dampingFactor = isBatterySaverMode ? 0.035 : 0.05;
+      controls.rotateSpeed = isBatterySaverMode ? 0.5 : isMobile ? 0.6 : 0.8; 
       controls.zoomSpeed = 1.0;
-      controls.autoRotate = true;
+      controls.autoRotate = gameState === 'start' && !isBatterySaverMode;
       controls.autoRotateSpeed = 0.3;
 
       if (onStartRef.current) controls.removeEventListener('start', onStartRef.current);
@@ -59,9 +60,11 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
 
       onEndRef.current = () => {
         if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
-        interactionTimeoutRef.current = setTimeout(() => {
-          controls.autoRotate = true;
-        }, 3500);
+        if (gameState === 'start' && !isBatterySaverMode) {
+          interactionTimeoutRef.current = setTimeout(() => {
+            controls.autoRotate = true;
+          }, 3500);
+        }
       };
 
       controls.addEventListener('start', onStartRef.current);
@@ -92,16 +95,16 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
         }
       }
     };
-  }, [gameState, isMobile, isSmoothMode]); 
+  }, [gameState, isBatterySaverMode, isMobile, isSmoothMode]); 
 
   // --- MEMOIZAÇÃO DE FUNÇÕES PROPS PARA EVITAR MEMORY LEAKS EM WEBGL ---
-  const getPolyAltitude = useCallback(d => guessedCountries.some(c => c.iso === d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005, [guessedCountries, isMobile, hoverD]);
+  const getPolyAltitude = useCallback((d) => guessedIsoSet.has(d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005, [guessedIsoSet, isMobile, hoverD]);
   
   const getPolyCapColor = useCallback(d => {
-    if (guessedCountries.some(c => c.iso === d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
+    if (guessedIsoSet.has(d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
     if (!isMobile && d === hoverD) return theme.polyHover;
     return 'rgba(255, 255, 255, 0.0)';
-  }, [guessedCountries, isMobile, hoverD, theme]);
+  }, [guessedIsoSet, isMobile, hoverD, theme]);
 
   const getPolySideColor = useCallback(() => 'rgba(0, 0, 0, 0.0)', []);
   const getPolyStrokeColor = useCallback(() => theme.polyStroke, [theme.polyStroke]);
@@ -122,32 +125,32 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
     <div 
       role="application" 
       aria-label="Globo terrestre interativo 3D"
-      className={`absolute inset-0 z-0 cursor-crosshair transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'start' ? startScreenTransform : 'translate-x-0 translate-y-0 scale-100'}`}
+      className={`globe-touch-surface absolute inset-0 z-0 transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'playing' ? 'cursor-crosshair' : 'cursor-grab'} ${gameState === 'start' ? startScreenTransform : 'translate-x-0 translate-y-0 scale-100'}`}
     >
       <div className={`w-full h-full transition-all duration-300`}>
         <Globe
           ref={globeEl}
-          rendererConfig={{ antialias: !isMobile, powerPreference: 'high-performance' }}
+          rendererConfig={{ antialias: !isMobile && !isBatterySaverMode, powerPreference: isMobile || isBatterySaverMode ? 'low-power' : 'high-performance' }}
           
           globeImageUrl={theme.globeUrl}
           backgroundImageUrl={theme.bgImageUrl}
-          bumpImageUrl={isMobile ? null : theme.bump}
+          bumpImageUrl={isMobile || isBatterySaverMode ? null : theme.bump}
           backgroundColor="rgba(0,0,0,0)"
           
           // EFEITO DE ATMOSFERA (GLOW 3D) ATIVADO!
-          showAtmosphere={true}
+          showAtmosphere={!isBatterySaverMode || !isMobile}
           atmosphereColor={isDarkMode ? '#6366f1' : '#38bdf8'}
-          atmosphereAltitude={0.15}
+          atmosphereAltitude={isBatterySaverMode ? 0.08 : 0.15}
           
           polygonsData={geoData}
-          polygonResolution={isMobile ? 1 : 2} 
+          polygonResolution={isMobile || isBatterySaverMode ? 1 : 2} 
           
           polygonAltitude={getPolyAltitude}
           polygonCapColor={getPolyCapColor}
           polygonSideColor={getPolySideColor}
           polygonStrokeColor={getPolyStrokeColor}
           
-          polygonTransitionDuration={250} 
+          polygonTransitionDuration={isBatterySaverMode ? 0 : 250} 
           
           onPolygonHover={isMobile ? undefined : handlePolygonHover}
           onPolygonClick={handlePolygonClick}
@@ -156,12 +159,12 @@ const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameS
           arcColor={getArcColor}
           arcDashLength={0.4}
           arcDashGap={0.2}
-          arcDashAnimateTime={1000} 
+          arcDashAnimateTime={isBatterySaverMode ? 700 : 1000} 
           arcAltitudeAutoScale={0.3}
 
           ringsData={impactRings}
           ringColor={getRingColor}
-          ringMaxRadius={isMobile ? 3 : 5}
+          ringMaxRadius={isBatterySaverMode ? 2.2 : isMobile ? 3 : 5}
           ringPropagationSpeed={3}
         />
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Trophy, Compass, Lock, Globe, ChevronRight, Cloud, TreePine, Mountain, Sparkles, Map, Star, Zap, Moon, Sun, Flame, TrendingUp } from 'lucide-react';
 import AdBanner from './AdBanner';
 import { saveNativeData } from '../utils/storage';
@@ -8,7 +8,7 @@ import ParallaxBackground from './StartScreenUI/ParallaxBackground';
 import BottomNav from './StartScreenUI/BottomNav';
 import RegionModal from './StartScreenUI/RegionModal';
 
-export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, activeAvatar, setShowShop, isDarkMode, toggleDarkMode }) {
+export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onOpenAchievements, onOpenSettings, coins, setCoins, currentTheme, setTheme, themes, unlockedThemes, setUnlockedThemes, dailyCompleted, countryCount, activeAvatar, setShowShop, isBatterySaverMode, isNativePlatform, isDarkMode, toggleDarkMode }) {
   
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
@@ -17,12 +17,32 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
   const bgNebulaRef = useRef(null);
   const bgLayer3Ref = useRef(null); // NOVA REFERÊNCIA PARA O 3º PLANO DE FUNDO
   const bgStarsRef = useRef(null);
+  const scrollFrameRef = useRef(null);
+  const pendingScrollRef = useRef(0);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => () => {
+    if (scrollFrameRef.current) {
+      cancelAnimationFrame(scrollFrameRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      return;
+    }
+
+    [bgNebulaRef, bgLayer3Ref, bgStarsRef].forEach((layerRef) => {
+      if (layerRef.current) {
+        layerRef.current.style.transform = '';
+      }
+    });
+  }, [isMobile]);
 
   const handleThemeSelect = (theme) => {
     if (coins >= theme.price) {
@@ -56,24 +76,41 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
     }, 200);
   };
 
-  const handleScroll = (e) => {
-    const scrollY = e.target.scrollTop;
-    if (bgNebulaRef.current) {
-      bgNebulaRef.current.style.transform = `translateY(${-scrollY * 0.10}px)`;
+  const handleScroll = useCallback((e) => {
+    if (isMobile || isBatterySaverMode) {
+      return;
     }
-    if (bgLayer3Ref.current) { // ANIMANDO O NOVO PLANO DE FUNDO
-      bgLayer3Ref.current.style.transform = `translateY(${-scrollY * 0.18}px)`;
-    }
-    if (bgStarsRef.current) {
-      bgStarsRef.current.style.transform = `translateY(${-scrollY * 0.25}px)`;
-    }
-  };
 
-  const themeNodes = Object.values(themes);
-  const currentIndex = themeNodes.findIndex(t => t.id === currentTheme.id);
-  
-  const stepHeight = isMobile ? 610 : 808; 
+    pendingScrollRef.current = e.target.scrollTop;
+    if (scrollFrameRef.current) {
+      return;
+    }
+
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      const scrollY = pendingScrollRef.current;
+      if (bgNebulaRef.current) {
+        bgNebulaRef.current.style.transform = `translateY(${-scrollY * 0.08}px)`;
+      }
+      if (bgLayer3Ref.current) {
+        bgLayer3Ref.current.style.transform = `translateY(${-scrollY * 0.14}px)`;
+      }
+      if (bgStarsRef.current) {
+        bgStarsRef.current.style.transform = `translateY(${-scrollY * 0.2}px)`;
+      }
+      scrollFrameRef.current = null;
+    });
+  }, [isBatterySaverMode, isMobile]);
+
+  const themeNodes = useMemo(() => Object.values(themes), [themes]);
+  const currentIndex = Math.max(0, themeNodes.findIndex(t => t.id === currentTheme.id));
+  const availableCountries = countryCount > 0 ? countryCount : '--';
+  const stepHeight = isMobile ? 610 : 808;
   const pinOffset = currentIndex * stepHeight;
+  const journeyNodeGap = isMobile ? 450 : 600;
+  const journeyHeight = Math.max(
+    themeNodes.length * journeyNodeGap + (isMobile ? 1080 : 1480),
+    isMobile ? 2600 : 3400,
+  );
 
   return (
     <div className="absolute inset-0 z-40 overflow-hidden bg-black">
@@ -117,10 +154,11 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
         bgStarsRef={bgStarsRef} 
         isDarkMode={isDarkMode} 
         isMobile={isMobile} 
+        isBatterySaverMode={isBatterySaverMode}
       />
       
       <div 
-        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar pb-[400px]"
+        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar touch-pan-y overscroll-y-contain pb-[400px]"
         onScroll={handleScroll}
       >
 
@@ -160,7 +198,9 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                 <img 
                   src={`${import.meta.env.BASE_URL}assets/icon.png`} 
                   alt="GenoAtlas Logo Oficial" 
-                  className="w-full h-full object-cover relative z-10" 
+                  className="w-full h-full object-cover relative z-10"
+                  decoding="async"
+                  fetchPriority="high"
                 />
               </div>
               
@@ -179,7 +219,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             <div className="flex gap-3 md:gap-5 mt-8 md:mt-12 w-full max-w-sm md:max-w-xl px-4">
               <div className={`flex-1 rounded-[1.2rem] p-4 md:p-5 flex flex-col items-center border transition-all animate-slide-in-left ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-cyan' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.2s'}}>
                 <Globe className={`w-6 h-6 md:w-8 md:h-8 mb-1 ${isDarkMode ? 'text-cyan-400' : 'text-sky-500'}`} strokeWidth={2.5}/>
-                <span className={`text-[24px] md:text-[32px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>195</span>
+                <span className={`text-[24px] md:text-[32px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>{availableCountries}</span>
                 <span className={`text-[10px] md:text-[13px] font-bold uppercase tracking-widest mt-1 ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>Países</span>
               </div>
               <div className={`flex-1 rounded-[1.2rem] p-4 md:p-5 flex flex-col items-center border transition-all animate-fade-in-up ${isDarkMode ? 'glass-panel border-white/10 hover:neon-glow-amber' : 'glass-panel-light border-stone-200 hover:shadow-md'}`} style={{animationDelay: '0.4s'}}>
@@ -211,7 +251,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               </div>
               <div className="relative text-rose-300 animate-float-cinematic will-change-transform z-10 w-[140px] h-[140px] md:w-[180px] md:h-[180px] flex items-center justify-center -mt-16 mb-2">
                  <div className={`absolute inset-0 rounded-full blur-[30px] opacity-40 z-0 ${dailyCompleted ? 'bg-slate-500' : 'bg-rose-500'}`}></div>
-                 <img src={`${import.meta.env.BASE_URL}assets/icons/Diar.png`} alt="Diário" className={`relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 ${dailyCompleted ? 'grayscale opacity-70' : ''}`} />
+                 <img src={`${import.meta.env.BASE_URL}assets/icons/Diar.png`} alt="Diário" className={`relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 ${dailyCompleted ? 'grayscale opacity-70' : ''}`} loading="lazy" decoding="async" />
               </div>
               <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 mt-2 ${dailyCompleted ? (isDarkMode ? 'text-slate-500' : 'text-stone-500') : (isDarkMode ? 'text-rose-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-rose-800')}`}>Diário</span>
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${dailyCompleted ? (isDarkMode ? 'text-slate-600' : 'text-stone-400') : (isDarkMode ? 'text-rose-300' : 'text-rose-500')}`}>{dailyCompleted ? 'Feito hoje!' : <><Star size={14} className="fill-current"/> Hoje</>}</span>
@@ -224,7 +264,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               </div>
               <div className="relative text-cyan-300 animate-float-cinematic will-change-transform z-10 w-[140px] h-[140px] md:w-[180px] md:h-[180px] flex items-center justify-center -mt-16 mb-2" style={{ animationDelay: '0.5s' }}>
                  <div className="absolute inset-0 bg-cyan-500 rounded-full blur-[30px] opacity-40 z-0"></div>
-                 <img src={`${import.meta.env.BASE_URL}assets/icons/Futb.png`} alt="Futebol" className="relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" />
+                 <img src={`${import.meta.env.BASE_URL}assets/icons/Futb.png`} alt="Futebol" className="relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" loading="lazy" decoding="async" />
               </div>
               <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 mt-2 ${isDarkMode ? 'text-cyan-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-sky-800'}`}>Futebol</span>
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${isDarkMode ? 'text-cyan-300' : 'text-sky-500'}`}><Zap size={14} className="fill-current"/> Teste sua mira</span>
@@ -237,7 +277,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
               </div>
               <div className="relative text-emerald-300 animate-float-cinematic will-change-transform z-10 w-[140px] h-[140px] md:w-[180px] md:h-[180px] flex items-center justify-center -mt-16 mb-2" style={{ animationDelay: '1s' }}>
                  <div className="absolute inset-0 bg-emerald-500 rounded-full blur-[30px] opacity-40 z-0"></div>
-                 <img src={`${import.meta.env.BASE_URL}assets/icons/Estud.png`} alt="Estudo" className="relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3" />
+                 <img src={`${import.meta.env.BASE_URL}assets/icons/Estud.png`} alt="Estudo" className="relative z-10 w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3" loading="lazy" decoding="async" />
               </div>
               <span className={`text-[20px] md:text-[28px] font-black uppercase tracking-widest leading-none relative z-10 mt-2 ${isDarkMode ? 'text-emerald-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-emerald-800'}`}>Estudo</span>
               <span className={`text-[12px] md:text-[16px] font-bold uppercase mt-2 relative z-10 flex items-center gap-1 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-500'}`}><Compass size={14} className="fill-current"/> Sem pressa</span>
@@ -254,7 +294,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
           </div>
         </div>
 
-        <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center min-h-[4500px] pt-[120px] md:pt-[160px]">
+        <div className="relative z-10 max-w-2xl mx-auto px-4 flex flex-col items-center pt-[120px] md:pt-[160px]" style={{ minHeight: `${journeyHeight}px` }}>
           
           <div 
             aria-hidden="true"
@@ -265,7 +305,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
                {activeAvatar.type === 'emoji' ? (
                   <span className="text-[40px] md:text-[56px] leading-none drop-shadow-md">{activeAvatar.icon}</span>
                ) : (
-                  <img src={activeAvatar.icon} alt={activeAvatar.name} className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-md" />
+                  <img src={activeAvatar.icon} alt={activeAvatar.name} className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-md" loading="lazy" decoding="async" />
                )}
             </div>
             <div className="absolute -bottom-3 md:-bottom-4 w-0 h-0 border-l-[16px] md:border-l-[20px] border-l-transparent border-r-[16px] md:border-r-[20px] border-r-transparent border-t-[20px] md:border-t-[24px] border-t-amber-400 animate-bounce-short z-10"></div>
@@ -279,7 +319,15 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             const isNextUnlocked = nextTheme ? unlockedThemes.includes(nextTheme.id) : false;
 
             return (
-              <div key={t.id} className="relative flex flex-col items-center z-10 mb-[450px] md:mb-[600px] w-full max-w-[320px]">
+              <div
+                key={t.id}
+                className="relative flex flex-col items-center z-10 w-full max-w-[320px]"
+                style={{
+                  marginBottom: `${journeyNodeGap}px`,
+                  contentVisibility: 'auto',
+                  containIntrinsicSize: isMobile ? '760px' : '980px',
+                }}
+              >
                 
                 {isCurrent && (
                   <div className="absolute top-[80px] md:top-[104px] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -393,7 +441,7 @@ export default function StartScreen({ onStart, onStudy, onFootball, onDaily, onO
             </div>
           </div>
 
-          <div className="w-full mt-16 scale-125 md:scale-150 transform origin-top"><AdBanner dataAdSlot="START_SCREEN_SLOT" /></div>
+          <div className="w-full mt-16 scale-125 md:scale-150 transform origin-top" style={{ contentVisibility: 'auto', containIntrinsicSize: '280px' }}><AdBanner dataAdSlot="START_SCREEN_SLOT" isNativePlatform={isNativePlatform} isBatterySaverMode={isBatterySaverMode} /></div>
         </div>
 
       </div>

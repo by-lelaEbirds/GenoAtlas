@@ -14,7 +14,7 @@
     overscroll-behavior-x: none;
     
     /* Previne que o toque na tela de touch mova a página toda acidentalmente */
-    touch-action: none; 
+    touch-action: manipulation;
     
     /* Remove a cor de highlight azul ao tocar em botões/links no mobile */
     -webkit-tap-highlight-color: transparent;
@@ -37,6 +37,12 @@
     pointer-events: auto;
   }
 
+  input, textarea, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+  }
+
   /* Estilização suave da barra de rolagem */
   ::-webkit-scrollbar {
     width: 6px;
@@ -54,6 +60,18 @@
 }
 
 @layer utilities {
+  .globe-touch-surface {
+    touch-action: none;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
   .animate-float-point {
     animation: floatPoint 0.8s ease-out forwards;
   }
@@ -252,5 +270,14 @@
   @keyframes slideInRight {
     from { opacity: 0; transform: translateX(30px); }
     to { opacity: 1; transform: translateX(0); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
