@@ -60,7 +60,7 @@ export function useGeoGame(globeRef) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const [isBatterySaverMode, setIsBatterySaverMode] = useState(nativePlatform || prefersReducedMotion || window.innerWidth < 768);
+  const [isBatterySaverMode] = useState(prefersReducedMotion);
 
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -113,7 +113,6 @@ export function useGeoGame(globeRef) {
         const savedDarkMode = await getNativeData('geoGuessDarkMode'); // NOVO
         const savedVibration = await getNativeData('geoGuessVibration');
         const savedSound = await getNativeData('geoGuessSound');
-        const savedBatterySaver = await getNativeData('geoGuessBatterySaver');
 
         if (savedScore !== null) setBestScore(parseInt(savedScore, 10) || 0);
         if (savedCoins !== null) setCoins(parseInt(savedCoins, 10) || 0);
@@ -146,7 +145,6 @@ export function useGeoGame(globeRef) {
         if (savedDarkMode !== null) setIsDarkMode(savedDarkMode === 'true');
         if (savedVibration !== null) setIsVibrationEnabled(savedVibration === 'true');
         if (savedSound !== null) setIsSoundEnabled(savedSound === 'true');
-        if (savedBatterySaver !== null) setIsBatterySaverMode(savedBatterySaver === 'true');
 
       } catch(e) {
         console.warn("GenoAtlas - Erro recuperando salvamento:", e);
@@ -300,12 +298,6 @@ export function useGeoGame(globeRef) {
       warmupAudio();
       playTone(660, 'sine', 0.08, 0.04);
     }
-  };
-
-  const toggleBatterySaver = () => {
-    const nextMode = !isBatterySaverMode;
-    setIsBatterySaverMode(nextMode);
-    saveNativeData('geoGuessBatterySaver', nextMode);
   };
 
   const unlockAchievement = useCallback((id) => {
@@ -673,7 +665,7 @@ export function useGeoGame(globeRef) {
       closeTutorial, setShowTutorial, setShowAchievements, setShowSettingsPrompt,
       skipCountry, revive, freezeTime, applySettings, 
       setUnlockedAvatars, setActiveAvatar, setPowerUps, setShowShop, redeemCode,
-      toggleDarkMode, toggleVibration, toggleSound, toggleBatterySaver, triggerHaptic
+      toggleDarkMode, toggleVibration, toggleSound, triggerHaptic
     }
   };
 }

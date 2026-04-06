@@ -1,173 +1,160 @@
 import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, memo, useCallback, useMemo } from 'react';
 import Globe from 'react-globe.gl';
 
-const GlobeVisualizer = memo(forwardRef(({ geoData, onCountryClick, theme, gameState, guessedCountries, travelArcs, impactRings, isMobile, isSmoothMode, isBatterySaverMode, isDarkMode }, ref) => {
+const GlobeVisualizer = memo(forwardRef(({
+  geoData,
+  onCountryClick,
+  theme,
+  gameState,
+  guessedCountries,
+  travelArcs,
+  impactRings,
+  isMobile,
+  isSmoothMode,
+  isBatterySaverMode,
+  isDarkMode,
+}, ref) => {
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
-  const interactionTimeoutRef = useRef(null);
-
-  const onStartRef = useRef(null);
-  const onEndRef = useRef(null);
   const guessedIsoSet = useMemo(() => new Set(guessedCountries.map((country) => country.iso)), [guessedCountries]);
 
-  const getIdealAltitude = () => isMobile ? 2.4 : 1.8;
+  const getIdealAltitude = useCallback(() => (isMobile ? 2.3 : 1.78), [isMobile]);
+
+  const configureScene = useCallback(() => {
+    if (!globeEl.current) {
+      return;
+    }
+
+    const renderer = globeEl.current.renderer?.();
+    if (renderer) {
+      const maxPixelRatio = isBatterySaverMode ? 1 : isMobile ? 1.2 : 1.6;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
+    }
+
+    const controls = globeEl.current.controls?.();
+    if (!controls) {
+      return;
+    }
+
+    controls.enableDamping = isSmoothMode && !isBatterySaverMode;
+    controls.dampingFactor = isBatterySaverMode ? 0.04 : 0.055;
+    controls.rotateSpeed = isMobile ? 0.58 : 0.72;
+    controls.zoomSpeed = 0.95;
+    controls.enablePan = false;
+    controls.autoRotate = false;
+  }, [isBatterySaverMode, isMobile, isSmoothMode]);
 
   useImperativeHandle(ref, () => ({
     resetPosition: () => {
       if (globeEl.current) {
-        globeEl.current.pointOfView({ lat: 20, lng: -20, altitude: getIdealAltitude() }, 1000);
+        globeEl.current.pointOfView({ lat: 20, lng: -20, altitude: getIdealAltitude() }, 700);
       }
     },
     triggerStartAnimation: () => {
       if (globeEl.current) {
-        globeEl.current.pointOfView({ altitude: getIdealAltitude() + 0.3 }, 0);
-        setTimeout(() => globeEl.current.pointOfView({ altitude: getIdealAltitude() }, 800), 50);
+        globeEl.current.pointOfView({ lat: 20, lng: -20, altitude: getIdealAltitude() + 0.24 }, 0);
+        setTimeout(() => {
+          globeEl.current?.pointOfView({ lat: 20, lng: -20, altitude: getIdealAltitude() }, isSmoothMode ? 900 : 500);
+        }, 50);
       }
-    }
-  }));
+    },
+  }), [getIdealAltitude, isSmoothMode]);
 
   useEffect(() => {
-    let controlsToCleanup = null;
-    let safetyTimeout;
+    configureScene();
+  }, [configureScene]);
 
-    const initControls = () => {
-      if (!globeEl.current) return;
-      const renderer = globeEl.current.renderer();
-      
-      if (renderer) {
-        renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, isBatterySaverMode ? 1 : isMobile ? 1.5 : 2) : 1);
-      }
-
-      const controls = globeEl.current.controls?.();
-      if (!controls) return;
-      
-      controlsToCleanup = controls; 
-
-      controls.enableDamping = isSmoothMode && !isBatterySaverMode; 
-      controls.dampingFactor = isBatterySaverMode ? 0.035 : 0.05;
-      controls.rotateSpeed = isBatterySaverMode ? 0.5 : isMobile ? 0.6 : 0.8; 
-      controls.zoomSpeed = 1.0;
-      controls.autoRotate = gameState === 'start' && !isBatterySaverMode;
-      controls.autoRotateSpeed = 0.3;
-
-      if (onStartRef.current) controls.removeEventListener('start', onStartRef.current);
-      if (onEndRef.current) controls.removeEventListener('end', onEndRef.current);
-
-      onStartRef.current = () => {
-        controls.autoRotate = false;
-        if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
-      };
-
-      onEndRef.current = () => {
-        if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
-        if (gameState === 'start' && !isBatterySaverMode) {
-          interactionTimeoutRef.current = setTimeout(() => {
-            controls.autoRotate = true;
-          }, 3500);
-        }
-      };
-
-      controls.addEventListener('start', onStartRef.current);
-      controls.addEventListener('end', onEndRef.current);
-    };
-
-    initControls();
-    safetyTimeout = setTimeout(initControls, 300);
-
-    if (gameState === 'start' && globeEl.current) {
-      globeEl.current.pointOfView({ lat: 20, lng: -20, altitude: getIdealAltitude() }, 1000);
+  useEffect(() => {
+    if (gameState !== 'playing' || !globeEl.current) {
+      return;
     }
 
-    return () => {
-      clearTimeout(safetyTimeout);
-      if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
-      if (controlsToCleanup) {
-        if (onStartRef.current) controlsToCleanup.removeEventListener('start', onStartRef.current);
-        if (onEndRef.current) controlsToCleanup.removeEventListener('end', onEndRef.current);
-      }
-      
-      // Memory Leak Fix for WebGL if unmounted
-      if (globeEl.current && globeEl.current.renderer) {
-        const renderer = globeEl.current.renderer();
-        if (renderer && typeof renderer.dispose === 'function') {
-           // Em SPAs onde o componente pudesse desmontar, é vital limpar o contexto.
-           // Mas aqui só limpamos as infos se for desmontado mesmo.
-        }
-      }
-    };
-  }, [gameState, isBatterySaverMode, isMobile, isSmoothMode]); 
+    const timer = window.setTimeout(() => {
+      globeEl.current?.pointOfView({ lat: 20, lng: -20, altitude: getIdealAltitude() }, 0);
+    }, 40);
 
-  // --- MEMOIZAÇÃO DE FUNÇÕES PROPS PARA EVITAR MEMORY LEAKS EM WEBGL ---
-  const getPolyAltitude = useCallback((d) => guessedIsoSet.has(d.properties.ISO_A2) ? 0.02 : (!isMobile && hoverD === d) ? 0.02 : 0.005, [guessedIsoSet, isMobile, hoverD]);
-  
-  const getPolyCapColor = useCallback(d => {
-    if (guessedIsoSet.has(d.properties.ISO_A2)) return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
-    if (!isMobile && d === hoverD) return theme.polyHover;
-    return 'rgba(255, 255, 255, 0.0)';
-  }, [guessedIsoSet, isMobile, hoverD, theme]);
+    return () => window.clearTimeout(timer);
+  }, [gameState, getIdealAltitude]);
 
-  const getPolySideColor = useCallback(() => 'rgba(0, 0, 0, 0.0)', []);
+  const getPolyAltitude = useCallback((polygon) => {
+    if (guessedIsoSet.has(polygon.properties.ISO_A2)) {
+      return 0.02;
+    }
+
+    if (!isMobile && hoverD === polygon) {
+      return 0.02;
+    }
+
+    return 0.005;
+  }, [guessedIsoSet, hoverD, isMobile]);
+
+  const getPolyCapColor = useCallback((polygon) => {
+    if (guessedIsoSet.has(polygon.properties.ISO_A2)) {
+      return theme.polyGuessed || 'rgba(34, 197, 94, 0.4)';
+    }
+
+    if (!isMobile && polygon === hoverD) {
+      return theme.polyHover;
+    }
+
+    return 'rgba(255, 255, 255, 0)';
+  }, [guessedIsoSet, hoverD, isMobile, theme]);
+
+  const getPolySideColor = useCallback(() => 'rgba(0, 0, 0, 0)', []);
   const getPolyStrokeColor = useCallback(() => theme.polyStroke, [theme.polyStroke]);
-  const getArcColor = useCallback(() => theme.polyStroke, [theme.polyStroke]);
-  const getRingColor = useCallback(d => d.color, []);
+  const getArcColor = useCallback(() => theme.arcsColor || theme.polyStroke, [theme.arcsColor, theme.polyStroke]);
+  const getRingColor = useCallback((ring) => ring.color, []);
 
-  const handlePolygonHover = useCallback((polygon) => isMobile ? undefined : setHoverD(polygon), [isMobile]);
-  const handlePolygonClick = useCallback((polygon, event, { lat, lng }) => {
-    if (onCountryClick) onCountryClick(polygon, lat, lng, event);
+  const handlePolygonHover = useCallback((polygon) => {
+    if (!isMobile) {
+      setHoverD(polygon);
+    }
+  }, [isMobile]);
+
+  const handlePolygonClick = useCallback((polygon, event, coords) => {
+    onCountryClick?.(polygon, coords.lat, coords.lng, event);
   }, [onCountryClick]);
 
-
-  const startScreenTransform = isMobile 
-    ? 'translate-y-[25%] scale-[1.1]' 
-    : 'translate-x-[15%] scale-100'; 
-
   return (
-    <div 
-      role="application" 
+    <div
+      role="application"
       aria-label="Globo terrestre interativo 3D"
-      className={`globe-touch-surface absolute inset-0 z-0 transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${gameState === 'playing' ? 'cursor-crosshair' : 'cursor-grab'} ${gameState === 'start' ? startScreenTransform : 'translate-x-0 translate-y-0 scale-100'}`}
+      className={`globe-touch-surface absolute inset-0 z-0 ${gameState === 'playing' ? 'cursor-crosshair' : 'cursor-grab'}`}
     >
-      <div className={`w-full h-full transition-all duration-300`}>
-        <Globe
-          ref={globeEl}
-          rendererConfig={{ antialias: !isMobile && !isBatterySaverMode, powerPreference: isMobile || isBatterySaverMode ? 'low-power' : 'high-performance' }}
-          
-          globeImageUrl={theme.globeUrl}
-          backgroundImageUrl={theme.bgImageUrl}
-          bumpImageUrl={isMobile || isBatterySaverMode ? null : theme.bump}
-          backgroundColor="rgba(0,0,0,0)"
-          
-          // EFEITO DE ATMOSFERA (GLOW 3D) ATIVADO!
-          showAtmosphere={!isBatterySaverMode || !isMobile}
-          atmosphereColor={isDarkMode ? '#6366f1' : '#38bdf8'}
-          atmosphereAltitude={isBatterySaverMode ? 0.08 : 0.15}
-          
-          polygonsData={geoData}
-          polygonResolution={isMobile || isBatterySaverMode ? 1 : 2} 
-          
-          polygonAltitude={getPolyAltitude}
-          polygonCapColor={getPolyCapColor}
-          polygonSideColor={getPolySideColor}
-          polygonStrokeColor={getPolyStrokeColor}
-          
-          polygonTransitionDuration={isBatterySaverMode ? 0 : 250} 
-          
-          onPolygonHover={isMobile ? undefined : handlePolygonHover}
-          onPolygonClick={handlePolygonClick}
-          
-          arcsData={travelArcs}
-          arcColor={getArcColor}
-          arcDashLength={0.4}
-          arcDashGap={0.2}
-          arcDashAnimateTime={isBatterySaverMode ? 700 : 1000} 
-          arcAltitudeAutoScale={0.3}
-
-          ringsData={impactRings}
-          ringColor={getRingColor}
-          ringMaxRadius={isBatterySaverMode ? 2.2 : isMobile ? 3 : 5}
-          ringPropagationSpeed={3}
-        />
-      </div>
+      <Globe
+        ref={globeEl}
+        rendererConfig={{
+          antialias: !isMobile && !isBatterySaverMode,
+          powerPreference: isMobile || isBatterySaverMode ? 'low-power' : 'high-performance',
+        }}
+        onGlobeReady={configureScene}
+        globeImageUrl={theme.globeUrl}
+        backgroundImageUrl={theme.bgImageUrl}
+        bumpImageUrl={isMobile || isBatterySaverMode ? null : theme.bump}
+        backgroundColor="rgba(0,0,0,0)"
+        showAtmosphere={!isBatterySaverMode || !isMobile}
+        atmosphereColor={isDarkMode ? '#6366f1' : '#38bdf8'}
+        atmosphereAltitude={isBatterySaverMode ? 0.08 : 0.13}
+        polygonsData={geoData}
+        polygonResolution={isMobile || isBatterySaverMode ? 1 : 2}
+        polygonAltitude={getPolyAltitude}
+        polygonCapColor={getPolyCapColor}
+        polygonSideColor={getPolySideColor}
+        polygonStrokeColor={getPolyStrokeColor}
+        polygonTransitionDuration={isBatterySaverMode ? 0 : 220}
+        onPolygonHover={isMobile ? undefined : handlePolygonHover}
+        onPolygonClick={handlePolygonClick}
+        arcsData={travelArcs}
+        arcColor={getArcColor}
+        arcDashLength={0.4}
+        arcDashGap={0.2}
+        arcDashAnimateTime={isBatterySaverMode ? 700 : 1000}
+        arcAltitudeAutoScale={0.3}
+        ringsData={impactRings}
+        ringColor={getRingColor}
+        ringMaxRadius={isBatterySaverMode ? 2.2 : isMobile ? 3 : 5}
+        ringPropagationSpeed={3}
+      />
     </div>
   );
 }));
