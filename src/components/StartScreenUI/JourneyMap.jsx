@@ -1,17 +1,37 @@
 import React, { memo, useMemo } from 'react';
 import { Cloud, Compass, Lock, Mountain, Sparkles, TreePine, Trophy } from 'lucide-react';
 
+const EMOJI_FONT_STYLE = {
+  fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
+};
+
+function resolveAvatarIcon(icon) {
+  if (!icon) {
+    return '';
+  }
+
+  if (/^(https?:)?\/\//.test(icon) || icon.startsWith('data:')) {
+    return icon;
+  }
+
+  return `${import.meta.env.BASE_URL}${icon.replace(/^\//, '')}`;
+}
+
 function AvatarPin({ activeAvatar, isDarkMode }) {
   return (
     <div className="pointer-events-none absolute -top-1 left-1/2 z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-      <div className={`flex h-[74px] w-[74px] items-center justify-center rounded-[24px] border-[7px] border-amber-400 bg-white shadow-[0_18px_28px_rgba(0,0,0,0.25)] md:h-[88px] md:w-[88px] md:rounded-[28px] ${isDarkMode ? 'shadow-[0_18px_32px_rgba(0,0,0,0.4)]' : ''}`}>
+      <div className={`relative flex h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-[26px] border-[7px] border-amber-400 bg-white shadow-[0_18px_28px_rgba(0,0,0,0.25)] md:h-[94px] md:w-[94px] md:rounded-[30px] ${isDarkMode ? 'shadow-[0_18px_32px_rgba(0,0,0,0.4)]' : ''}`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-amber-50" />
+        <div className="absolute inset-x-2 top-2 h-8 rounded-full bg-white/70 blur-md md:h-10" />
         {activeAvatar.type === 'emoji' ? (
-          <span className="text-[34px] leading-none md:text-[40px]">{activeAvatar.icon}</span>
+          <span style={EMOJI_FONT_STYLE} className="relative z-10 text-[38px] leading-none drop-shadow-[0_10px_16px_rgba(15,23,42,0.18)] md:text-[46px]">
+            {activeAvatar.icon}
+          </span>
         ) : (
           <img
-            src={activeAvatar.icon}
+            src={resolveAvatarIcon(activeAvatar.icon)}
             alt={activeAvatar.name}
-            className="h-11 w-11 object-contain md:h-14 md:w-14"
+            className="relative z-10 h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(15,23,42,0.18)] md:h-16 md:w-16"
             loading="lazy"
             decoding="async"
           />

@@ -62,6 +62,44 @@
     height: 0;
     display: none;
   }
+
+  body.a11y-large-text,
+  .a11y-large-text {
+    font-size: 1.04rem;
+  }
+
+  body.a11y-high-contrast .glass-panel,
+  .a11y-high-contrast .glass-panel {
+    background: rgba(2, 6, 23, 0.9);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  body.a11y-high-contrast .glass-panel-light,
+  .a11y-high-contrast .glass-panel-light {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(14, 165, 233, 0.2);
+  }
+
+  body.a11y-color-assist .neon-glow-cyan,
+  body.a11y-color-assist .neon-glow-emerald,
+  body.a11y-color-assist .neon-glow-rose,
+  body.a11y-color-assist .neon-glow-amber,
+  body.a11y-color-assist .neon-glow-fuchsia,
+  .a11y-color-assist .neon-glow-cyan,
+  .a11y-color-assist .neon-glow-emerald,
+  .a11y-color-assist .neon-glow-rose,
+  .a11y-color-assist .neon-glow-amber,
+  .a11y-color-assist .neon-glow-fuchsia {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 0 18px rgba(56, 189, 248, 0.28);
+  }
+
+  body.a11y-reduced-effects .glass-panel,
+  body.a11y-reduced-effects .glass-panel-light,
+  .a11y-reduced-effects .glass-panel,
+  .a11y-reduced-effects .glass-panel-light {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
 }
 
 @media (pointer: coarse) {

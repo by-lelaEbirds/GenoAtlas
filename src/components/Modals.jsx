@@ -1,8 +1,24 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, ShieldAlert, Award, ShoppingCart, Lock, ArrowUpCircle } from 'lucide-react';
-import { AVATARS, POWER_UPS } from '../constants/shop';
+import { AVATARS, POWER_UPS, ROUTE_UPGRADES } from '../constants/shop';
 import { ACHIEVEMENTS_LIST } from '../constants/achievements';
 import { saveNativeData } from '../utils/storage';
+
+const EMOJI_FONT_STYLE = {
+  fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
+};
+
+function resolveAvatarIcon(icon) {
+  if (!icon) {
+    return '';
+  }
+
+  if (/^(https?:)?\/\//.test(icon) || icon.startsWith('data:')) {
+    return icon;
+  }
+
+  return `${import.meta.env.BASE_URL}${icon.replace(/^\//, '')}`;
+}
 
 function getOverlayClasses(isDarkMode, isClosing) {
   return `absolute inset-0 z-[200] flex items-center justify-center px-4 md:px-6 py-6 overflow-y-auto custom-scrollbar backdrop-blur-md ${
@@ -30,6 +46,22 @@ function getCardClasses(isDarkMode, extraClasses = '') {
   return `${extraClasses} ${
     isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-stone-50 border-stone-100 text-stone-700'
   }`;
+}
+
+function getRarityBadgeClasses(isDarkMode, rarity) {
+  if (isDarkMode) {
+    if (rarity === 'Lendario') return 'bg-amber-500/15 border-amber-500/30 text-amber-200';
+    if (rarity === 'Epico') return 'bg-fuchsia-500/15 border-fuchsia-500/30 text-fuchsia-200';
+    if (rarity === 'Raro') return 'bg-cyan-500/15 border-cyan-500/30 text-cyan-200';
+    if (rarity === 'Core') return 'bg-emerald-500/15 border-emerald-500/30 text-emerald-200';
+    return 'bg-slate-700 border-slate-600 text-slate-200';
+  }
+
+  if (rarity === 'Lendario') return 'bg-amber-50 border-amber-200 text-amber-700';
+  if (rarity === 'Epico') return 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700';
+  if (rarity === 'Raro') return 'bg-cyan-50 border-cyan-200 text-cyan-700';
+  if (rarity === 'Core') return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+  return 'bg-stone-100 border-stone-200 text-stone-600';
 }
 
 export function TutorialModal({ onClose, isDarkMode }) {
@@ -267,6 +299,8 @@ export function ShopModal({
   setActiveAvatar,
   powerUps,
   setPowerUps,
+  routeUpgrades,
+  setRouteUpgrades,
   isDarkMode,
 }) {
   const [isClosing, setIsClosing] = useState(false);
@@ -311,6 +345,22 @@ export function ShopModal({
         setPowerUps(newPowerUps);
         saveNativeData('geoGuessCoins', newCoins);
         saveNativeData('geoGuessPowerUps', JSON.stringify(newPowerUps));
+      }
+    }
+  };
+
+  const upgradeRoute = (routeKey, data) => {
+    const currentLevel = routeUpgrades[routeKey];
+    if (currentLevel < data.maxLevel) {
+      const cost = data.basePrice * (currentLevel + 1);
+      if (coins >= cost) {
+        const newCoins = coins - cost;
+        const newRouteUpgrades = { ...routeUpgrades, [routeKey]: currentLevel + 1 };
+
+        setCoins(newCoins);
+        setRouteUpgrades(newRouteUpgrades);
+        saveNativeData('geoGuessCoins', newCoins);
+        saveNativeData('geoGuessRouteUpgrades', JSON.stringify(newRouteUpgrades));
       }
     }
   };
@@ -370,6 +420,20 @@ export function ShopModal({
             >
               Melhorias
             </button>
+            <button
+              onClick={() => setTab('routes')}
+              className={`flex-1 py-3 rounded-full font-black uppercase tracking-widest text-[14px] md:text-[16px] transition-all ${
+                tab === 'routes'
+                  ? isDarkMode
+                    ? 'bg-slate-700 text-white shadow-sm border-b-[4px] border-slate-500'
+                    : 'bg-white text-stone-800 shadow-sm border-b-[4px] border-stone-200'
+                  : isDarkMode
+                    ? 'text-slate-400 hover:text-slate-200'
+                    : 'text-stone-400 hover:text-stone-600'
+              }`}
+            >
+              Rotas
+            </button>
           </div>
         </div>
 
@@ -388,12 +452,25 @@ export function ShopModal({
                     } ${isEquipped ? (isDarkMode ? 'ring-4 ring-amber-400/60 bg-amber-950/30' : 'ring-4 ring-amber-400 bg-amber-50') : ''}`}
                   >
                     <div className="text-[48px] md:text-[64px] mb-2 leading-none drop-shadow-md">
-                      {avatar.type === 'emoji' ? avatar.icon : <img src={avatar.icon} alt={avatar.name} className="w-16 h-16 object-contain" loading="lazy" decoding="async" />}
+                      {avatar.type === 'emoji' ? (
+                        <span style={EMOJI_FONT_STYLE}>{avatar.icon}</span>
+                      ) : (
+                        <img
+                          src={resolveAvatarIcon(avatar.icon)}
+                          alt={avatar.name}
+                          className="w-16 h-16 object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
                     </div>
                     <span className={`font-bold uppercase text-[12px] md:text-[14px] mb-4 tracking-wider leading-tight line-clamp-2 ${
                       isDarkMode ? 'text-slate-300' : 'text-stone-600'
                     }`}>
                       {avatar.name}
+                    </span>
+                    <span className={`mb-3 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${getRarityBadgeClasses(isDarkMode, avatar.rarity)}`}>
+                      {avatar.rarity}
                     </span>
 
                     {isUnlocked ? (
@@ -455,6 +532,9 @@ export function ShopModal({
                           NV {currentLevel}/{powerUp.maxLevel}
                         </span>
                       </div>
+                      <span className={`mb-3 inline-flex rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${getRarityBadgeClasses(isDarkMode, powerUp.rarity)}`}>
+                        {powerUp.rarity}
+                      </span>
                       <p className={`text-[14px] md:text-[16px] font-bold leading-snug mb-4 ${isDarkMode ? 'text-slate-300' : 'text-stone-500'}`}>
                         {powerUp.desc}
                       </p>
@@ -490,6 +570,76 @@ export function ShopModal({
                         }`}
                       >
                         {isMax ? 'Máximo' : <><ArrowUpCircle size={20} /> Melhorar ({cost}🪙)</>}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === 'routes' && (
+            <div className="space-y-4">
+              {ROUTE_UPGRADES.map((routeUpgrade) => {
+                const currentLevel = routeUpgrades[routeUpgrade.id];
+                const isMax = currentLevel >= routeUpgrade.maxLevel;
+                const cost = routeUpgrade.basePrice * (currentLevel + 1);
+
+                return (
+                  <div
+                    key={routeUpgrade.id}
+                    className={`border-[4px] rounded-[2rem] p-5 md:p-6 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 md:gap-6 ${getCardClasses(isDarkMode)}`}
+                  >
+                    <div className="text-[48px] leading-none drop-shadow-sm shrink-0">{routeUpgrade.icon}</div>
+                    <div className="flex-1 w-full">
+                      <div className="flex justify-between items-center mb-1 gap-4">
+                        <h4 className={`font-black uppercase tracking-tight text-[18px] md:text-[22px] ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>
+                          {routeUpgrade.name}
+                        </h4>
+                        <span className={`font-black text-[14px] px-3 py-1 rounded-full border ${
+                          isDarkMode ? 'text-amber-200 bg-amber-950/70 border-amber-700' : 'text-amber-500 bg-amber-100 border-amber-200'
+                        }`}>
+                          NV {currentLevel}/{routeUpgrade.maxLevel}
+                        </span>
+                      </div>
+                      <span className={`mb-3 inline-flex rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${getRarityBadgeClasses(isDarkMode, routeUpgrade.rarity)}`}>
+                        {routeUpgrade.rarity}
+                      </span>
+                      <p className={`text-[14px] md:text-[16px] font-bold leading-snug mb-4 ${isDarkMode ? 'text-slate-300' : 'text-stone-500'}`}>
+                        {routeUpgrade.desc}
+                      </p>
+
+                      <div className="flex gap-2 mb-4 justify-center sm:justify-start">
+                        {[...Array(routeUpgrade.maxLevel)].map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-3 flex-1 max-w-[40px] rounded-full ${
+                              index < currentLevel
+                                ? 'bg-cyan-400 shadow-inner'
+                                : isDarkMode
+                                  ? 'bg-slate-700'
+                                  : 'bg-stone-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => upgradeRoute(routeUpgrade.id, routeUpgrade)}
+                        disabled={isMax || coins < cost}
+                        className={`w-full sm:w-auto px-6 py-3 rounded-[1.5rem] font-black uppercase text-[14px] md:text-[16px] transition-all flex items-center justify-center sm:justify-start gap-2 border-b-[4px] ${
+                          isMax
+                            ? isDarkMode
+                              ? 'bg-slate-700 text-slate-400 border-slate-600'
+                              : 'bg-stone-200 text-stone-400 border-stone-300'
+                            : coins >= cost
+                              ? 'bg-cyan-400 text-cyan-950 border-cyan-500 active:translate-y-[4px] active:border-b-0'
+                              : isDarkMode
+                                ? 'bg-slate-700 text-slate-400 border-slate-600'
+                                : 'bg-stone-200 text-stone-400 border-stone-300'
+                        }`}
+                      >
+                        {isMax ? 'Maximo' : <><ArrowUpCircle size={20} /> Melhorar ({cost}🪙)</>}
                       </button>
                     </div>
                   </div>

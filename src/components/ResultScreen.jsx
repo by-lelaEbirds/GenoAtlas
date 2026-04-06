@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import { RefreshCw, Home, Trophy, Coins, Clock, MapPin, Share2, Check, Sparkles } from 'lucide-react';
 
-export default function ResultScreen({ score, previousBestScore, guessedCount, reason, onRestart, onHome, coinsEarned, gameMode, isDarkMode }) {
+export default function ResultScreen({
+  score,
+  previousBestScore,
+  guessedCount,
+  reason,
+  onRestart,
+  onHome,
+  onClaimDoubleCoins,
+  canClaimDoubleCoins,
+  coinsEarned,
+  gameMode,
+  sessionRewardSummary,
+  isDarkMode,
+}) {
   const [copied, setCopied] = useState(false);
   const isNewRecord = score > previousBestScore && score > 0 && (gameMode === 'normal' || gameMode === 'football');
 
@@ -76,7 +89,7 @@ export default function ResultScreen({ score, previousBestScore, guessedCount, r
 
   return (
     <div className={`absolute inset-0 z-50 flex items-center justify-center overflow-y-auto custom-scrollbar px-4 py-10 md:px-6 ${isDarkMode ? 'bg-black/80' : 'bg-stone-900/80'} animate-fade-in-up`}>
-      <section role="dialog" aria-modal="true" aria-labelledby="result-title" className={`${isDarkMode ? 'glass-panel shadow-[0_30px_60px_rgba(0,0,0,0.8)]' : 'glass-panel-light shadow-2xl'} relative my-auto flex w-full max-w-md flex-col rounded-[3rem] p-6 text-center md:rounded-[4rem] md:p-10`}>
+      <section role="dialog" aria-modal="true" aria-labelledby="result-title" className={`${isDarkMode ? 'glass-panel shadow-[0_30px_60px_rgba(0,0,0,0.8)]' : 'glass-panel-light shadow-2xl'} relative my-auto flex w-full max-w-lg flex-col rounded-[3rem] p-6 text-center md:rounded-[4rem] md:p-10`}>
         {isNewRecord && (
           <div role="status" className="absolute -top-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border-[4px] border-white bg-amber-400 px-6 py-2 text-sm font-black uppercase tracking-widest text-amber-950 shadow-[0_0_20px_rgba(251,191,36,0.6)] md:text-base animate-bounce-short">
             <Sparkles size={18} />
@@ -120,9 +133,87 @@ export default function ResultScreen({ score, previousBestScore, guessedCount, r
               </div>
             </div>
           </div>
+
+          {sessionRewardSummary && (
+            <div className={`rounded-[2rem] border p-5 text-left ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-stone-200 shadow-sm'}`}>
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <span className={`block text-[12px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-stone-400'}`}>
+                    Progressao
+                  </span>
+                  <span className={`mt-2 block text-[24px] font-black leading-none ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>
+                    +{sessionRewardSummary.seasonXpEarned} XP
+                  </span>
+                </div>
+                {sessionRewardSummary.leveledUp && (
+                  <div className="rounded-full border border-amber-300 bg-amber-400 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-amber-950 shadow-[0_0_16px_rgba(251,191,36,0.45)]">
+                    Nivel {sessionRewardSummary.currentLevel}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className={`rounded-[1.35rem] border p-3 ${isDarkMode ? 'bg-slate-900/70 border-white/10' : 'bg-white/80 border-stone-100'}`}>
+                  <span className={`block text-[11px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
+                    Evento ativo
+                  </span>
+                  <span className={`mt-1 block text-[15px] font-black leading-snug ${isDarkMode ? 'text-cyan-300' : 'text-sky-700'}`}>
+                    {sessionRewardSummary.activeEvent?.title || 'Rota estavel'}
+                  </span>
+                  <span className={`mt-1 block text-[12px] font-bold leading-snug ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
+                    {sessionRewardSummary.eventCoinBonus > 0
+                      ? `+${sessionRewardSummary.eventCoinBonus} moedas de evento`
+                      : sessionRewardSummary.activeEvent?.rewardLabel || 'Sem bonus rotativo nesta sessao.'}
+                  </span>
+                </div>
+
+                <div className={`rounded-[1.35rem] border p-3 ${isDarkMode ? 'bg-slate-900/70 border-white/10' : 'bg-white/80 border-stone-100'}`}>
+                  <span className={`block text-[11px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
+                    Precisao
+                  </span>
+                  <span className={`mt-1 block text-[15px] font-black leading-snug ${isDarkMode ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                    {sessionRewardSummary.accuracy}%
+                  </span>
+                  <span className={`mt-1 block text-[12px] font-bold leading-snug ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>
+                    {sessionRewardSummary.coachTip?.title || 'Rotina de navegacao'}
+                  </span>
+                </div>
+              </div>
+
+              {(sessionRewardSummary.completedMissions?.length > 0 || sessionRewardSummary.continentMilestones?.length > 0) && (
+                <div className="mt-4 space-y-2">
+                  {sessionRewardSummary.completedMissions?.map((mission) => (
+                    <div key={mission.id} className={`rounded-[1.1rem] border px-4 py-3 ${isDarkMode ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
+                      <span className="block text-[11px] font-black uppercase tracking-widest">Missao concluida</span>
+                      <span className="mt-1 block text-[14px] font-black leading-snug">{mission.title}</span>
+                    </div>
+                  ))}
+
+                  {sessionRewardSummary.continentMilestones?.map((milestone) => (
+                    <div key={`${milestone.continent}-${milestone.target}`} className={`rounded-[1.1rem] border px-4 py-3 ${isDarkMode ? 'border-fuchsia-500/25 bg-fuchsia-500/10 text-fuchsia-200' : 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700'}`}>
+                      <span className="block text-[11px] font-black uppercase tracking-widest">Milestone continental</span>
+                      <span className="mt-1 block text-[14px] font-black leading-snug">
+                        {milestone.continent} alcancou {milestone.target} descobertas
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <nav aria-label="Acoes de fim de jogo" className="flex flex-col gap-4">
+          {canClaimDoubleCoins && (
+            <button
+              onClick={onClaimDoubleCoins}
+              className="flex w-full items-center justify-center gap-3 rounded-[2rem] bg-amber-400 py-5 text-[17px] font-black uppercase tracking-widest text-amber-950 transition-all hover:bg-amber-300 md:text-[20px] neon-glow-amber"
+            >
+              <Coins aria-hidden="true" size={24} />
+              Assistir e dobrar moedas
+            </button>
+          )}
+
           <button onClick={handleShare} className="flex w-full items-center justify-center gap-3 rounded-[2rem] bg-cyan-500/90 py-5 text-[18px] font-black uppercase tracking-widest text-white transition-all hover:bg-cyan-400 md:text-[22px] neon-glow-cyan">
             {copied ? <Check aria-hidden="true" size={28} className="fill-current" /> : <Share2 aria-hidden="true" size={28} className="fill-current" />}
             {copied ? 'Copiado!' : 'Desafiar Amigos'}

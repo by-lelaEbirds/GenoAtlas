@@ -3,6 +3,7 @@ import { Coins, Flame, Globe, Moon, Sun, TrendingUp } from 'lucide-react';
 
 import { saveNativeData } from '../utils/storage';
 import BottomNav from './StartScreenUI/BottomNav';
+import CommandCenter from './StartScreenUI/CommandCenter';
 import JourneyMap from './StartScreenUI/JourneyMap';
 import ModeCarousel from './StartScreenUI/ModeCarousel';
 import ParallaxBackground from './StartScreenUI/ParallaxBackground';
@@ -30,12 +31,22 @@ export default function StartScreen({
   isBatterySaverMode,
   isDarkMode,
   toggleDarkMode,
+  seasonProgress,
+  seasonXp,
+  activeEvent,
+  weeklyMissions,
+  masteryEntries,
+  dailyWinStreak,
+  weeklyVoyageStreak,
+  routeUpgrades,
+  coachTip,
 }) {
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const bgNebulaRef = useRef(null);
+  const bgCloudsRef = useRef(null);
   const bgLayer3Ref = useRef(null);
   const bgStarsRef = useRef(null);
   const scrollFrameRef = useRef(null);
@@ -58,7 +69,7 @@ export default function StartScreen({
       return;
     }
 
-    [bgNebulaRef, bgLayer3Ref, bgStarsRef].forEach((layerRef) => {
+    [bgNebulaRef, bgCloudsRef, bgLayer3Ref, bgStarsRef].forEach((layerRef) => {
       if (layerRef.current) {
         layerRef.current.style.transform = '';
       }
@@ -112,7 +123,7 @@ export default function StartScreen({
   }, []);
 
   const handleScroll = useCallback((event) => {
-    if (isMobile || isBatterySaverMode) {
+    if (isBatterySaverMode) {
       return;
     }
 
@@ -123,17 +134,24 @@ export default function StartScreen({
 
     scrollFrameRef.current = requestAnimationFrame(() => {
       const scrollY = pendingScrollRef.current;
+      const speeds = isMobile
+        ? { nebula: 0.025, clouds: 0.045, layer: 0.07, stars: 0.095 }
+        : { nebula: 0.06, clouds: 0.11, layer: 0.16, stars: 0.22 };
 
       if (bgNebulaRef.current) {
-        bgNebulaRef.current.style.transform = `translateY(${-scrollY * 0.06}px)`;
+        bgNebulaRef.current.style.transform = `translateY(${-scrollY * speeds.nebula}px)`;
+      }
+
+      if (bgCloudsRef.current) {
+        bgCloudsRef.current.style.transform = `translateY(${-scrollY * speeds.clouds}px)`;
       }
 
       if (bgLayer3Ref.current) {
-        bgLayer3Ref.current.style.transform = `translateY(${-scrollY * 0.1}px)`;
+        bgLayer3Ref.current.style.transform = `translateY(${-scrollY * speeds.layer}px)`;
       }
 
       if (bgStarsRef.current) {
-        bgStarsRef.current.style.transform = `translateY(${-scrollY * 0.14}px)`;
+        bgStarsRef.current.style.transform = `translateY(${-scrollY * speeds.stars}px)`;
       }
 
       scrollFrameRef.current = null;
@@ -146,6 +164,7 @@ export default function StartScreen({
     <div className={`absolute inset-0 z-40 overflow-hidden ${isDarkMode ? 'bg-slate-950' : 'bg-sky-100'}`}>
       <ParallaxBackground
         bgNebulaRef={bgNebulaRef}
+        bgCloudsRef={bgCloudsRef}
         bgLayer3Ref={bgLayer3Ref}
         bgStarsRef={bgStarsRef}
         isDarkMode={isDarkMode}
@@ -231,7 +250,7 @@ export default function StartScreen({
                 </div>
                 <div className={`rounded-[1.5rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/70'}`}>
                   <Flame className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-amber-300' : 'text-amber-500'}`} strokeWidth={2.5} />
-                  <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>3</span>
+                  <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>4</span>
                   <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Modos</span>
                 </div>
                 <div className={`rounded-[1.5rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/70'}`}>
@@ -263,6 +282,20 @@ export default function StartScreen({
             onStudy={onStudy}
             dailyCompleted={dailyCompleted}
             isDarkMode={isDarkMode}
+          />
+
+          <CommandCenter
+            seasonProgress={seasonProgress}
+            seasonXp={seasonXp}
+            activeEvent={activeEvent}
+            coachTip={coachTip}
+            weeklyMissions={weeklyMissions}
+            masteryEntries={masteryEntries}
+            dailyWinStreak={dailyWinStreak}
+            weeklyVoyageStreak={weeklyVoyageStreak}
+            routeUpgrades={routeUpgrades}
+            isDarkMode={isDarkMode}
+            onOpenShop={() => setShowShop(true)}
           />
 
           <section className="relative z-10 px-5 pb-10 pt-6 md:px-8 md:pb-14 md:pt-10">

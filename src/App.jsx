@@ -1,12 +1,16 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import {
+  Accessibility,
   Coins,
   Compass,
+  Eye,
   Film,
   Gift,
   Info,
   Rocket,
+  Sparkles,
   Trophy,
+  Type,
   Vibrate,
   VibrateOff,
   Volume2,
@@ -16,9 +20,11 @@ import {
 
 import StartScreen from './components/StartScreen';
 import GameHUD from './components/GameHUD';
+import MonetizationModal from './components/MonetizationModal';
 import { TutorialModal, AchievementsModal, ShopModal, CreditsModal } from './components/Modals';
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_MODES, GAME_STATES, MAP_THEMES } from './constants';
+import { initializeAds } from './utils/ads';
 
 const loadGlobeVisualizer = () => import('./components/GlobeVisualizer');
 const loadResultScreen = () => import('./components/ResultScreen');
@@ -61,6 +67,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    initializeAds();
+  }, []);
+
+  useEffect(() => {
     if (!isLoaded) {
       return undefined;
     }
@@ -78,12 +88,24 @@ export default function App() {
     document.body.style.backgroundColor = backgroundColor;
     document.body.classList.toggle('native-shell', state.isNativePlatform);
     document.body.classList.toggle('android-shell', state.isAndroidPlatform);
+    document.body.classList.toggle('a11y-high-contrast', state.isHighContrastMode);
+    document.body.classList.toggle('a11y-large-text', state.isLargeTextMode);
+    document.body.classList.toggle('a11y-color-assist', state.isColorAssistMode);
+    document.body.classList.toggle('a11y-reduced-effects', state.isReducedEffectsMode);
 
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     if (themeMeta) {
       themeMeta.setAttribute('content', backgroundColor);
     }
-  }, [isDarkMode, state.isAndroidPlatform, state.isNativePlatform]);
+  }, [
+    isDarkMode,
+    state.isAndroidPlatform,
+    state.isColorAssistMode,
+    state.isHighContrastMode,
+    state.isLargeTextMode,
+    state.isNativePlatform,
+    state.isReducedEffectsMode,
+  ]);
 
   const showInteractiveGlobe = state.gameState === GAME_STATES.PLAYING;
 
@@ -124,11 +146,24 @@ export default function App() {
     window.setTimeout(() => setPromoFeedback(null), 4000);
   };
 
+  const handleRestartFromResult = async () => {
+    await actions.maybeShowSessionInterstitial();
+    actions.startGame(state.gameMode);
+  };
+
+  const handleHomeFromResult = async () => {
+    await actions.maybeShowSessionInterstitial();
+    actions.quitGame();
+    actions.resetGlobe();
+  };
+
   return (
     <main
       className={`relative h-[100dvh] w-full overflow-hidden select-none transition-all duration-1000 ease-out ${
         isDarkMode ? 'bg-indigo-950 text-slate-100' : 'bg-sky-100 text-stone-900'
-      } ${isLoaded ? 'opacity-100' : 'scale-105 opacity-0'}`}
+      } ${state.isHighContrastMode ? 'a11y-high-contrast' : ''} ${state.isLargeTextMode ? 'a11y-large-text' : ''} ${
+        state.isColorAssistMode ? 'a11y-color-assist' : ''
+      } ${state.isReducedEffectsMode ? 'a11y-reduced-effects' : ''} ${isLoaded ? 'opacity-100' : 'scale-105 opacity-0'}`}
     >
       <div
         aria-hidden="true"
@@ -224,7 +259,19 @@ export default function App() {
           setActiveAvatar={actions.setActiveAvatar}
           powerUps={state.powerUps}
           setPowerUps={actions.setPowerUps}
+          routeUpgrades={state.routeUpgrades}
+          setRouteUpgrades={actions.setRouteUpgrades}
           isDarkMode={isDarkMode}
+        />
+      )}
+
+      {state.adPrompt && (
+        <MonetizationModal
+          prompt={state.adPrompt}
+          isDarkMode={isDarkMode}
+          isLoading={state.isAdFlowActive}
+          onConfirm={actions.confirmAdPrompt}
+          onClose={actions.closeAdPrompt}
         />
       )}
 
@@ -453,6 +500,81 @@ export default function App() {
                   Creditos
                 </button>
               </div>
+
+              <div className={`mt-2 border-t-[4px] pt-6 ${isDarkMode ? 'border-slate-700' : 'border-stone-100'}`}>
+                <div className="mb-4 flex items-center justify-center gap-3">
+                  <Accessibility className="h-6 w-6 text-cyan-400 md:h-8 md:w-8" strokeWidth={2.5} />
+                  <h4 className={`text-[20px] font-black uppercase leading-none tracking-tighter md:text-[28px] ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>
+                    Acessibilidade
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      actions.toggleHighContrast();
+                      actions.triggerHaptic();
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-[1.5rem] p-4 font-bold uppercase tracking-widest transition-all ${
+                      isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50'
+                    }`}
+                  >
+                    <Accessibility size={18} className={state.isHighContrastMode ? 'text-amber-400' : 'text-slate-400'} />
+                    <span className={isDarkMode ? 'text-slate-300' : 'text-stone-600'}>
+                      Contraste: {state.isHighContrastMode ? 'ON' : 'OFF'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      actions.toggleLargeText();
+                      actions.triggerHaptic();
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-[1.5rem] p-4 font-bold uppercase tracking-widest transition-all ${
+                      isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50'
+                    }`}
+                  >
+                    <Type size={18} className={state.isLargeTextMode ? 'text-emerald-400' : 'text-slate-400'} />
+                    <span className={isDarkMode ? 'text-slate-300' : 'text-stone-600'}>
+                      Texto: {state.isLargeTextMode ? 'GRANDE' : 'PADRAO'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      actions.toggleColorAssist();
+                      actions.triggerHaptic();
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-[1.5rem] p-4 font-bold uppercase tracking-widest transition-all ${
+                      isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50'
+                    }`}
+                  >
+                    <Eye size={18} className={state.isColorAssistMode ? 'text-fuchsia-400' : 'text-slate-400'} />
+                    <span className={isDarkMode ? 'text-slate-300' : 'text-stone-600'}>
+                      Cores: {state.isColorAssistMode ? 'ASSIST' : 'PADRAO'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      actions.toggleReducedEffects();
+                      actions.triggerHaptic();
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-[1.5rem] p-4 font-bold uppercase tracking-widest transition-all ${
+                      isDarkMode ? 'glass-panel hover:bg-slate-800' : 'glass-panel-light hover:bg-slate-50'
+                    }`}
+                  >
+                    <Sparkles size={18} className={state.isReducedEffectsMode ? 'text-cyan-400' : 'text-slate-400'} />
+                    <span className={isDarkMode ? 'text-slate-300' : 'text-stone-600'}>
+                      Efeitos: {state.isReducedEffectsMode ? 'SUAVES' : 'COMPLETOS'}
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -491,6 +613,15 @@ export default function App() {
           isBatterySaverMode={state.isBatterySaverMode}
           isDarkMode={isDarkMode}
           toggleDarkMode={actions.toggleDarkMode}
+          seasonProgress={state.seasonProgress}
+          seasonXp={state.metaProgress.seasonXp}
+          activeEvent={state.activeEvent}
+          weeklyMissions={state.metaProgress.weeklyMissions}
+          masteryEntries={state.masteryEntries}
+          dailyWinStreak={state.metaProgress.dailyWinStreak}
+          weeklyVoyageStreak={state.metaProgress.weeklyVoyageStreak}
+          routeUpgrades={state.routeUpgrades}
+          coachTip={state.coachTip}
         />
       )}
 
@@ -503,11 +634,11 @@ export default function App() {
             guessedCount={state.guessedCountries.length}
             coinsEarned={state.lastCoinsEarned}
             gameMode={state.gameMode}
-            onRestart={() => actions.startGame(state.gameMode)}
-            onHome={() => {
-              actions.quitGame();
-              actions.resetGlobe();
-            }}
+            onRestart={handleRestartFromResult}
+            onHome={handleHomeFromResult}
+            onClaimDoubleCoins={actions.openRewardedCoinsPrompt}
+            canClaimDoubleCoins={state.canClaimRewardedCoins}
+            sessionRewardSummary={state.sessionRewardSummary}
             isDarkMode={isDarkMode}
           />
         </Suspense>
@@ -598,24 +729,41 @@ export default function App() {
               {!state.studyCard.isCorrect &&
               state.studyCard.livesRemaining <= 0 &&
               state.gameMode !== GAME_MODES.DAILY ? (
-                <div className="mt-6 flex gap-4">
+                <div className="mt-6 flex flex-col gap-4">
                   <button
                     type="button"
-                    onClick={handleDismissStudyCard}
-                    className={`w-1/3 whitespace-nowrap rounded-[2rem] border py-8 text-[24px] font-black uppercase tracking-widest transition-all ${
-                      isDarkMode ? 'glass-panel hover:bg-white/10 hover:text-white' : 'glass-panel-light hover:bg-slate-100'
+                    onClick={actions.openRewardedRevivePrompt}
+                    disabled={!state.canUseRewardedRevive}
+                    className={`flex w-full items-center justify-center gap-4 rounded-[2rem] py-6 text-[22px] font-black uppercase tracking-widest transition-all ${
+                      state.canUseRewardedRevive
+                        ? 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300 neon-glow-emerald'
+                        : isDarkMode
+                          ? 'glass-panel text-slate-500'
+                          : 'glass-panel-light text-stone-400'
                     }`}
                   >
-                    Sair
+                    Assistir anuncio e voltar
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleRevive}
-                    disabled={state.coins < 100}
-                    className="flex w-2/3 items-center justify-center gap-4 whitespace-nowrap rounded-[2rem] bg-amber-500/90 py-8 text-[24px] font-black uppercase tracking-widest text-amber-950 transition-all hover:bg-amber-400 disabled:grayscale disabled:opacity-50 neon-glow-amber"
-                  >
-                    Reviver (100 <Coins size={32} />)
-                  </button>
+
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={handleDismissStudyCard}
+                      className={`w-1/3 whitespace-nowrap rounded-[2rem] border py-6 text-[20px] font-black uppercase tracking-widest transition-all ${
+                        isDarkMode ? 'glass-panel hover:bg-white/10 hover:text-white' : 'glass-panel-light hover:bg-slate-100'
+                      }`}
+                    >
+                      Sair
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRevive}
+                      disabled={state.coins < 100}
+                      className="flex w-2/3 items-center justify-center gap-3 whitespace-nowrap rounded-[2rem] bg-amber-500/90 py-6 text-[20px] font-black uppercase tracking-widest text-amber-950 transition-all hover:bg-amber-400 disabled:grayscale disabled:opacity-50 neon-glow-amber"
+                    >
+                      Reviver (100 <Coins size={26} />)
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <button
