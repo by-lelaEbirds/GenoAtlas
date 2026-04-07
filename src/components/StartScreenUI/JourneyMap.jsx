@@ -1,49 +1,36 @@
 import React, { memo, useMemo } from 'react';
 import { Cloud, Compass, Lock, Mountain, Sparkles, TreePine, Trophy } from 'lucide-react';
+import AvatarIcon from '../shared/AvatarIcon';
 
-const EMOJI_FONT_STYLE = {
-  fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
-};
-
-function resolveAvatarIcon(icon) {
-  if (!icon) {
-    return '';
-  }
-
-  if (/^(https?:)?\/\//.test(icon) || icon.startsWith('data:')) {
-    return icon;
-  }
-
-  return `${import.meta.env.BASE_URL}${icon.replace(/^\//, '')}`;
-}
-
-function AvatarPin({ activeAvatar, isDarkMode }) {
+function AvatarPin({ activeAvatar, isDarkMode, isPerformanceMode }) {
   return (
     <div className="pointer-events-none absolute -top-1 left-1/2 z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-      <div className={`relative flex h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-[26px] border-[7px] border-amber-400 bg-white shadow-[0_18px_28px_rgba(0,0,0,0.25)] md:h-[94px] md:w-[94px] md:rounded-[30px] ${isDarkMode ? 'shadow-[0_18px_32px_rgba(0,0,0,0.4)]' : ''}`}>
+      <div className={`relative flex h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-[26px] border-[7px] border-amber-400 bg-white md:h-[94px] md:w-[94px] md:rounded-[30px] ${
+        isPerformanceMode
+          ? isDarkMode
+            ? 'shadow-[0_12px_20px_rgba(0,0,0,0.34)]'
+            : 'shadow-[0_12px_18px_rgba(0,0,0,0.18)]'
+          : isDarkMode
+            ? 'shadow-[0_18px_32px_rgba(0,0,0,0.4)]'
+            : 'shadow-[0_18px_28px_rgba(0,0,0,0.25)]'
+      }`}>
         <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-amber-50" />
-        <div className="absolute inset-x-2 top-2 h-8 rounded-full bg-white/70 blur-md md:h-10" />
-        {activeAvatar.type === 'emoji' ? (
-          <span style={EMOJI_FONT_STYLE} className="relative z-10 text-[38px] leading-none drop-shadow-[0_10px_16px_rgba(15,23,42,0.18)] md:text-[46px]">
-            {activeAvatar.icon}
-          </span>
-        ) : (
-          <img
-            src={resolveAvatarIcon(activeAvatar.icon)}
-            alt={activeAvatar.name}
-            className="relative z-10 h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(15,23,42,0.18)] md:h-16 md:w-16"
-            loading="lazy"
-            decoding="async"
-          />
-        )}
+        {!isPerformanceMode && <div className="absolute inset-x-2 top-2 h-8 rounded-full bg-white/70 blur-md md:h-10" />}
+        <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-[18px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 text-amber-300 shadow-[inset_0_1px_2px_rgba(255,255,255,0.18)] md:h-16 md:w-16 md:rounded-[20px]">
+          <AvatarIcon avatar={activeAvatar} size={isPerformanceMode ? 34 : 40} className="drop-shadow-[0_8px_12px_rgba(15,23,42,0.18)]" />
+        </div>
       </div>
       <div className="h-0 w-0 border-x-[14px] border-t-[18px] border-x-transparent border-t-amber-400 md:border-x-[16px] md:border-t-[20px]" />
-      <div className={`mt-2 h-3 w-12 rounded-full blur-[4px] ${isDarkMode ? 'bg-black/70' : 'bg-stone-900/20'}`} />
+      {!isPerformanceMode && <div className={`mt-2 h-3 w-12 rounded-full blur-[4px] ${isDarkMode ? 'bg-black/70' : 'bg-stone-900/20'}`} />}
     </div>
   );
 }
 
-function JourneyScenery({ index, isDarkMode, isMobile }) {
+function JourneyScenery({ index, isDarkMode, isMobile, isPerformanceMode }) {
+  if (isPerformanceMode) {
+    return null;
+  }
+
   const iconSize = isMobile ? 64 : 88;
   const secondarySize = isMobile ? 42 : 56;
 
@@ -94,6 +81,7 @@ const JourneyNode = memo(function JourneyNode({
   activeAvatar,
   isDarkMode,
   isMobile,
+  isPerformanceMode,
   isLast,
 }) {
   const circleTone = isUnlocked
@@ -110,12 +98,12 @@ const JourneyNode = memo(function JourneyNode({
 
   return (
     <div className="relative flex min-h-[270px] w-full flex-col items-center justify-start pt-20 md:min-h-[320px] md:pt-24">
-      <JourneyScenery index={index} isDarkMode={isDarkMode} isMobile={isMobile} />
+      <JourneyScenery index={index} isDarkMode={isDarkMode} isMobile={isMobile} isPerformanceMode={isPerformanceMode} />
 
-      {isCurrent && <AvatarPin activeAvatar={activeAvatar} isDarkMode={isDarkMode} />}
+      {isCurrent && <AvatarPin activeAvatar={activeAvatar} isDarkMode={isDarkMode} isPerformanceMode={isPerformanceMode} />}
 
       <div className="relative z-20">
-        {isCurrent && (
+        {isCurrent && !isPerformanceMode && (
           <>
             <div className="absolute left-1/2 top-1/2 h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[7px] border-amber-400/45 animate-pulse-ring md:h-[216px] md:w-[216px]" />
             <div className="absolute left-1/2 top-1/2 h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2 rounded-full border-[7px] border-amber-400/25 animate-pulse-ring md:h-[216px] md:w-[216px]" style={{ animationDelay: '0.9s' }} />
@@ -130,7 +118,7 @@ const JourneyNode = memo(function JourneyNode({
             isUnlocked ? 'hover:scale-[1.03]' : ''
           } ${circleTone}`}
         >
-          {isCurrent && <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />}
+          {isCurrent && !isPerformanceMode && <div className="absolute inset-0 -translate-x-[150%] animate-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />}
           {isUnlocked ? (
             <Compass className={`relative z-10 h-16 w-16 md:h-20 md:w-20 ${isCurrent ? 'text-amber-950' : isDarkMode ? 'text-cyan-300' : 'text-sky-600'}`} strokeWidth={2.5} />
           ) : (
@@ -197,6 +185,7 @@ function JourneyMap({
   onThemePress,
   isDarkMode,
   isMobile,
+  isPerformanceMode,
 }) {
   const themeNodes = useMemo(() => Object.values(themes), [themes]);
 
@@ -230,6 +219,7 @@ function JourneyMap({
               activeAvatar={activeAvatar}
               isDarkMode={isDarkMode}
               isMobile={isMobile}
+              isPerformanceMode={isPerformanceMode}
               isLast={index === themeNodes.length - 1}
             />
           );

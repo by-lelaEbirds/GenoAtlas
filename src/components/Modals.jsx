@@ -3,22 +3,7 @@ import { X, CheckCircle, ShieldAlert, Award, ShoppingCart, Lock, ArrowUpCircle }
 import { AVATARS, POWER_UPS, ROUTE_UPGRADES } from '../constants/shop';
 import { ACHIEVEMENTS_LIST } from '../constants/achievements';
 import { saveNativeData } from '../utils/storage';
-
-const EMOJI_FONT_STYLE = {
-  fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
-};
-
-function resolveAvatarIcon(icon) {
-  if (!icon) {
-    return '';
-  }
-
-  if (/^(https?:)?\/\//.test(icon) || icon.startsWith('data:')) {
-    return icon;
-  }
-
-  return `${import.meta.env.BASE_URL}${icon.replace(/^\//, '')}`;
-}
+import AvatarIcon from './shared/AvatarIcon';
 
 function getOverlayClasses(isDarkMode, isClosing) {
   return `absolute inset-0 z-[200] flex items-center justify-center px-4 md:px-6 py-6 overflow-y-auto custom-scrollbar backdrop-blur-md ${
@@ -451,18 +436,12 @@ export function ShopModal({
                       getCardClasses(isDarkMode)
                     } ${isEquipped ? (isDarkMode ? 'ring-4 ring-amber-400/60 bg-amber-950/30' : 'ring-4 ring-amber-400 bg-amber-50') : ''}`}
                   >
-                    <div className="text-[48px] md:text-[64px] mb-2 leading-none drop-shadow-md">
-                      {avatar.type === 'emoji' ? (
-                        <span style={EMOJI_FONT_STYLE}>{avatar.icon}</span>
-                      ) : (
-                        <img
-                          src={resolveAvatarIcon(avatar.icon)}
-                          alt={avatar.name}
-                          className="w-16 h-16 object-contain"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      )}
+                    <div
+                      className={`mb-2 flex h-[88px] w-[88px] items-center justify-center rounded-[1.5rem] border md:h-[104px] md:w-[104px] ${
+                        isDarkMode ? 'border-white/10 bg-slate-900/70 text-amber-300' : 'border-sky-100 bg-white text-amber-600'
+                      }`}
+                    >
+                      <AvatarIcon avatar={avatar} size={48} />
                     </div>
                     <span className={`font-bold uppercase text-[12px] md:text-[14px] mb-4 tracking-wider leading-tight line-clamp-2 ${
                       isDarkMode ? 'text-slate-300' : 'text-stone-600'

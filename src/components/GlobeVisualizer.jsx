@@ -17,6 +17,8 @@ const GlobeVisualizer = memo(forwardRef(({
   const globeEl = useRef();
   const [hoverD, setHoverD] = useState();
   const guessedIsoSet = useMemo(() => new Set(guessedCountries.map((country) => country.iso)), [guessedCountries]);
+  const useLiteRenderer = isBatterySaverMode || isMobile;
+  const showRouteEffects = !useLiteRenderer;
 
   const getIdealAltitude = useCallback(() => (isMobile ? 2.3 : 1.78), [isMobile]);
 
@@ -27,7 +29,7 @@ const GlobeVisualizer = memo(forwardRef(({
 
     const renderer = globeEl.current.renderer?.();
     if (renderer) {
-      const maxPixelRatio = isBatterySaverMode ? 1 : isMobile ? 1.2 : 1.6;
+      const maxPixelRatio = useLiteRenderer ? 0.9 : 1.25;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
     }
 
@@ -36,13 +38,13 @@ const GlobeVisualizer = memo(forwardRef(({
       return;
     }
 
-    controls.enableDamping = isSmoothMode && !isBatterySaverMode;
-    controls.dampingFactor = isBatterySaverMode ? 0.04 : 0.055;
-    controls.rotateSpeed = isMobile ? 0.58 : 0.72;
+    controls.enableDamping = isSmoothMode && !useLiteRenderer;
+    controls.dampingFactor = useLiteRenderer ? 0.04 : 0.055;
+    controls.rotateSpeed = useLiteRenderer ? 0.5 : 0.72;
     controls.zoomSpeed = 0.95;
     controls.enablePan = false;
     controls.autoRotate = false;
-  }, [isBatterySaverMode, isMobile, isSmoothMode]);
+  }, [isSmoothMode, useLiteRenderer]);
 
   useImperativeHandle(ref, () => ({
     resetPosition: () => {
@@ -124,35 +126,35 @@ const GlobeVisualizer = memo(forwardRef(({
       <Globe
         ref={globeEl}
         rendererConfig={{
-          antialias: !isMobile && !isBatterySaverMode,
-          powerPreference: isMobile || isBatterySaverMode ? 'low-power' : 'high-performance',
+          antialias: false,
+          powerPreference: useLiteRenderer ? 'low-power' : 'high-performance',
         }}
         onGlobeReady={configureScene}
         globeImageUrl={theme.globeUrl}
-        backgroundImageUrl={theme.bgImageUrl}
-        bumpImageUrl={isMobile || isBatterySaverMode ? null : theme.bump}
+        backgroundImageUrl={useLiteRenderer ? null : theme.bgImageUrl}
+        bumpImageUrl={useLiteRenderer ? null : theme.bump}
         backgroundColor="rgba(0,0,0,0)"
-        showAtmosphere={!isBatterySaverMode || !isMobile}
+        showAtmosphere={!useLiteRenderer}
         atmosphereColor={isDarkMode ? '#6366f1' : '#38bdf8'}
-        atmosphereAltitude={isBatterySaverMode ? 0.08 : 0.13}
+        atmosphereAltitude={useLiteRenderer ? 0.06 : 0.13}
         polygonsData={geoData}
-        polygonResolution={isMobile || isBatterySaverMode ? 1 : 2}
+        polygonResolution={useLiteRenderer ? 1 : 2}
         polygonAltitude={getPolyAltitude}
         polygonCapColor={getPolyCapColor}
         polygonSideColor={getPolySideColor}
         polygonStrokeColor={getPolyStrokeColor}
-        polygonTransitionDuration={isBatterySaverMode ? 0 : 220}
+        polygonTransitionDuration={useLiteRenderer ? 0 : 220}
         onPolygonHover={isMobile ? undefined : handlePolygonHover}
         onPolygonClick={handlePolygonClick}
-        arcsData={travelArcs}
+        arcsData={showRouteEffects ? travelArcs : []}
         arcColor={getArcColor}
         arcDashLength={0.4}
         arcDashGap={0.2}
-        arcDashAnimateTime={isBatterySaverMode ? 700 : 1000}
+        arcDashAnimateTime={showRouteEffects ? 1000 : 0}
         arcAltitudeAutoScale={0.3}
-        ringsData={impactRings}
+        ringsData={showRouteEffects ? impactRings : []}
         ringColor={getRingColor}
-        ringMaxRadius={isBatterySaverMode ? 2.2 : isMobile ? 3 : 5}
+        ringMaxRadius={useLiteRenderer ? 2.2 : 5}
         ringPropagationSpeed={3}
       />
     </div>

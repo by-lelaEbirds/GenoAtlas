@@ -113,6 +113,29 @@
     height: 0;
     display: none;
   }
+
+  .animate-sweep,
+  .animate-pulse-ring,
+  .animate-pulse-slow,
+  .animate-float,
+  .animate-twinkle,
+  .animate-shooting-star,
+  .animate-drift-up,
+  .animate-drift-up-slow,
+  .animate-float-cinematic,
+  .animate-pulse-glow,
+  .animate-orbit,
+  .animate-orbit-reverse,
+  .animate-text-glow,
+  .animate-text-glow-light {
+    animation: none !important;
+  }
+
+  .glass-panel,
+  .glass-panel-light {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 @layer utilities {

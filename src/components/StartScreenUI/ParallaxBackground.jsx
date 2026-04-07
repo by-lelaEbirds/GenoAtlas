@@ -9,9 +9,12 @@ function ParallaxBackground({
   isDarkMode,
   isMobile,
   isBatterySaverMode,
+  isReducedEffectsMode,
 }) {
+  const useLiteScene = isBatterySaverMode || isReducedEffectsMode || isMobile;
+
   const starPositions = useMemo(() => {
-    const count = isBatterySaverMode ? 22 : isMobile ? 42 : 88;
+    const count = useLiteScene ? 20 : 88;
     const darkColors = ['bg-white', 'bg-cyan-200', 'bg-fuchsia-200', 'bg-indigo-100', 'bg-amber-200'];
     const lightColors = ['bg-white', 'bg-amber-100', 'bg-sky-200', 'bg-white', 'bg-cyan-100'];
 
@@ -26,10 +29,10 @@ function ParallaxBackground({
         delay: (index % 5) * 1.15,
       };
     });
-  }, [isBatterySaverMode, isDarkMode, isMobile]);
+  }, [isDarkMode, useLiteScene]);
 
   const floatingParticles = useMemo(() => {
-    const count = isBatterySaverMode ? 0 : isMobile ? 6 : 12;
+    const count = useLiteScene ? 0 : 12;
     return [...Array(count)].map((_, index) => ({
       left: ((index * 19 + 13) % 90) + 5,
       size: (index % 4) + 2,
@@ -37,27 +40,55 @@ function ParallaxBackground({
       speed: index % 2 === 0 ? 'animate-drift-up' : 'animate-drift-up-slow',
       top: (index * 11 + 18) % 72,
     }));
-  }, [isBatterySaverMode, isMobile]);
+  }, [useLiteScene]);
 
   const cloudPositions = useMemo(() => {
     return isDarkMode
       ? [
-          { top: 8, left: 4, size: isMobile ? 92 : 128, opacity: 0.62 },
-          { top: 19, right: 6, size: isMobile ? 78 : 104, opacity: 0.48 },
-          { top: 38, left: 72, size: isMobile ? 58 : 80, opacity: 0.34 },
-          { top: 58, left: 12, size: isMobile ? 66 : 90, opacity: 0.24 },
-          { top: 70, right: 10, size: isMobile ? 54 : 74, opacity: 0.18 },
+          { top: 8, left: 4, size: useLiteScene ? 74 : 128, opacity: 0.54 },
+          { top: 20, right: 8, size: useLiteScene ? 62 : 104, opacity: 0.4 },
+          ...(useLiteScene ? [] : [
+            { top: 38, left: 72, size: 80, opacity: 0.34 },
+            { top: 58, left: 12, size: 90, opacity: 0.24 },
+            { top: 70, right: 10, size: 74, opacity: 0.18 },
+          ]),
         ]
       : [
-          { top: 9, left: 4, size: isMobile ? 96 : 132, opacity: 0.9 },
-          { top: 18, right: 5, size: isMobile ? 76 : 104, opacity: 0.82 },
-          { top: 36, left: 72, size: isMobile ? 60 : 82, opacity: 0.7 },
-          { top: 56, left: 12, size: isMobile ? 70 : 94, opacity: 0.58 },
-          { top: 69, right: 11, size: isMobile ? 56 : 78, opacity: 0.5 },
+          { top: 9, left: 4, size: useLiteScene ? 76 : 132, opacity: 0.84 },
+          { top: 20, right: 6, size: useLiteScene ? 64 : 104, opacity: 0.74 },
+          ...(useLiteScene ? [] : [
+            { top: 36, left: 72, size: 82, opacity: 0.7 },
+            { top: 56, left: 12, size: 94, opacity: 0.58 },
+            { top: 69, right: 11, size: 78, opacity: 0.5 },
+          ]),
         ];
-  }, [isDarkMode, isMobile]);
+  }, [isDarkMode, useLiteScene]);
 
   const ribbonBands = useMemo(() => {
+    if (useLiteScene) {
+      return isDarkMode
+        ? [
+            {
+              top: '18%',
+              left: '-4%',
+              width: '72%',
+              height: '14%',
+              background: 'linear-gradient(90deg, rgba(99,102,241,0.16), rgba(34,211,238,0.05), transparent)',
+              rotate: '-8deg',
+            },
+          ]
+        : [
+            {
+              top: '20%',
+              left: '-6%',
+              width: '74%',
+              height: '14%',
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.6), rgba(186,230,253,0.18), transparent)',
+              rotate: '-8deg',
+            },
+          ];
+    }
+
     if (isDarkMode) {
       return [
         {
@@ -97,7 +128,7 @@ function ParallaxBackground({
         rotate: '8deg',
       },
     ];
-  }, [isDarkMode]);
+  }, [isDarkMode, useLiteScene]);
 
   return (
     <div className={`pointer-events-none fixed inset-0 z-0 overflow-hidden transition-colors duration-1000 ${isDarkMode ? 'bg-[#120a28]' : 'bg-[#dff4ff]'}`}>
@@ -113,16 +144,16 @@ function ParallaxBackground({
       <div ref={bgNebulaRef} aria-hidden="true" className="absolute inset-[-22%] h-[144%] w-[144%] opacity-95 will-change-transform">
         {isDarkMode ? (
           <>
-            <div className="absolute left-[-14%] top-[-9%] h-[74vw] w-[74vw] max-h-[720px] max-w-[720px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.42) 0%, rgba(49,46,129,0.16) 42%, transparent 72%)' }} />
-            <div className="absolute right-[-6%] top-[16%] h-[82vw] w-[82vw] max-h-[780px] max-w-[780px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(217,70,239,0.28) 0%, rgba(112,26,117,0.08) 46%, transparent 74%)', animationDelay: '2.1s' }} />
-            <div className="absolute left-[2%] top-[54%] h-[58vw] w-[58vw] max-h-[540px] max-w-[540px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(34,211,238,0.24) 0%, transparent 72%)', animationDelay: '4.1s' }} />
-            <div className="absolute bottom-[2%] right-[8%] h-[44vw] w-[44vw] max-h-[420px] max-w-[420px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.14) 0%, transparent 70%)', animationDelay: '5.8s' }} />
+            <div className={`absolute left-[-14%] top-[-9%] h-[74vw] w-[74vw] max-h-[720px] max-w-[720px] rounded-full ${useLiteScene ? '' : 'animate-pulse-slow'}`} style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.42) 0%, rgba(49,46,129,0.16) 42%, transparent 72%)' }} />
+            <div className={`absolute right-[-6%] top-[16%] h-[82vw] w-[82vw] max-h-[780px] max-w-[780px] rounded-full ${useLiteScene ? '' : 'animate-pulse-slow'}`} style={{ background: 'radial-gradient(circle, rgba(217,70,239,0.28) 0%, rgba(112,26,117,0.08) 46%, transparent 74%)', animationDelay: '2.1s' }} />
+            {!useLiteScene && <div className="absolute left-[2%] top-[54%] h-[58vw] w-[58vw] max-h-[540px] max-w-[540px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(34,211,238,0.24) 0%, transparent 72%)', animationDelay: '4.1s' }} />}
+            {!useLiteScene && <div className="absolute bottom-[2%] right-[8%] h-[44vw] w-[44vw] max-h-[420px] max-w-[420px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.14) 0%, transparent 70%)', animationDelay: '5.8s' }} />}
           </>
         ) : (
           <>
-            <div className="absolute left-[-10%] top-[-6%] h-[64vw] w-[64vw] max-h-[660px] max-w-[660px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 32%, transparent 70%)' }} />
-            <div className="absolute right-[-6%] top-[30%] h-[70vw] w-[70vw] max-h-[680px] max-w-[680px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(186,230,253,0.78) 0%, rgba(186,230,253,0.16) 44%, transparent 74%)', animationDelay: '2s' }} />
-            <div className="absolute left-[10%] top-[68%] h-[42vw] w-[42vw] max-h-[360px] max-w-[360px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(253,230,138,0.42) 0%, transparent 70%)', animationDelay: '4s' }} />
+            <div className={`absolute left-[-10%] top-[-6%] h-[64vw] w-[64vw] max-h-[660px] max-w-[660px] rounded-full ${useLiteScene ? '' : 'animate-pulse-slow'}`} style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 32%, transparent 70%)' }} />
+            <div className={`absolute right-[-6%] top-[30%] h-[70vw] w-[70vw] max-h-[680px] max-w-[680px] rounded-full ${useLiteScene ? '' : 'animate-pulse-slow'}`} style={{ background: 'radial-gradient(circle, rgba(186,230,253,0.78) 0%, rgba(186,230,253,0.16) 44%, transparent 74%)', animationDelay: '2s' }} />
+            {!useLiteScene && <div className="absolute left-[10%] top-[68%] h-[42vw] w-[42vw] max-h-[360px] max-w-[360px] rounded-full animate-pulse-slow" style={{ background: 'radial-gradient(circle, rgba(253,230,138,0.42) 0%, transparent 70%)', animationDelay: '4s' }} />}
           </>
         )}
 
@@ -148,12 +179,12 @@ function ParallaxBackground({
               animationDuration: `${star.duration}s`,
               animationDelay: `${star.delay}s`,
               willChange: 'opacity, transform',
-              opacity: isDarkMode ? 0.78 : 0.68,
+              opacity: isDarkMode ? 0.72 : 0.62,
             }}
           />
         ))}
 
-        {isDarkMode && !isBatterySaverMode && (
+        {isDarkMode && !useLiteScene && (
           <>
             <div className="absolute right-[16%] top-[9%] h-[2px] w-[120px] bg-gradient-to-r from-white to-transparent animate-shooting-star opacity-85" />
             <div className="absolute right-[60%] top-[34%] h-[2px] w-[86px] bg-gradient-to-r from-cyan-200 to-transparent animate-shooting-star opacity-65" style={{ animationDelay: '1.4s' }} />
@@ -179,13 +210,13 @@ function ParallaxBackground({
           />
         ))}
 
-        <div className={`absolute inset-x-[6%] top-[18%] h-[18vh] rounded-[999px] blur-[40px] ${isDarkMode ? 'bg-indigo-400/8' : 'bg-white/45'}`} />
-        <div className={`absolute inset-x-[14%] top-[48%] h-[16vh] rounded-[999px] blur-[38px] ${isDarkMode ? 'bg-cyan-300/7' : 'bg-sky-200/35'}`} />
+        <div className={`absolute inset-x-[6%] top-[18%] h-[18vh] rounded-[999px] ${useLiteScene ? 'blur-[24px]' : 'blur-[40px]'} ${isDarkMode ? 'bg-indigo-400/8' : 'bg-white/45'}`} />
+        {!useLiteScene && <div className={`absolute inset-x-[14%] top-[48%] h-[16vh] rounded-[999px] blur-[38px] ${isDarkMode ? 'bg-cyan-300/7' : 'bg-sky-200/35'}`} />}
 
         {cloudPositions.map((cloud, index) => (
           <div
             key={`${cloud.top}-${index}`}
-            className={`absolute ${isDarkMode ? 'text-white/70' : 'text-white'} ${isBatterySaverMode ? '' : 'animate-float'}`}
+            className={`absolute ${isDarkMode ? 'text-white/70' : 'text-white'} ${useLiteScene ? '' : 'animate-float'}`}
             style={{
               top: `${cloud.top}%`,
               left: cloud.left !== undefined ? `${cloud.left}%` : undefined,
@@ -203,17 +234,17 @@ function ParallaxBackground({
       <div ref={bgLayer3Ref} aria-hidden="true" className="absolute inset-[-8%] h-[116%] w-[116%] will-change-transform">
         {isDarkMode ? (
           <>
-            <div className="absolute bottom-[7%] left-[-10%] h-[28vh] w-[65vw] rounded-[50%] bg-cyan-500/12 blur-[40px] md:h-[30vh] md:blur-[70px]" />
-            <div className="absolute bottom-[-4%] right-[-8%] h-[30vh] w-[62vw] rounded-[50%] bg-indigo-500/14 blur-[46px] md:blur-[74px]" />
-            <div className="absolute bottom-[12%] left-[18%] h-[14vh] w-[64vw] rounded-[100%] border border-white/6 bg-white/5 blur-[2px]" />
-            <div className="absolute bottom-[18%] right-[16%] h-[8vh] w-[22vw] rounded-[100%] bg-fuchsia-400/10 blur-[18px]" />
+            <div className={`absolute bottom-[7%] left-[-10%] h-[28vh] w-[65vw] rounded-[50%] bg-cyan-500/12 ${useLiteScene ? 'blur-[24px]' : 'blur-[40px] md:blur-[70px]'}`} />
+            <div className={`absolute bottom-[-4%] right-[-8%] h-[30vh] w-[62vw] rounded-[50%] bg-indigo-500/14 ${useLiteScene ? 'blur-[28px]' : 'blur-[46px] md:blur-[74px]'}`} />
+            {!useLiteScene && <div className="absolute bottom-[12%] left-[18%] h-[14vh] w-[64vw] rounded-[100%] border border-white/6 bg-white/5 blur-[2px]" />}
+            {!useLiteScene && <div className="absolute bottom-[18%] right-[16%] h-[8vh] w-[22vw] rounded-[100%] bg-fuchsia-400/10 blur-[18px]" />}
           </>
         ) : (
           <>
-            <div className="absolute bottom-[10%] left-[-10%] h-[28vh] w-[68vw] rounded-[50%] bg-emerald-200/45 blur-[32px] md:blur-[52px]" />
-            <div className="absolute bottom-[-2%] right-[-12%] h-[32vh] w-[72vw] rounded-[50%] bg-sky-100/90 blur-[32px] md:blur-[52px]" />
-            <div className="absolute bottom-[8%] left-[15%] h-[12vh] w-[70vw] rounded-[100%] bg-white/35 blur-[14px]" />
-            <div className="absolute bottom-[18%] right-[18%] h-[8vh] w-[24vw] rounded-[100%] bg-amber-100/50 blur-[20px]" />
+            <div className={`absolute bottom-[10%] left-[-10%] h-[28vh] w-[68vw] rounded-[50%] bg-emerald-200/45 ${useLiteScene ? 'blur-[20px]' : 'blur-[32px] md:blur-[52px]'}`} />
+            <div className={`absolute bottom-[-2%] right-[-12%] h-[32vh] w-[72vw] rounded-[50%] bg-sky-100/90 ${useLiteScene ? 'blur-[20px]' : 'blur-[32px] md:blur-[52px]'}`} />
+            {!useLiteScene && <div className="absolute bottom-[8%] left-[15%] h-[12vh] w-[70vw] rounded-[100%] bg-white/35 blur-[14px]" />}
+            {!useLiteScene && <div className="absolute bottom-[18%] right-[18%] h-[8vh] w-[24vw] rounded-[100%] bg-amber-100/50 blur-[20px]" />}
           </>
         )}
       </div>

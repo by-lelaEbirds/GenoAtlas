@@ -22,13 +22,11 @@ import {
   createDefaultSessionStats,
   ensureMetaProgress,
   getActiveEvent,
-  getCoachTip,
   getStartTimeBonus,
-  getWeeklyRotationPreview,
   getUpgradeAdjustedCoins,
   normalizeContinent,
 } from '../utils/metaProgression';
-import { createDefaultTelemetry, ensureTelemetry, getTelemetryInsight, recordRunTelemetry, recordTelemetryCounter } from '../utils/telemetry';
+import { createDefaultTelemetry, ensureTelemetry, recordRunTelemetry, recordTelemetryCounter } from '../utils/telemetry';
 
 function resolveAvatarById(savedAvatarId) {
   return AVATARS.find((avatar) => avatar.id === savedAvatarId) || AVATARS[0];
@@ -49,7 +47,10 @@ function safeParseJson(value, fallback) {
 export function useGeoGame(globeRef) {
   const nativePlatform = isNativeRuntime();
   const androidPlatform = isAndroidRuntime();
+  const compactViewport = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const hardwareThreads = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 4 : 4;
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  const prefersEfficientMode = prefersReducedMotion || androidPlatform || (compactViewport && hardwareThreads <= 8);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [geoData, setGeoData] = useState([]);
@@ -89,11 +90,11 @@ export function useGeoGame(globeRef) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const [isBatterySaverMode, setIsBatterySaverMode] = useState(prefersReducedMotion);
+  const [isBatterySaverMode, setIsBatterySaverMode] = useState(prefersEfficientMode);
   const [isHighContrastMode, setIsHighContrastMode] = useState(false);
   const [isLargeTextMode, setIsLargeTextMode] = useState(false);
   const [isColorAssistMode, setIsColorAssistMode] = useState(false);
-  const [isReducedEffectsMode, setIsReducedEffectsMode] = useState(prefersReducedMotion);
+  const [isReducedEffectsMode, setIsReducedEffectsMode] = useState(prefersEfficientMode);
 
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -113,7 +114,6 @@ export function useGeoGame(globeRef) {
   const [floatingPoints, setFloatingPoints] = useState([]);
   const [studyCard, setStudyCard] = useState(null);
   const [sessionTargetCount, setSessionTargetCount] = useState(0);
-  const [sessionRewardSummary, setSessionRewardSummary] = useState(null);
 
   const [adPrompt, setAdPrompt] = useState(null);
   const [isAdFlowActive, setIsAdFlowActive] = useState(false);
@@ -143,12 +143,6 @@ export function useGeoGame(globeRef) {
   const endGameRef = useRef(null);
 
   const activeEvent = useMemo(() => metaProgress.weeklyRotation || getActiveEvent(todayStr), [metaProgress.weeklyRotation, todayStr]);
-  const weeklyRotationPreview = useMemo(() => getWeeklyRotationPreview(todayStr, 8), [todayStr]);
-  const telemetryInsight = useMemo(() => getTelemetryInsight(telemetry), [telemetry]);
-  const coachTip = useMemo(
-    () => getCoachTip({ telemetryInsight, metaProgress, activeEvent }),
-    [activeEvent, metaProgress, telemetryInsight],
-  );
 
   useEffect(() => {
     scoreRef.current = score;
@@ -742,7 +736,6 @@ export function useGeoGame(globeRef) {
     setSessionTargetCount(0);
     setAdPrompt(null);
     setIsAdFlowActive(false);
-    setSessionRewardSummary(null);
     setScreenFlash('');
     setIsShaking(false);
   }, []);
@@ -818,17 +811,6 @@ export function useGeoGame(globeRef) {
     const nextTelemetry = recordRunTelemetry(telemetryRef.current, summary);
     saveTelemetry(nextTelemetry);
 
-    setSessionRewardSummary({
-      ...metaResult.rewardSummary,
-      activeEvent,
-      coachTip,
-      eventCoinBonus: eventCoinResult.bonusCoins,
-      accuracy:
-        summary.correctAnswers + summary.wrongAnswers > 0
-          ? Math.round((summary.correctAnswers / (summary.correctAnswers + summary.wrongAnswers)) * 100)
-          : 0,
-    });
-
     if (metaResult.rewardSummary.completedMissions.length > 0) playMissionCompleteCue();
 
     if (scoreRef.current > bestScore && (gameMode === GAME_MODES.NORMAL || gameMode === GAME_MODES.FOOTBALL)) {
@@ -844,7 +826,7 @@ export function useGeoGame(globeRef) {
     else if (reason === 'daily_win' || reason === 'win') playSound('success', 0.8);
 
     if (earnedCoins > 0) window.setTimeout(() => playSound('coin', 0.8), 800);
-  }, [activeEvent, bestScore, coachTip, gameMode, saveMetaProgress, saveTelemetry, todayStr, unlockAchievement]);
+  }, [activeEvent, bestScore, gameMode, saveMetaProgress, saveTelemetry, todayStr, unlockAchievement]);
 
   useEffect(() => {
     endGameRef.current = endGame;
@@ -913,7 +895,6 @@ export function useGeoGame(globeRef) {
     setIsAdFlowActive(false);
     setRewardedReviveUsed(false);
     setRewardedCoinsClaimed(false);
-    setSessionRewardSummary(null);
     setScreenFlash('');
     setIsShaking(false);
     setGameMode(mode);
@@ -1188,14 +1169,6 @@ export function useGeoGame(globeRef) {
         gameMode !== GAME_MODES.DAILY,
       canClaimRewardedCoins:
         gameState === GAME_STATES.RESULT && !rewardedCoinsClaimed && lastCoinsEarned > 0,
-      metaProgress,
-      activeEvent,
-      weeklyRotationPreview,
-      telemetry,
-      telemetryInsight,
-      coachTip,
-      sessionRewardSummary,
-      dailyWinsCount,
     },
     actions: {
       startGame,

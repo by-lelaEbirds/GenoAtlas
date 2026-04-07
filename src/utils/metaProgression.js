@@ -86,7 +86,7 @@ function createEmptyContinentMastery() {
 }
 
 function getMissionRewardMultiplier(routeUpgrades) {
-  return 1 + ((routeUpgrades?.atlasPass || 0) * 0.08);
+  return 1;
 }
 
 function formatContinentLabel(continent) {
@@ -495,7 +495,7 @@ export function applyEventBonuses(baseCoins, baseXp, summary, activeEvent) {
 }
 
 export function getUpgradeAdjustedCoins(baseCoins, routeUpgrades) {
-  const multiplier = 1 + ((routeUpgrades?.treasureRadar || 0) * 0.06);
+  const multiplier = 1 + ((routeUpgrades?.treasureRadar || 0) * 0.06) + ((routeUpgrades?.atlasPass || 0) * 0.04);
   return Math.round(baseCoins * multiplier);
 }
 

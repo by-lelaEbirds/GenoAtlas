@@ -40,8 +40,8 @@ export const POWER_UPS = [
 export const ROUTE_UPGRADES = [
   {
     id: 'atlasPass',
-    name: 'Radar de Missoes',
-    desc: '+8% moedas das operacoes semanais por nivel.',
+    name: 'Bussola de Elite',
+    desc: '+4% moedas por corrida por nivel.',
     icon: '\u{1F9ED}',
     maxLevel: 5,
     basePrice: 2200,

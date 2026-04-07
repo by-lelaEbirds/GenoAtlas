@@ -21,7 +21,6 @@ import {
 import StartScreen from './components/StartScreen';
 import GameHUD from './components/GameHUD';
 import MonetizationModal from './components/MonetizationModal';
-import WeeklyMissionsModal from './components/WeeklyMissionsModal';
 import { TutorialModal, AchievementsModal, ShopModal, CreditsModal } from './components/Modals';
 import { useGeoGame } from './hooks/useGeoGame';
 import { GAME_MODES, GAME_STATES, MAP_THEMES } from './constants';
@@ -44,14 +43,8 @@ export default function App() {
   const [promoInput, setPromoInput] = useState('');
   const [promoFeedback, setPromoFeedback] = useState(null);
   const [showCredits, setShowCredits] = useState(false);
-  const [showWeeklyOps, setShowWeeklyOps] = useState(false);
 
   const { isDarkMode, isSoundEnabled, isVibrationEnabled } = state;
-  const weeklyMissionStatus = {
-    total: state.metaProgress.weeklyMissions.length,
-    completed: state.metaProgress.weeklyMissions.filter((mission) => mission.completed).length,
-    title: state.activeEvent?.title || 'Missoes da semana',
-  };
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsLoaded(true), 150);
@@ -76,12 +69,6 @@ export default function App() {
   useEffect(() => {
     initializeAds();
   }, []);
-
-  useEffect(() => {
-    if (state.gameState !== GAME_STATES.START && showWeeklyOps) {
-      setShowWeeklyOps(false);
-    }
-  }, [showWeeklyOps, state.gameState]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -274,19 +261,6 @@ export default function App() {
           setPowerUps={actions.setPowerUps}
           routeUpgrades={state.routeUpgrades}
           setRouteUpgrades={actions.setRouteUpgrades}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {showWeeklyOps && (
-        <WeeklyMissionsModal
-          onClose={() => setShowWeeklyOps(false)}
-          weeklyRotation={state.activeEvent}
-          weeklyMissions={state.metaProgress.weeklyMissions}
-          weeklyRotationPreview={state.weeklyRotationPreview}
-          dailyWinStreak={state.metaProgress.dailyWinStreak}
-          weeklyVoyageStreak={state.metaProgress.weeklyVoyageStreak}
-          coachTip={state.coachTip}
           isDarkMode={isDarkMode}
         />
       )}
@@ -623,7 +597,6 @@ export default function App() {
           onFootball={() => actions.startGame('football')}
           onDaily={() => actions.startGame('daily')}
           onOpenAchievements={() => actions.setShowAchievements(true)}
-          onOpenWeeklyOps={() => setShowWeeklyOps(true)}
           onOpenTutorial={() => actions.setShowTutorial(true)}
           onOpenSettings={() => actions.setShowSettingsPrompt(true)}
           coins={state.coins}
@@ -637,8 +610,8 @@ export default function App() {
           countryCount={state.countryCount}
           activeAvatar={state.activeAvatar}
           setShowShop={actions.setShowShop}
-          weeklyMissionStatus={weeklyMissionStatus}
           isBatterySaverMode={state.isBatterySaverMode}
+          isReducedEffectsMode={state.isReducedEffectsMode}
           isDarkMode={isDarkMode}
           toggleDarkMode={actions.toggleDarkMode}
         />
@@ -657,7 +630,6 @@ export default function App() {
             onHome={handleHomeFromResult}
             onClaimDoubleCoins={actions.openRewardedCoinsPrompt}
             canClaimDoubleCoins={state.canClaimRewardedCoins}
-            sessionRewardSummary={state.sessionRewardSummary}
             isDarkMode={isDarkMode}
           />
         </Suspense>

@@ -89,7 +89,7 @@ function getToneClasses(tone, isDarkMode) {
   }
 }
 
-const ModeCard = memo(function ModeCard({ card, isDarkMode }) {
+const ModeCard = memo(function ModeCard({ card, isDarkMode, isPerformanceMode }) {
   const tone = getToneClasses(card.accentTone, isDarkMode);
   const isDisabled = card.disabled;
 
@@ -120,7 +120,7 @@ const ModeCard = memo(function ModeCard({ card, isDarkMode }) {
         <img
           src={`${import.meta.env.BASE_URL}assets/icons/${card.icon}`}
           alt={card.title}
-          className={`relative z-10 mb-4 h-[116px] w-[116px] object-contain drop-shadow-[0_14px_24px_rgba(0,0,0,0.24)] transition-transform duration-500 md:h-[138px] md:w-[138px] ${isDisabled ? 'grayscale opacity-60' : 'group-hover:scale-[1.04]'}`}
+          className={`relative z-10 mb-4 h-[116px] w-[116px] object-contain drop-shadow-[0_14px_24px_rgba(0,0,0,0.24)] transition-transform duration-500 md:h-[138px] md:w-[138px] ${isDisabled ? 'grayscale opacity-60' : isPerformanceMode ? '' : 'group-hover:scale-[1.04]'}`}
           loading="lazy"
           decoding="async"
         />
@@ -138,7 +138,7 @@ const ModeCard = memo(function ModeCard({ card, isDarkMode }) {
   );
 });
 
-function ModeCarousel({ onDaily, onFootball, onStudy, dailyCompleted, isDarkMode }) {
+function ModeCarousel({ onDaily, onFootball, onStudy, dailyCompleted, isDarkMode, isPerformanceMode }) {
   const cards = useMemo(() => {
     return MODE_DEFINITIONS.map((mode) => {
       if (mode.id === 'daily') {
@@ -170,7 +170,7 @@ function ModeCarousel({ onDaily, onFootball, onStudy, dailyCompleted, isDarkMode
 
   return (
     <section
-      className="relative z-10 animate-fade-in-up"
+      className={`relative z-10 ${isPerformanceMode ? '' : 'animate-fade-in-up'}`}
       style={{ contentVisibility: 'auto', containIntrinsicSize: '320px' }}
     >
       <div className="mb-5 flex items-end justify-between px-5 md:px-8">
@@ -187,7 +187,7 @@ function ModeCarousel({ onDaily, onFootball, onStudy, dailyCompleted, isDarkMode
       <div className="custom-scrollbar flex snap-x gap-4 overflow-x-auto px-5 pb-4 pt-2 md:px-8">
         {cards.map((card) => (
           <div key={card.id} className="group">
-            <ModeCard card={card} isDarkMode={isDarkMode} />
+            <ModeCard card={card} isDarkMode={isDarkMode} isPerformanceMode={isPerformanceMode} />
           </div>
         ))}
       </div>

@@ -14,7 +14,6 @@ export default function StartScreen({
   onFootball,
   onDaily,
   onOpenAchievements,
-  onOpenWeeklyOps,
   onOpenTutorial,
   onOpenSettings,
   coins,
@@ -28,8 +27,8 @@ export default function StartScreen({
   countryCount,
   activeAvatar,
   setShowShop,
-  weeklyMissionStatus,
   isBatterySaverMode,
+  isReducedEffectsMode,
   isDarkMode,
   toggleDarkMode,
 }) {
@@ -57,7 +56,7 @@ export default function StartScreen({
   }, []);
 
   useEffect(() => {
-    if (!isMobile) {
+    if (!isMobile && !isBatterySaverMode) {
       return;
     }
 
@@ -66,7 +65,7 @@ export default function StartScreen({
         layerRef.current.style.transform = '';
       }
     });
-  }, [isMobile]);
+  }, [isBatterySaverMode, isMobile]);
 
   const handleThemeUnlock = useCallback((theme) => {
     if (coins < theme.price) {
@@ -115,7 +114,7 @@ export default function StartScreen({
   }, []);
 
   const handleScroll = useCallback((event) => {
-    if (isBatterySaverMode) {
+    if (isBatterySaverMode || isMobile) {
       return;
     }
 
@@ -150,6 +149,8 @@ export default function StartScreen({
     });
   }, [isBatterySaverMode, isMobile]);
 
+  const isPerformanceMode = isBatterySaverMode || isReducedEffectsMode || isMobile;
+
   const availableCountries = countryCount > 0 ? countryCount : '--';
 
   return (
@@ -162,6 +163,7 @@ export default function StartScreen({
         isDarkMode={isDarkMode}
         isMobile={isMobile}
         isBatterySaverMode={isBatterySaverMode}
+        isReducedEffectsMode={isReducedEffectsMode}
       />
 
       <div
@@ -274,6 +276,7 @@ export default function StartScreen({
             onStudy={onStudy}
             dailyCompleted={dailyCompleted}
             isDarkMode={isDarkMode}
+            isPerformanceMode={isPerformanceMode}
           />
 
           <section className="relative z-10 px-5 pb-10 pt-6 md:px-8 md:pb-14 md:pt-10">
@@ -292,6 +295,7 @@ export default function StartScreen({
               onThemePress={handleThemePress}
               isDarkMode={isDarkMode}
               isMobile={isMobile}
+              isPerformanceMode={isPerformanceMode}
             />
           </section>
         </div>
@@ -299,10 +303,8 @@ export default function StartScreen({
 
       <BottomNav
         onOpenAchievements={onOpenAchievements}
-        onOpenWeeklyOps={onOpenWeeklyOps}
         onOpenSettings={onOpenSettings}
         setShowShop={setShowShop}
-        weeklyMissionStatus={weeklyMissionStatus}
         isDarkMode={isDarkMode}
       />
 
