@@ -609,13 +609,10 @@ export default function App() {
           dailyCompleted={state.playedDailyDates.includes(state.todayStr)}
           countryCount={state.countryCount}
           activeAvatar={state.activeAvatar}
-          activeEvent={state.activeEvent}
-          weeklyMissions={state.weeklyMissions}
           setShowShop={actions.setShowShop}
           isBatterySaverMode={state.isBatterySaverMode}
           isReducedEffectsMode={state.isReducedEffectsMode}
           isDarkMode={isDarkMode}
-          isNativePlatform={state.isNativePlatform}
           toggleDarkMode={actions.toggleDarkMode}
         />
       )}

@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Coins, Flame, Globe, Moon, Sun, TrendingUp } from 'lucide-react';
 
 import { saveNativeData } from '../utils/storage';
-import AdBanner from './AdBanner';
 import BottomNav from './StartScreenUI/BottomNav';
 import ExperienceShowcase from './StartScreenUI/ExperienceShowcase';
+import HomeCommandDeck from './StartScreenUI/HomeCommandDeck';
 import JourneyMap from './StartScreenUI/JourneyMap';
 import ModeCarousel from './StartScreenUI/ModeCarousel';
 import ParallaxBackground from './StartScreenUI/ParallaxBackground';
 import RegionModal from './StartScreenUI/RegionModal';
-import WeeklyPulseCard from './StartScreenUI/WeeklyPulseCard';
 
 export default function StartScreen({
   onStart,
@@ -34,9 +33,6 @@ export default function StartScreen({
   isReducedEffectsMode,
   isDarkMode,
   toggleDarkMode,
-  activeEvent,
-  weeklyMissions,
-  isNativePlatform,
 }) {
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
@@ -210,7 +206,11 @@ export default function StartScreen({
         </header>
 
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 pb-10 pt-4 md:px-8">
-          <section className="relative z-10 overflow-hidden rounded-[3rem] border border-white/30 bg-white/80 px-5 pb-8 pt-[calc(6.8rem+env(safe-area-inset-top))] shadow-[0_30px_70px_rgba(2,6,23,0.2)] dark:border-slate-800 dark:bg-slate-900/70">
+          <section
+            className={`relative z-10 overflow-hidden rounded-[3rem] border px-5 pb-8 pt-[calc(6.8rem+env(safe-area-inset-top))] shadow-[0_30px_70px_rgba(2,6,23,0.2)] ${
+              isDarkMode ? 'border-white/10 bg-slate-900/70' : 'border-white/30 bg-white/80'
+            }`}
+          >
             <div aria-hidden="true" className="pointer-events-none absolute inset-0">
               <div className={`absolute left-1/2 top-0 -translate-x-1/2 h-[320px] w-[320px] rounded-full blur-[120px] ${isDarkMode ? 'bg-cyan-500/20' : 'bg-sky-300/40'}`} />
             </div>
@@ -282,46 +282,27 @@ export default function StartScreen({
                 </div>
               </div>
 
-              <div className={`relative rounded-[2.4rem] border p-6 shadow-[0_30px_60px_rgba(2,6,23,0.25)] ${isDarkMode ? 'glass-panel border-white/15' : 'glass-panel-light border-white/70'}`}>
-                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-amber-500">Ciclo ativo</p>
-                <h3 className={`mt-2 text-[30px] font-black uppercase tracking-[0.08em] ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
-                  {activeEvent?.title ?? 'Rotação semanal'}
-                </h3>
-                <p className={`mt-2 text-[13px] leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-stone-500'}`}>
-                  {activeEvent?.description ?? 'Complete rotas e empilhe recompensas antes do fim do ciclo.'}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {(activeEvent?.bestModes || ['Normal']).map((mode) => (
-                    <span key={mode} className="rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.3em] text-sky-600 border-sky-300 bg-sky-50">
-                      {mode}
-                    </span>
-                  ))}
-                </div>
-                {activeEvent?.guide?.length ? (
-                  <div className="mt-4 space-y-2 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">
-                    {activeEvent.guide.slice(0, 2).map((tip, index) => (
-                      <div key={`${tip}-${index}`} className="flex items-start gap-2">
-                        <span className={`mt-1 inline-flex h-2 w-2 rounded-full ${isDarkMode ? 'bg-cyan-300' : 'bg-sky-500'}`} />
-                        <span className={isDarkMode ? 'text-slate-300' : 'text-stone-500'}>{tip}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                {activeEvent?.rewardLabel && (
-                  <p className="mt-5 text-[12px] font-black uppercase tracking-[0.32em] text-amber-400">
-                    {activeEvent.rewardLabel}
-                  </p>
-                )}
-              </div>
+              <HomeCommandDeck
+                activeAvatar={activeAvatar}
+                currentTheme={currentTheme}
+                coins={coins}
+                dailyCompleted={dailyCompleted}
+                isDarkMode={isDarkMode}
+              />
             </div>
           </section>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)]">
-            <div className="space-y-6 order-2 lg:order-1">
-              <WeeklyPulseCard activeEvent={activeEvent} missions={weeklyMissions} isDarkMode={isDarkMode} />
-              <ExperienceShowcase coins={coins} countryCount={availableCountries} isDarkMode={isDarkMode} />
+            <div className="order-2 lg:order-1">
+              <ExperienceShowcase
+                coins={coins}
+                countryCount={availableCountries}
+                currentTheme={currentTheme}
+                activeAvatar={activeAvatar}
+                isDarkMode={isDarkMode}
+              />
             </div>
-            <div className="space-y-6 order-1 lg:order-2">
+            <div className="order-1 lg:order-2">
               <ModeCarousel
                 onDaily={onDaily}
                 onFootball={onFootball}
@@ -329,11 +310,6 @@ export default function StartScreen({
                 dailyCompleted={dailyCompleted}
                 isDarkMode={isDarkMode}
                 isPerformanceMode={isPerformanceMode}
-              />
-              <AdBanner
-                dataAdSlot="5555555555"
-                isNativePlatform={isNativePlatform}
-                isBatterySaverMode={isBatterySaverMode}
               />
             </div>
           </div>
