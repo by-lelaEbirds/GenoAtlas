@@ -141,8 +141,10 @@ export function useGeoGame(globeRef) {
   const telemetryRef = useRef(telemetry);
   const routeUpgradesRef = useRef(routeUpgrades);
   const endGameRef = useRef(null);
+  const reviveOfferRef = useRef(null);
 
   const activeEvent = useMemo(() => metaProgress.weeklyRotation || getActiveEvent(todayStr), [metaProgress.weeklyRotation, todayStr]);
+  const weeklyMissions = useMemo(() => metaProgress.weeklyMissions || [], [metaProgress.weeklyMissions]);
 
   useEffect(() => {
     scoreRef.current = score;
@@ -662,6 +664,27 @@ export function useGeoGame(globeRef) {
     });
   }, [gameState, lastCoinsEarned, rewardedCoinsClaimed]);
 
+  useEffect(() => {
+    if (
+      !studyCard ||
+      studyCard.isCorrect ||
+      studyCard.livesRemaining > 0 ||
+      gameMode === GAME_MODES.DAILY ||
+      rewardedReviveUsed
+    ) {
+      reviveOfferRef.current = null;
+      return;
+    }
+
+    const cardKey = `${studyCard.iso}-${studyCard.livesRemaining}-${studyCard.clickedName || ''}`;
+    if (reviveOfferRef.current === cardKey) {
+      return;
+    }
+
+    reviveOfferRef.current = cardKey;
+    openRewardedRevivePrompt();
+  }, [gameMode, openRewardedRevivePrompt, rewardedReviveUsed, studyCard]);
+
   const confirmAdPrompt = useCallback(async () => {
     if (!adPrompt || isAdFlowActive) {
       return false;
@@ -1159,6 +1182,8 @@ export function useGeoGame(globeRef) {
       isAndroidPlatform: androidPlatform,
       sessionTargetCount,
       countryCount: allCountries.length,
+      activeEvent,
+      weeklyMissions,
       adPrompt,
       isAdFlowActive,
       canUseRewardedRevive:

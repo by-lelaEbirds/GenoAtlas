@@ -130,6 +130,38 @@ function ParallaxBackground({
     ];
   }, [isDarkMode, useLiteScene]);
 
+  const orbitRings = useMemo(() => {
+    if (useLiteScene) {
+      return [];
+    }
+
+    const palette = isDarkMode ? 'rgba(34,211,238,0.18)' : 'rgba(56,189,248,0.25)';
+
+    return [360, 440, 520].map((size, index) => ({
+      size,
+      top: `${12 + index * 6}%`,
+      left: `${10 + index * 6}%`,
+      borderColor: palette,
+      opacity: 0.28 - index * 0.05,
+      animation: index % 2 === 0 ? 'animate-orbit' : 'animate-orbit-reverse',
+      delay: index * 1.5,
+    }));
+  }, [isDarkMode, useLiteScene]);
+
+  const starTrails = useMemo(() => {
+    if (useLiteScene) {
+      return [];
+    }
+
+    return [...Array(3)].map((_, index) => ({
+      width: `${140 + index * 35}px`,
+      top: `${22 + index * 12}%`,
+      left: `${5 + index * 24}%`,
+      opacity: 0.42 - index * 0.08,
+      delay: `${index * 1.6}s`,
+    }));
+  }, [useLiteScene]);
+
   return (
     <div className={`pointer-events-none fixed inset-0 z-0 overflow-hidden transition-colors duration-1000 ${isDarkMode ? 'bg-[#120a28]' : 'bg-[#dff4ff]'}`}>
       <div
@@ -180,6 +212,24 @@ function ParallaxBackground({
               animationDelay: `${star.delay}s`,
               willChange: 'opacity, transform',
               opacity: isDarkMode ? 0.72 : 0.62,
+            }}
+          />
+        ))}
+
+        {starTrails.map((trail, index) => (
+          <div
+            key={`trail-${index}`}
+            className="absolute h-[2px] rounded-full animate-shooting-star"
+            style={{
+              width: trail.width,
+              top: trail.top,
+              left: trail.left,
+              opacity: trail.opacity,
+              animationDelay: trail.delay,
+              background: isDarkMode
+                ? 'linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0))'
+                : 'linear-gradient(90deg, rgba(255,255,255,0.9), rgba(59,130,246,0.05))',
+              boxShadow: isDarkMode ? '0 0 12px rgba(255,255,255,0.6)' : '0 0 15px rgba(59,130,246,0.45)',
             }}
           />
         ))}
@@ -247,6 +297,24 @@ function ParallaxBackground({
             {!useLiteScene && <div className="absolute bottom-[18%] right-[18%] h-[8vh] w-[24vw] rounded-[100%] bg-amber-100/50 blur-[20px]" />}
           </>
         )}
+
+        {orbitRings.map((orbit, index) => (
+          <div
+            key={`orbit-${index}`}
+            className={`absolute ${orbit.animation}`}
+            style={{
+              width: `${orbit.size}px`,
+              height: `${orbit.size}px`,
+              borderRadius: '50%',
+              border: `1px solid ${orbit.borderColor}`,
+              top: orbit.top,
+              left: orbit.left,
+              opacity: orbit.opacity,
+              animationDelay: `${orbit.delay}s`,
+              transform: 'translate3d(0, 0, 0)',
+            }}
+          />
+        ))}
       </div>
 
       <div aria-hidden="true" className="absolute inset-0">

@@ -95,6 +95,19 @@ function RocketAvatar({ size, className }) {
 }
 
 export default function AvatarIcon({ avatar, size = 40, className = '' }) {
+  if (avatar?.image) {
+    return (
+      <img
+        aria-hidden="true"
+        src={avatar.image}
+        alt={avatar.name || 'Avatar'}
+        width={size}
+        height={size}
+        className={className}
+        style={{ width: `${size}px`, height: `${size}px`, objectFit: 'cover', borderRadius: '26px' }}
+      />
+    );
+  }
   switch (avatar?.id) {
     case 'pin':
       return <PinAvatar size={size} className={className} />;
