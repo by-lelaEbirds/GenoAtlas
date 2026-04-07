@@ -3,8 +3,6 @@ import { Coins, Flame, Globe, Moon, Sun, TrendingUp } from 'lucide-react';
 
 import { saveNativeData } from '../utils/storage';
 import BottomNav from './StartScreenUI/BottomNav';
-import ExperienceShowcase from './StartScreenUI/ExperienceShowcase';
-import HomeCommandDeck from './StartScreenUI/HomeCommandDeck';
 import JourneyMap from './StartScreenUI/JourneyMap';
 import ModeCarousel from './StartScreenUI/ModeCarousel';
 import ParallaxBackground from './StartScreenUI/ParallaxBackground';
@@ -205,133 +203,116 @@ export default function StartScreen({
           </div>
         </header>
 
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 pb-10 pt-4 md:px-8">
-          <section
-            className={`relative z-10 overflow-hidden rounded-[3rem] border px-5 pb-8 pt-[calc(6.8rem+env(safe-area-inset-top))] shadow-[0_30px_70px_rgba(2,6,23,0.2)] ${
-              isDarkMode ? 'border-white/10 bg-slate-900/70' : 'border-white/30 bg-white/80'
-            }`}
-          >
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-              <div className={`absolute left-1/2 top-0 -translate-x-1/2 h-[320px] w-[320px] rounded-full blur-[120px] ${isDarkMode ? 'bg-cyan-500/20' : 'bg-sky-300/40'}`} />
-            </div>
+        <div className="mx-auto flex w-full max-w-6xl flex-col px-5 pb-10 pt-4 md:px-8">
+          <section className="relative z-10 px-0 pb-8 pt-[calc(6.8rem+env(safe-area-inset-top))] md:pb-10 md:pt-[calc(7.25rem+env(safe-area-inset-top))]">
+            <div className={`relative mx-auto flex max-w-5xl flex-col items-center overflow-hidden rounded-[3rem] border px-5 py-8 text-center md:px-8 md:py-10 ${
+              isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/80'
+            }`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                <div className={`absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full blur-[110px] ${isDarkMode ? 'bg-fuchsia-500/14' : 'bg-white/80'}`} />
+                <div className={`absolute -left-12 bottom-0 h-40 w-40 rounded-full blur-3xl ${isDarkMode ? 'bg-cyan-500/10' : 'bg-sky-200/60'}`} />
+                <div className={`absolute -right-10 top-12 h-36 w-36 rounded-full blur-3xl ${isDarkMode ? 'bg-amber-400/8' : 'bg-amber-100/60'}`} />
+              </div>
 
-            <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.75fr)] lg:items-start">
-              <div className="space-y-6">
-                <div className="relative mx-auto flex max-w-4xl flex-col items-center text-center">
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1 flex justify-center">
-                    <div className={`h-[290px] w-[290px] rounded-full blur-3xl md:h-[360px] md:w-[360px] ${isDarkMode ? 'bg-fuchsia-500/16' : 'bg-white/70'}`} />
-                  </div>
-
-                  <div className="relative z-10 flex flex-col items-center text-center">
-                    <div
-                      className={`relative mb-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-[2.25rem] border-[5px] md:h-36 md:w-36 md:rounded-[2.8rem] ${
-                        isDarkMode
-                          ? 'border-indigo-400/25 bg-slate-900/60 shadow-[0_24px_40px_rgba(15,23,42,0.45)]'
-                          : 'border-sky-200 bg-white/95 shadow-[0_22px_34px_rgba(56,189,248,0.15)]'
-                      }`}
-                    >
-                      <div className="absolute inset-0 -translate-x-[150%] skew-x-12 animate-sweep bg-gradient-to-r from-transparent via-white/35 to-transparent" />
-                      <img
-                        src={`${import.meta.env.BASE_URL}assets/icon.png`}
-                        alt="Logo do GenoAtlas"
-                        className="relative z-10 h-full w-full object-cover"
-                        decoding="async"
-                        fetchPriority="high"
-                      />
-                    </div>
-
-                    <h1 className={`text-[52px] font-black uppercase leading-[0.86] tracking-tight md:text-[78px] ${isDarkMode ? 'text-white' : 'text-sky-950'}`}>
-                      Geno<span className={isDarkMode ? 'text-cyan-300' : 'text-sky-500'}>Atlas</span>
-                    </h1>
-                    <p className={`mt-3 text-[13px] font-black uppercase tracking-[0.34em] md:text-[16px] ${isDarkMode ? 'text-indigo-200/80' : 'text-sky-700/80'}`}>
-                      Explore / Aprenda / Domine
-                    </p>
-                  </div>
+              <div className="relative z-10 flex flex-col items-center">
+                <div
+                  className={`relative mb-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-[2.25rem] border-[5px] md:h-36 md:w-36 md:rounded-[2.8rem] ${
+                    isDarkMode
+                      ? 'border-indigo-400/25 bg-slate-900/60 shadow-[0_24px_40px_rgba(15,23,42,0.45)]'
+                      : 'border-sky-200 bg-white/95 shadow-[0_22px_34px_rgba(56,189,248,0.15)]'
+                  }`}
+                >
+                  <div className="absolute inset-0 -translate-x-[150%] skew-x-12 animate-sweep bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+                  <img
+                    src={`${import.meta.env.BASE_URL}assets/icon.png`}
+                    alt="Logo do GenoAtlas"
+                    className="relative z-10 h-full w-full object-cover"
+                    decoding="async"
+                    fetchPriority="high"
+                  />
                 </div>
 
-                <div className="grid w-full grid-cols-3 gap-3 md:gap-4">
-                  <div className={`rounded-[1.5rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/70'}`}>
-                    <Globe className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-cyan-300' : 'text-sky-500'}`} strokeWidth={2.5} />
-                    <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>{availableCountries}</span>
-                    <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Paises</span>
-                  </div>
-                  <div className={`rounded-[1.5rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/70'}`}>
-                    <Flame className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-amber-300' : 'text-amber-500'}`} strokeWidth={2.5} />
-                    <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>4</span>
-                    <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Modos</span>
-                  </div>
-                  <div className={`rounded-[1.5rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/70'}`}>
-                    <TrendingUp className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-500'}`} strokeWidth={2.5} />
-                    <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>MAX</span>
-                    <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Jornada</span>
-                  </div>
-                </div>
+                <h1 className={`text-[52px] font-black uppercase leading-[0.86] tracking-tight md:text-[78px] ${isDarkMode ? 'text-white' : 'text-sky-950'}`}>
+                  Geno<span className={isDarkMode ? 'text-cyan-300' : 'text-sky-500'}>Atlas</span>
+                </h1>
+                <p className={`mt-3 max-w-xl text-[13px] font-black uppercase tracking-[0.34em] md:text-[16px] ${isDarkMode ? 'text-indigo-200/80' : 'text-sky-700/80'}`}>
+                  Explore / Aprenda / Domine
+                </p>
+              </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={onOpenTutorial}
-                    className={`rounded-full border px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.18em] transition-all active:scale-[0.98] md:text-[12px] ${
-                      isDarkMode
-                        ? 'glass-panel border-white/10 text-slate-200 hover:border-cyan-300/30 hover:bg-white/10'
-                        : 'glass-panel-light border-white text-sky-700 hover:bg-white'
-                    }`}
-                  >
-                    Como jogar
-                  </button>
+              <div className="relative z-10 mt-8 grid w-full max-w-3xl grid-cols-3 gap-3 md:mt-10 md:gap-4">
+                <div className={`rounded-[1.6rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white/85 border-white/80'}`}>
+                  <Globe className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-cyan-300' : 'text-sky-500'}`} strokeWidth={2.5} />
+                  <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>{availableCountries}</span>
+                  <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Paises</span>
+                </div>
+                <div className={`rounded-[1.6rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white/85 border-white/80'}`}>
+                  <Flame className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-amber-300' : 'text-amber-500'}`} strokeWidth={2.5} />
+                  <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>4</span>
+                  <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Modos</span>
+                </div>
+                <div className={`rounded-[1.6rem] border px-3 py-4 text-center md:px-4 md:py-5 ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white/85 border-white/80'}`}>
+                  <TrendingUp className={`mx-auto mb-2 h-6 w-6 md:h-7 md:w-7 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-500'}`} strokeWidth={2.5} />
+                  <span className={`block text-[24px] font-black leading-none md:text-[30px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>MAX</span>
+                  <span className={`mt-1 block text-[10px] font-black uppercase tracking-[0.18em] md:text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-stone-500'}`}>Jornada</span>
                 </div>
               </div>
 
-              <HomeCommandDeck
-                activeAvatar={activeAvatar}
-                currentTheme={currentTheme}
-                coins={coins}
-                dailyCompleted={dailyCompleted}
-                isDarkMode={isDarkMode}
-              />
+              <div className="relative z-10 mt-5 flex flex-wrap items-center justify-center gap-3 md:mt-6">
+                <button
+                  type="button"
+                  onClick={onOpenTutorial}
+                  className={`rounded-full border px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all active:scale-[0.98] md:text-[12px] ${
+                    isDarkMode
+                      ? 'bg-white/5 border-white/10 text-slate-200 hover:border-cyan-300/30 hover:bg-white/10'
+                      : 'bg-white/85 border-white text-sky-700 hover:bg-white'
+                  }`}
+                >
+                  Como jogar
+                </button>
+              </div>
             </div>
           </section>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)]">
-            <div className="order-2 lg:order-1">
-              <ExperienceShowcase
-                coins={coins}
-                countryCount={availableCountries}
+          <section className="relative z-10 pt-2 md:pt-4">
+            <ModeCarousel
+              onDaily={onDaily}
+              onFootball={onFootball}
+              onStudy={onStudy}
+              dailyCompleted={dailyCompleted}
+              isDarkMode={isDarkMode}
+              isPerformanceMode={isPerformanceMode}
+            />
+          </section>
+
+          <section className="relative z-10 px-0 pb-10 pt-8 md:pb-14 md:pt-12">
+            <div className={`relative overflow-hidden rounded-[3rem] border px-5 py-6 md:px-7 md:py-8 ${
+              isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/80'
+            }`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                <div className={`absolute left-1/2 top-10 h-40 w-[75%] -translate-x-1/2 rounded-full blur-3xl ${isDarkMode ? 'bg-fuchsia-500/8' : 'bg-sky-100/80'}`} />
+              </div>
+
+              <div className="relative z-10 mb-8 text-center md:mb-10">
+                <div className={`inline-flex items-center gap-3 rounded-full border px-7 py-3 md:px-10 md:py-4 ${
+                  isDarkMode ? 'bg-white/5 border-fuchsia-500/20' : 'bg-white/85 border-white text-sky-800'
+                }`}>
+                  <span className={`h-3 w-3 rounded-full ${isDarkMode ? 'bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.75)]' : 'bg-sky-500 shadow-[0_0_10px_rgba(56,189,248,0.35)]'}`} />
+                  <span className={`text-[20px] font-black uppercase tracking-[0.18em] md:text-[28px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>Sua jornada</span>
+                </div>
+              </div>
+
+              <JourneyMap
+                themes={themes}
                 currentTheme={currentTheme}
+                unlockedThemes={unlockedThemes}
                 activeAvatar={activeAvatar}
+                onThemePress={handleThemePress}
                 isDarkMode={isDarkMode}
-              />
-            </div>
-            <div className="order-1 lg:order-2">
-              <ModeCarousel
-                onDaily={onDaily}
-                onFootball={onFootball}
-                onStudy={onStudy}
-                dailyCompleted={dailyCompleted}
-                isDarkMode={isDarkMode}
+                isMobile={isMobile}
                 isPerformanceMode={isPerformanceMode}
               />
             </div>
-          </div>
-
-          <section className="relative z-10 px-5 pb-10 pt-6 md:px-8 md:pb-14 md:pt-10">
-            <div className="mb-8 text-center md:mb-10">
-              <div className={`inline-flex items-center gap-3 rounded-full border px-7 py-3 md:px-10 md:py-4 ${isDarkMode ? 'glass-panel border-fuchsia-500/25' : 'glass-panel-light border-white text-sky-800'}`}>
-                <span className={`h-3 w-3 rounded-full ${isDarkMode ? 'bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.75)]' : 'bg-sky-500 shadow-[0_0_10px_rgba(56,189,248,0.35)]'}`} />
-                <span className={`text-[20px] font-black uppercase tracking-[0.18em] md:text-[28px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>Sua jornada</span>
-              </div>
-            </div>
-
-            <JourneyMap
-              themes={themes}
-              currentTheme={currentTheme}
-              unlockedThemes={unlockedThemes}
-              activeAvatar={activeAvatar}
-              onThemePress={handleThemePress}
-              isDarkMode={isDarkMode}
-              isMobile={isMobile}
-              isPerformanceMode={isPerformanceMode}
-            />
           </section>
         </div>
       </div>

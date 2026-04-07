@@ -99,7 +99,7 @@ const ModeCard = memo(function ModeCard({ card, isDarkMode, isPerformanceMode })
       aria-label={card.ariaLabel}
       onClick={card.onClick}
       disabled={isDisabled}
-      className={`snap-center relative flex min-h-[214px] w-[240px] shrink-0 flex-col items-center overflow-hidden rounded-[2rem] px-5 pb-6 pt-5 text-center transition-all active:scale-[0.98] md:min-h-[250px] md:w-[290px] md:px-6 ${
+      className={`snap-center relative flex min-h-[214px] w-[248px] shrink-0 flex-col items-center overflow-hidden rounded-[2rem] px-5 pb-6 pt-5 text-center transition-all active:scale-[0.98] md:min-h-[250px] md:w-[292px] md:px-6 ${
         isDisabled
           ? isDarkMode
             ? 'glass-panel cursor-not-allowed border-white/10 opacity-55'
@@ -109,6 +109,7 @@ const ModeCard = memo(function ModeCard({ card, isDarkMode, isPerformanceMode })
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[2rem]">
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/15 to-transparent" />
+        <div className={`absolute bottom-0 left-0 h-20 w-full ${isDarkMode ? 'bg-gradient-to-t from-slate-950/35 to-transparent' : 'bg-gradient-to-t from-white/60 to-transparent'}`} />
       </div>
 
       <div className={`absolute right-4 top-4 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${tone.badge}`}>
@@ -170,10 +171,14 @@ function ModeCarousel({ onDaily, onFootball, onStudy, dailyCompleted, isDarkMode
 
   return (
     <section
-      className={`relative z-10 ${isPerformanceMode ? '' : 'animate-fade-in-up'}`}
+      className={`relative z-10 overflow-hidden rounded-[3rem] border px-5 py-6 md:px-7 md:py-7 ${
+        isDarkMode ? 'glass-panel border-white/10' : 'glass-panel-light border-white/80'
+      } ${isPerformanceMode ? '' : 'animate-fade-in-up'}`}
       style={{ contentVisibility: 'auto', containIntrinsicSize: '320px' }}
     >
-      <div className="mb-5 flex items-end justify-between px-5 md:px-8">
+      <div aria-hidden="true" className={`pointer-events-none absolute inset-x-[10%] top-0 h-32 rounded-full blur-3xl ${isDarkMode ? 'bg-cyan-500/8' : 'bg-sky-200/70'}`} />
+
+      <div className="relative mb-5 flex items-end justify-between">
         <h2 className={`flex items-center gap-2 text-[20px] font-black uppercase tracking-[0.16em] md:text-[28px] ${isDarkMode ? 'text-white' : 'text-sky-900'}`}>
           <Map size={22} className={isDarkMode ? 'text-cyan-300' : 'text-sky-500'} />
           Modos
@@ -184,7 +189,7 @@ function ModeCarousel({ onDaily, onFootball, onStudy, dailyCompleted, isDarkMode
         </span>
       </div>
 
-      <div className="custom-scrollbar flex snap-x gap-4 overflow-x-auto px-5 pb-4 pt-2 md:px-8">
+      <div className="custom-scrollbar relative flex snap-x gap-4 overflow-x-auto pb-2 pt-2">
         {cards.map((card) => (
           <div key={card.id} className="group">
             <ModeCard card={card} isDarkMode={isDarkMode} isPerformanceMode={isPerformanceMode} />

@@ -191,9 +191,16 @@ function JourneyMap({
 
   return (
     <div
-      className="relative z-10 mx-auto w-full max-w-[28rem] px-2 md:max-w-[34rem] md:px-4"
+      className="relative z-10 mx-auto w-full max-w-[29rem] px-1 md:max-w-[35rem] md:px-3"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '2200px' }}
     >
+      <div
+        aria-hidden="true"
+        className={`absolute inset-x-[10%] top-20 h-24 rounded-full blur-3xl ${
+          isDarkMode ? 'bg-fuchsia-500/8' : 'bg-sky-100/80'
+        }`}
+      />
+
       <div
         aria-hidden="true"
         className={`absolute left-1/2 top-[154px] bottom-[168px] w-[6px] -translate-x-1/2 rounded-full md:top-[188px] md:bottom-[188px] ${
@@ -247,7 +254,7 @@ function JourneyMap({
             }`}>
               Proxima Rota
             </span>
-            <div className={`rounded-full border px-7 py-3 text-[15px] font-black uppercase tracking-[0.12em] md:px-10 md:py-4 md:text-[17px] ${
+            <div className={`rounded-full border px-7 py-3 text-[15px] font-black uppercase tracking-[0.12em] shadow-[0_16px_30px_rgba(15,23,42,0.12)] md:px-10 md:py-4 md:text-[17px] ${
               isDarkMode
                 ? 'glass-panel border-rose-500/25 text-rose-100'
                 : 'glass-panel-light border-rose-200 text-rose-700'
